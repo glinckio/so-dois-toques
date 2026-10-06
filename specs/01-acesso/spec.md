@@ -1,6 +1,6 @@
 # Etapa 1: Acesso e auditoria
 
-**Status:** rascunho
+**Status:** aprovada
 
 ## Objetivo
 
@@ -35,6 +35,8 @@ O que cada perfil pode fazer dentro de cada módulo é detalhado na spec do mód
 - Usuário criado pelo administrador recebe uma senha temporária e é obrigado a trocá-la no primeiro acesso.
 - Usuários nunca são apagados, apenas desativados, para preservar o histórico.
 - Sessão expira após 12 horas sem uso e, no máximo, 7 dias após o login.
+- Depois de um bloqueio por senha errada, enquanto não houver um acesso com sucesso, cada nova senha errada bloqueia o e-mail por mais 15 minutos.
+- O bloqueio vale para qualquer e-mail digitado, exista ele ou não, para que o sistema não revele quais e-mails estão cadastrados.
 
 ## Critérios de aceite
 
@@ -82,7 +84,7 @@ O que cada perfil pode fazer dentro de cada módulo é detalhado na spec do mód
 - Autenticação em dois fatores. Recomendada para o perfil Administrador numa etapa futura.
 - Acesso de alunos ao sistema.
 
-## Perguntas em aberto
+## Decisões registradas
 
-- Os tempos de sessão (12 horas sem uso, 7 dias no máximo) servem para a rotina de vocês?
-- Quem será o primeiro administrador (nome e e-mail)? Só é necessário na hora de colocar em produção.
+- 06/10/2026: o dono pediu para seguir sem esperar revisão; ficam valendo os tempos de sessão propostos (12 horas sem uso, 7 dias no máximo). Podem ser ajustados depois sem mudar a arquitetura.
+- O primeiro administrador (nome e e-mail) é definido na hora de colocar em produção.
