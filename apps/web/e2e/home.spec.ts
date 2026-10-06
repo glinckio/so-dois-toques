@@ -32,13 +32,6 @@ test("FUND-CA-02: a resposta traz os cabeçalhos de segurança", async ({ reques
   expect(second.headers()["content-security-policy"]).not.toBe(headers["content-security-policy"]);
 });
 
-test("FUND-CA-04: o health check responde sem expor detalhes", async ({ request }) => {
-  const response = await request.get("/api/health");
-  expect(response.status()).toBe(200);
-  expect(await response.json()).toEqual({ status: "ok", database: "ok" });
-  expect(response.headers()["cache-control"]).toContain("no-store");
-});
-
 test("página inexistente responde 404 em português", async ({ page }) => {
   const response = await page.goto("/nao-existe");
   expect(response?.status()).toBe(404);

@@ -1,5 +1,4 @@
-import { describe, expect, it } from "vitest";
-import { checkHealth } from "./health";
+import { checkHealth } from "./health.js";
 
 describe("checkHealth", () => {
   it("FUND-CA-04: informa ok quando o banco responde", async () => {

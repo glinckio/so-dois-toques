@@ -5,16 +5,16 @@ import { extractCriteria, extractStatus, findUncoveredCriteria } from "./spec-co
 function walk(dir: string, accept: (path: string) => boolean): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
-    if (name === "node_modules" || name === "generated") return [];
+    if (["node_modules", "generated", "dist", ".next"].includes(name)) return [];
     return statSync(path).isDirectory() ? walk(path, accept) : accept(path) ? [path] : [];
   });
 }
 
 const specs = walk("specs", (path) => path.endsWith("spec.md"));
-const tests = [
-  ...walk("src", (path) => /\.test\.tsx?$/.test(path)),
-  ...walk("e2e", (path) => /\.spec\.ts$/.test(path)),
-].map((path) => readFileSync(path, "utf8"));
+// Testes de todos os apps: unidade (*.test.ts, *.spec.ts), integração (*.e2e-spec.ts) e Playwright.
+const tests = walk("apps", (path) => /\.(test|spec|e2e-spec)\.tsx?$/.test(path)).map((path) =>
+  readFileSync(path, "utf8"),
+);
 
 let failed = false;
 for (const spec of specs) {

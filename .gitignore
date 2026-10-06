@@ -29,4 +29,5 @@ Thumbs.db
 !.vscode/extensions.json
 .idea/
 
-/src/generated/prisma
+/apps/api/src/generated/
+/apps/api/dist/

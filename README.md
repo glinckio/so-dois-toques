@@ -13,8 +13,10 @@ Requisitos: Node 22+, pnpm 10 e Docker.
 ```bash
 pnpm install
 docker compose up -d
-cp .env.example .env
+cp apps/api/.env.example apps/api/.env
 pnpm dev
 ```
+
+O site abre em http://localhost:3000 e a API em http://localhost:3001.
 
 Os comandos de teste e o fluxo de trabalho estão em [CLAUDE.md](CLAUDE.md).

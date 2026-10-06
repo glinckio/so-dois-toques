@@ -1,8 +1,14 @@
-@AGENTS.md
-
 # Só Dois Toques
 
 Sistema de gestão (aulas, horários das quadras, estoque, caixa, contábil). Usuários e documentação em português do Brasil: specs, commits, PRs e textos de tela em pt-BR.
+
+## Estrutura
+
+Monorepo pnpm:
+
+- `apps/web`: Next.js 16 (telas). Leia `apps/web/AGENTS.md` antes de mexer: a versão do Next.js é mais nova que o seu conhecimento; a documentação está em `apps/web/node_modules/next/dist/docs/`.
+- `apps/api`: NestJS 12 em ESM (regras de negócio, login, banco com Prisma 7). Imports relativos com extensão `.js`.
+- `specs/`: specs SDD de cada etapa. `scripts/`: verificações do CI.
 
 ## Fluxo SDD (obrigatório)
 
@@ -16,15 +22,15 @@ Sistema de gestão (aulas, horários das quadras, estoque, caixa, contábil). Us
 
 ```bash
 pnpm install
-docker compose up -d        # PostgreSQL local
-cp .env.example .env
-pnpm dev                    # http://localhost:3000
+docker compose up -d                    # PostgreSQL local
+cp apps/api/.env.example apps/api/.env
+pnpm dev                                # web em :3000, API em :3001
 
 pnpm lint && pnpm format:check && pnpm typecheck
-pnpm test                   # unidade
+pnpm test                   # unidade (raiz, web e API)
 pnpm test:coverage          # unidade com cobertura (mínimo 80%)
-pnpm test:integration       # integração com PostgreSQL real
-pnpm build && pnpm test:e2e # ponta a ponta (celular e desktop)
+pnpm test:integration       # API contra PostgreSQL real
+pnpm build && pnpm test:e2e # ponta a ponta do web (celular e desktop)
 pnpm check:specs            # todo critério de aceite tem teste
 ```
 
@@ -33,6 +39,6 @@ pnpm check:specs            # todo critério de aceite tem teste
 - Dinheiro sempre em centavos inteiros; datas em America/Sao_Paulo.
 - Toda entrada de usuário validada com Zod no servidor; checagem de permissão no servidor.
 - Lançamentos financeiros nunca são apagados ou editados: erro se corrige com estorno.
-- Nada de segredos no repositório; novas variáveis entram em `src/env.ts` e `.env.example`.
-- Regra de negócio em `src/lib/` como funções puras com teste de unidade; acesso ao banco separado.
-- Arquivos `*.int.test.ts` rodam contra PostgreSQL real.
+- Nada de segredos no repositório; novas variáveis da API entram em `apps/api/src/env.ts` e `apps/api/.env.example`.
+- Regra de negócio na API, como funções puras com teste de unidade (`*.spec.ts`); acesso ao banco nos services. O web nunca acessa o banco.
+- Testes de integração da API ficam em `apps/api/test/*.e2e-spec.ts` e rodam contra PostgreSQL real.

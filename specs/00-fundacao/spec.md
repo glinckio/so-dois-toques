@@ -19,9 +19,9 @@ O sistema vai guardar dados de alunos (LGPD) e dinheiro (mensalidades, caixa). E
 ## Critérios de aceite
 
 - **FUND-CA-01**: Dado que alguém acessa o endereço do sistema, quando a página inicial carrega no celular ou no computador, então ela aparece em português (`lang="pt-BR"`), com o nome "Só Dois Toques" e os módulos previstos (Aulas, Horários, Estoque, Contábil), sem erros no navegador.
-- **FUND-CA-02**: Dado qualquer acesso a uma página, então a resposta traz cabeçalhos de segurança: Content-Security-Policy com nonce novo a cada requisição, HSTS, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, política de referência e de permissões, e não revela a tecnologia do servidor (`X-Powered-By`).
-- **FUND-CA-03**: Dado que uma variável de ambiente obrigatória está ausente ou inválida, quando o sistema inicia, então ele recusa iniciar e a mensagem cita o nome da variável, nunca o valor.
-- **FUND-CA-04**: Dado o endereço `/api/health`, então ele informa se o banco de dados está acessível, sem cache e sem expor mensagens de erro, endereço ou usuário do banco.
+- **FUND-CA-02**: Dado qualquer acesso a uma página ou à API, então a resposta traz cabeçalhos de segurança: Content-Security-Policy (nas páginas, com nonce novo a cada requisição), HSTS, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, política de referência, e não revela a tecnologia do servidor (`X-Powered-By`). A API só aceita chamadas de navegador vindas do endereço do front-end (CORS).
+- **FUND-CA-03**: Dado que uma variável de ambiente obrigatória da API está ausente ou inválida, quando a API inicia, então ele recusa iniciar e a mensagem cita o nome da variável, nunca o valor.
+- **FUND-CA-04**: Dado o endereço `GET /health` da API, então ele informa se o banco de dados está acessível, sem cache e sem expor mensagens de erro, endereço ou usuário do banco.
 - **FUND-CA-05**: Dado um critério de aceite em qualquer spec do repositório, quando o CI roda, então ele falha se o critério não aparecer em nenhum teste. A exigência vale para specs com status `implementada` (ou sem status); specs em `rascunho` ou `aprovada` ainda não têm código. Critérios marcados com `[manual]` são verificados na revisão.
 - **FUND-CA-06** [manual]: Dado um PR para a `main`, então o merge só é possível com todas as verificações do CI verdes e aprovação do dono do repositório; push direto na `main` é bloqueado.
 
