@@ -67,6 +67,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://sdt:sdt_ci@localhost:5432/so_dois_toques
       WEB_ORIGIN: http://localhost:3000
+      # Valor fixo só para o CI; o banco de teste é recriado a cada execução.
+      INTERNAL_API_KEY: ci-chave-interna-apenas-para-testes-automatizados
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -75,7 +77,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm db:deploy
+      # O setup dos testes recria o banco so_dois_toques_test e aplica as migrations.
       - run: pnpm test:integration
 
   e2e:
