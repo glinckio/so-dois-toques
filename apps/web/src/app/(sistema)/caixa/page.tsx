@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { estornarAvulso } from "@/app/acoes/caixa";
+import { FormAbertura } from "@/components/caixa/form-abertura";
+import { FormAvulso } from "@/components/caixa/form-avulso";
+import { FormFechamento } from "@/components/caixa/form-fechamento";
+import { FormMotivo } from "@/components/mensalidades/form-motivo";
 import { Aviso, classeBotaoSecundario, classeCampo } from "@/components/ui";
+import { formatarDataHora } from "@/lib/acesso/auditoria";
 import { formatarData, hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
+import { ehAvulso, nomeDaCategoria } from "@/lib/caixa/formatacao";
+import type { Turno } from "@/lib/caixa/tipos";
 import { FORMAS, formatarReais, type Forma } from "@/lib/mensalidades/formatacao";
 import type { CaixaDoDia } from "@/lib/mensalidades/tipos";
 import { chamarApi } from "@/lib/servidor/api";
+import { exigirArea } from "@/lib/servidor/sessao";
 
 export const metadata: Metadata = { title: "Caixa | Só Dois Toques" };
 
@@ -17,7 +26,13 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
   const { data: pedida } = await searchParams;
   const hoje = hojeEmSaoPaulo();
   const data = typeof pedida === "string" && DATA.test(pedida) ? pedida : hoje;
-  const resposta = await chamarApi<CaixaDoDia>(`/caixa/lancamentos?data=${data}`);
+  const { usuario } = await exigirArea("caixa");
+  const admin = usuario.perfil === "ADMINISTRADOR";
+  const [resposta, atual] = await Promise.all([
+    chamarApi<CaixaDoDia>(`/caixa/lancamentos?data=${data}`),
+    chamarApi<{ turno: Turno | null }>("/caixa/sessao"),
+  ]);
+  const turno = atual.ok ? atual.dados.turno : null;
 
   return (
     <>
@@ -45,6 +60,37 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
           </button>
         </form>
       </header>
+      {!atual.ok ? (
+        <Aviso tipo="erro">{atual.mensagem}</Aviso>
+      ) : turno ? (
+        <section aria-label="Caixa aberto" className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1 rounded-lg border border-green-600/40 bg-green-600/10 p-4">
+            <h2 className="text-lg font-medium">Caixa aberto</h2>
+            <p className="text-sm" data-testid="turno-aberto">
+              Aberto por {turno.abertaPor} em {formatarDataHora(turno.abertaEm)} · troco{" "}
+              {formatarReais(turno.trocoInicialCentavos)} · esperado em dinheiro{" "}
+              {formatarReais(turno.esperadoDinheiroCentavos)}
+            </p>
+            <Link href={`/caixa/turnos/${turno.id}`} className="self-start text-sm underline">
+              Ver o turno
+            </Link>
+          </div>
+          <FormAvulso />
+          <FormFechamento turnoId={turno.id} esperadoCentavos={turno.esperadoDinheiroCentavos} />
+        </section>
+      ) : (
+        <section
+          aria-label="Caixa fechado"
+          className="flex flex-col gap-3 rounded-lg border border-amber-600/40 bg-amber-600/10 p-4"
+        >
+          <h2 className="text-lg font-medium">Caixa fechado</h2>
+          <p className="text-sm">
+            Abra o caixa para lançar avulsos. Pagamentos registrados com o caixa fechado ficam sem
+            turno.
+          </p>
+          <FormAbertura />
+        </section>
+      )}
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
       ) : (
@@ -89,9 +135,13 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
                 {resposta.dados.lancamentos.map((l) => (
                   <li key={l.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                     <span>
-                      <span className="font-medium">{l.descricao}</span>
+                      <span
+                        className={`font-medium ${l.estornado ? "line-through opacity-70" : ""}`}
+                      >
+                        {l.descricao}
+                      </span>
                       <span className="block text-sm opacity-80">
-                        {FORMAS[l.forma]} · {l.criadoPor} ·{" "}
+                        {nomeDaCategoria(l.categoria)} · {FORMAS[l.forma]} · {l.criadoPor} ·{" "}
                         {new Intl.DateTimeFormat("pt-BR", {
                           timeZone: "America/Sao_Paulo",
                           timeStyle: "short",
@@ -112,6 +162,21 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
                       {l.tipo === "SAIDA" ? "− " : "+ "}
                       {formatarReais(l.valorCentavos)}
                     </span>
+                    {admin && turno && ehAvulso(l.categoria) && !l.estornado && (
+                      <details className="w-full">
+                        <summary className="cursor-pointer text-sm underline">Estornar</summary>
+                        <div className="pt-2">
+                          <FormMotivo
+                            acao={estornarAvulso}
+                            campos={{ lancamentoId: l.id }}
+                            titulo="Estornar lançamento avulso"
+                            explicacao="Lança o valor contrário no caixa aberto. O lançamento original continua no histórico."
+                            rotulo="Estornar lançamento"
+                            idCampo={`motivo-${l.id}`}
+                          />
+                        </div>
+                      </details>
+                    )}
                   </li>
                 ))}
               </ul>

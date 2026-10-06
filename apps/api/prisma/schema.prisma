@@ -40,6 +40,8 @@ model Usuario {
   lancamentos                Lancamento[]
   pagamentosQuadra           PagamentoQuadra[] @relation("PagamentoQuadraPagoPor")
   pagamentosQuadraEstornados PagamentoQuadra[] @relation("PagamentoQuadraEstornadoPor")
+  caixasAbertos              SessaoCaixa[]     @relation("SessaoAbertaPor")
+  caixasFechados             SessaoCaixa[]     @relation("SessaoFechadaPor")
 
   @@index([perfil, ativo])
 }
@@ -240,6 +242,10 @@ enum CategoriaLancamento {
   MENSALIDADE
   ESTORNO
   QUADRA_PARCEIRA
+  SUPRIMENTO
+  SANGRIA
+  DESPESA
+  RECEITA_AVULSA
 }
 
 model Plano {
@@ -343,6 +349,9 @@ model Lancamento {
   criadoPorId   String              @db.Uuid
   criadoPor     Usuario             @relation(fields: [criadoPorId], references: [id], onDelete: Restrict)
   criadoEm      DateTime            @default(now()) @db.Timestamptz(3)
+  /// Etapa 5: turno do caixa aberto quando o lançamento foi criado.
+  sessaoId      String?             @db.Uuid
+  sessao        SessaoCaixa?        @relation(fields: [sessaoId], references: [id], onDelete: Restrict)
 
   pagamento              Pagamento?       @relation("LancamentoDoPagamento")
   estornoPagamento       Pagamento?       @relation("EstornoDoPagamento")
@@ -350,6 +359,7 @@ model Lancamento {
   estornoPagamentoQuadra PagamentoQuadra? @relation("EstornoDoPagamentoQuadra")
 
   @@index([data])
+  @@index([sessaoId])
 }
 
 // Etapa 4: Horas e custos das quadras parceiras
@@ -378,4 +388,25 @@ model PagamentoQuadra {
 
   @@index([localId, competencia])
   @@index([competencia])
+}
+
+// Etapa 5: Caixa (abertura, fechamento e avulsos)
+
+/// Turno do caixa. Só um aberto por vez (índice único parcial na migração).
+model SessaoCaixa {
+  id                       String       @id @default(uuid()) @db.Uuid
+  trocoInicialCentavos     Int
+  abertaPorId              String       @db.Uuid
+  abertaPor                Usuario      @relation("SessaoAbertaPor", fields: [abertaPorId], references: [id], onDelete: Restrict)
+  abertaEm                 DateTime     @default(now()) @db.Timestamptz(3)
+  fechadaPorId             String?      @db.Uuid
+  fechadaPor               Usuario?     @relation("SessaoFechadaPor", fields: [fechadaPorId], references: [id], onDelete: Restrict)
+  fechadaEm                DateTime?    @db.Timestamptz(3)
+  esperadoDinheiroCentavos Int?
+  contadoDinheiroCentavos  Int?
+  diferencaCentavos        Int?
+  observacao               String?      @db.VarChar(300)
+  lancamentos              Lancamento[]
+
+  @@index([abertaEm])
 }

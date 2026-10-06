@@ -7,6 +7,7 @@ export default async function LayoutCaixa({ children }: LayoutProps<"/caixa">) {
   if (!permitido) return <AcessoNegado />;
   const links = [
     { href: "/caixa", rotulo: "Caixa do dia" },
+    { href: "/caixa/turnos", rotulo: "Turnos" },
     { href: "/caixa/mensalidades", rotulo: "Mensalidades" },
     { href: "/caixa/inadimplentes", rotulo: "Inadimplentes" },
   ];
