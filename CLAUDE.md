@@ -24,13 +24,15 @@ Monorepo pnpm:
 pnpm install
 docker compose up -d                    # PostgreSQL local
 cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
+pnpm db:deploy && pnpm admin:criar      # banco e primeiro administrador
 pnpm dev                                # web em :3000, API em :3001
 
 pnpm lint && pnpm format:check && pnpm typecheck
 pnpm test                   # unidade (raiz, web e API)
 pnpm test:coverage          # unidade com cobertura (mínimo 80%)
-pnpm test:integration       # API contra PostgreSQL real
-pnpm build && pnpm test:e2e # ponta a ponta do web (celular e desktop)
+pnpm test:integration       # API contra PostgreSQL real (banco *_test recriado)
+pnpm build && pnpm test:e2e # web + API + banco *_e2e (celular e desktop)
 pnpm check:specs            # todo critério de aceite tem teste
 ```
 
@@ -39,6 +41,7 @@ pnpm check:specs            # todo critério de aceite tem teste
 - Dinheiro sempre em centavos inteiros; datas em America/Sao_Paulo.
 - Toda entrada de usuário validada com Zod no servidor; checagem de permissão no servidor.
 - Lançamentos financeiros nunca são apagados ou editados: erro se corrige com estorno.
-- Nada de segredos no repositório; novas variáveis da API entram em `apps/api/src/env.ts` e `apps/api/.env.example`.
+- Nada de segredos no repositório; novas variáveis da API entram em `apps/api/src/env.ts` e `apps/api/.env.example` (as do web em `apps/web/src/lib/servidor/env.ts` e `apps/web/.env.example`).
+- O navegador só fala com o Next.js; o servidor do Next.js chama a API com a chave interna e o token da sessão (`apps/web/src/lib/servidor/api.ts`). Toda rota nova da API exige sessão por padrão; use `@ExigeArea(...)` para restringir por perfil.
 - Regra de negócio na API, como funções puras com teste de unidade (`*.spec.ts`); acesso ao banco nos services. O web nunca acessa o banco.
 - Testes de integração da API ficam em `apps/api/test/*.e2e-spec.ts` e rodam contra PostgreSQL real.

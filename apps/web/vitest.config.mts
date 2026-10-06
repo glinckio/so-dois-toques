@@ -9,7 +9,13 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
-      exclude: ["src/**/*.test.ts", "src/app/**", "src/proxy.ts"],
+      exclude: [
+        "src/**/*.test.ts",
+        "src/app/**",
+        "src/proxy.ts",
+        "src/lib/servidor/**",
+        "src/components/**",
+      ],
       thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
     },
   },

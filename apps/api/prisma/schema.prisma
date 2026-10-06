@@ -11,3 +11,66 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum Perfil {
+  ADMINISTRADOR
+  PROFESSOR
+  ATENDENTE
+}
+
+model Usuario {
+  id           String   @id @default(uuid()) @db.Uuid
+  nome         String   @db.VarChar(120)
+  email        String   @unique @db.VarChar(254)
+  perfil       Perfil
+  ativo        Boolean  @default(true)
+  senhaHash    String
+  trocarSenha  Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @db.Timestamptz(3)
+  atualizadoEm DateTime @updatedAt @db.Timestamptz(3)
+
+  sessoes Sessao[]
+
+  @@index([perfil, ativo])
+}
+
+model Sessao {
+  id          String   @id @default(uuid()) @db.Uuid
+  tokenHash   String   @unique @db.Char(64)
+  usuarioId   String   @db.Uuid
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  criadaEm    DateTime @default(now()) @db.Timestamptz(3)
+  ultimoUsoEm DateTime @default(now()) @db.Timestamptz(3)
+  expiraEm    DateTime @db.Timestamptz(3)
+  ip          String?  @db.VarChar(64)
+  agente      String?  @db.VarChar(300)
+
+  @@index([usuarioId])
+}
+
+model TentativaLogin {
+  id       BigInt   @id @default(autoincrement())
+  email    String   @db.VarChar(254)
+  ip       String?  @db.VarChar(64)
+  sucesso  Boolean
+  criadaEm DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([email, criadaEm])
+  @@index([ip, criadaEm])
+}
+
+/// Registro imutável: um gatilho no banco recusa UPDATE, DELETE e TRUNCATE.
+model Auditoria {
+  id       BigInt   @id @default(autoincrement())
+  criadaEm DateTime @default(now()) @db.Timestamptz(3)
+  atorId   String?  @db.Uuid
+  acao     String   @db.VarChar(40)
+  alvoTipo String?  @db.VarChar(40)
+  alvoId   String?  @db.VarChar(64)
+  ip       String?  @db.VarChar(64)
+  detalhes Json?
+
+  @@index([criadaEm])
+  @@index([atorId, criadaEm])
+  @@index([acao, criadaEm])
+}
