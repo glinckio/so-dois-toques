@@ -10,6 +10,8 @@ import { TurmasService } from "./aulas/turmas.service.js";
 import { AuditoriaController } from "./auditoria/auditoria.controller.js";
 import { AuditoriaService } from "./auditoria/auditoria.service.js";
 import { ConfigModule } from "./config.module.js";
+import { CustosController } from "./custos/custos.controller.js";
+import { CustosService } from "./custos/custos.service.js";
 import { HealthController } from "./health/health.controller.js";
 import { GeracaoAutomaticaService } from "./mensalidades/geracao-automatica.service.js";
 import { MensalidadesController } from "./mensalidades/mensalidades.controller.js";
@@ -24,6 +26,7 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
   imports: [ConfigModule, PrismaModule],
   controllers: [
     HealthController,
+    CustosController,
     AuthController,
     UsuariosController,
     AuditoriaController,
@@ -34,6 +37,7 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
   ],
   providers: [
     AuditoriaService,
+    CustosService,
     AuthService,
     UsuariosService,
     AlunosService,

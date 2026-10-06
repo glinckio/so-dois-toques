@@ -82,7 +82,9 @@ export class TurmasService {
       return await this.prisma.$transaction(async (tx) => {
         const atual = await tx.local.findUnique({ where: { id } });
         if (!atual) throw new NotFoundException("Local não encontrado.");
-        const local = await tx.local.update({ where: { id }, data: dados });
+        // Local próprio não tem valor de hora (Etapa 4).
+        const valorHora = dados.tipo === "PROPRIA" ? { valorHoraCentavos: null } : {};
+        const local = await tx.local.update({ where: { id }, data: { ...dados, ...valorHora } });
         await this.auditoria.registrar(
           {
             acao: "LOCAL_ALTERADO",

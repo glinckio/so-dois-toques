@@ -29,15 +29,17 @@ model Usuario {
   criadoEm     DateTime @default(now()) @db.Timestamptz(3)
   atualizadoEm DateTime @updatedAt @db.Timestamptz(3)
 
-  sessoes                Sessao[]
-  turmas                 Turma[]
-  consentimentos         Aluno[]       @relation("ConsentimentoRegistradoPor")
-  presencasRegistradas   Presenca[]
-  assinaturasCriadas     Assinatura[]
-  mensalidadesCanceladas Mensalidade[]
-  pagamentosRecebidos    Pagamento[]   @relation("PagamentoRecebidoPor")
-  pagamentosEstornados   Pagamento[]   @relation("PagamentoEstornadoPor")
-  lancamentos            Lancamento[]
+  sessoes                    Sessao[]
+  turmas                     Turma[]
+  consentimentos             Aluno[]           @relation("ConsentimentoRegistradoPor")
+  presencasRegistradas       Presenca[]
+  assinaturasCriadas         Assinatura[]
+  mensalidadesCanceladas     Mensalidade[]
+  pagamentosRecebidos        Pagamento[]       @relation("PagamentoRecebidoPor")
+  pagamentosEstornados       Pagamento[]       @relation("PagamentoEstornadoPor")
+  lancamentos                Lancamento[]
+  pagamentosQuadra           PagamentoQuadra[] @relation("PagamentoQuadraPagoPor")
+  pagamentosQuadraEstornados PagamentoQuadra[] @relation("PagamentoQuadraEstornadoPor")
 
   @@index([perfil, ativo])
 }
@@ -134,15 +136,18 @@ model Aluno {
 }
 
 model Local {
-  id           String    @id @default(uuid()) @db.Uuid
-  nome         String    @unique @db.VarChar(80)
-  tipo         TipoLocal
-  endereco     String?   @db.VarChar(200)
-  ativo        Boolean   @default(true)
-  criadoEm     DateTime  @default(now()) @db.Timestamptz(3)
-  atualizadoEm DateTime  @updatedAt @db.Timestamptz(3)
+  id                String    @id @default(uuid()) @db.Uuid
+  nome              String    @unique @db.VarChar(80)
+  tipo              TipoLocal
+  endereco          String?   @db.VarChar(200)
+  ativo             Boolean   @default(true)
+  /// Etapa 4: quanto a quadra parceira cobra por hora (centavos). Só para PARCEIRA.
+  valorHoraCentavos Int?
+  criadoEm          DateTime  @default(now()) @db.Timestamptz(3)
+  atualizadoEm      DateTime  @updatedAt @db.Timestamptz(3)
 
-  turmas Turma[]
+  turmas           Turma[]
+  pagamentosQuadra PagamentoQuadra[]
 }
 
 model Turma {
@@ -234,6 +239,7 @@ enum TipoLancamento {
 enum CategoriaLancamento {
   MENSALIDADE
   ESTORNO
+  QUADRA_PARCEIRA
 }
 
 model Plano {
@@ -338,8 +344,38 @@ model Lancamento {
   criadoPor     Usuario             @relation(fields: [criadoPorId], references: [id], onDelete: Restrict)
   criadoEm      DateTime            @default(now()) @db.Timestamptz(3)
 
-  pagamento        Pagamento? @relation("LancamentoDoPagamento")
-  estornoPagamento Pagamento? @relation("EstornoDoPagamento")
+  pagamento              Pagamento?       @relation("LancamentoDoPagamento")
+  estornoPagamento       Pagamento?       @relation("EstornoDoPagamento")
+  pagamentoQuadra        PagamentoQuadra? @relation("LancamentoDoPagamentoQuadra")
+  estornoPagamentoQuadra PagamentoQuadra? @relation("EstornoDoPagamentoQuadra")
 
   @@index([data])
+}
+
+// Etapa 4: Horas e custos das quadras parceiras
+
+/// Pagamento feito a uma quadra parceira pelas aulas de um mês.
+model PagamentoQuadra {
+  id                  String         @id @default(uuid()) @db.Uuid
+  localId             String         @db.Uuid
+  local               Local          @relation(fields: [localId], references: [id], onDelete: Restrict)
+  /// Primeiro dia do mês a que o pagamento se refere.
+  competencia         DateTime       @db.Date
+  valorCentavos       Int
+  forma               FormaPagamento
+  data                DateTime       @db.Date
+  pagoPorId           String         @db.Uuid
+  pagoPor             Usuario        @relation("PagamentoQuadraPagoPor", fields: [pagoPorId], references: [id], onDelete: Restrict)
+  criadoEm            DateTime       @default(now()) @db.Timestamptz(3)
+  lancamentoId        String         @unique @db.Uuid
+  lancamento          Lancamento     @relation("LancamentoDoPagamentoQuadra", fields: [lancamentoId], references: [id], onDelete: Restrict)
+  estornadoEm         DateTime?      @db.Timestamptz(3)
+  estornadoPorId      String?        @db.Uuid
+  estornadoPor        Usuario?       @relation("PagamentoQuadraEstornadoPor", fields: [estornadoPorId], references: [id], onDelete: Restrict)
+  motivoEstorno       String?        @db.VarChar(200)
+  estornoLancamentoId String?        @unique @db.Uuid
+  estornoLancamento   Lancamento?    @relation("EstornoDoPagamentoQuadra", fields: [estornoLancamentoId], references: [id], onDelete: Restrict)
+
+  @@index([localId, competencia])
+  @@index([competencia])
 }
