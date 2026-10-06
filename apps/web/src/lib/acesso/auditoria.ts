@@ -10,6 +10,20 @@ export const ROTULOS_ACOES = {
   SENHA_TROCADA: "Trocou a própria senha",
   SENHA_REDEFINIDA: "Senha temporária gerada",
   ADMIN_INICIAL_CRIADO: "Primeiro administrador criado",
+  ALUNO_CRIADO: "Aluno cadastrado",
+  ALUNO_ALTERADO: "Aluno alterado",
+  ALUNO_INATIVADO: "Aluno inativado",
+  ALUNO_REATIVADO: "Aluno reativado",
+  ALUNO_EXPORTADO: "Dados de aluno exportados",
+  ALUNO_ANONIMIZADO: "Aluno anonimizado",
+  LOCAL_CRIADO: "Local cadastrado",
+  LOCAL_ALTERADO: "Local alterado",
+  TURMA_CRIADA: "Turma cadastrada",
+  TURMA_ALTERADA: "Turma alterada",
+  TURMA_ENCERRADA: "Turma encerrada",
+  MATRICULA_CRIADA: "Matrícula feita",
+  MATRICULA_ENCERRADA: "Matrícula encerrada",
+  PRESENCA_REGISTRADA: "Presença registrada",
 } as const;
 
 export const TAMANHO_PAGINA = 50;

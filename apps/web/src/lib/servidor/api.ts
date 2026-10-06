@@ -12,7 +12,7 @@ export type RespostaApi<T> =
   | { ok: false; status: number; mensagem: string; codigo?: string; campos?: CampoInvalido[] };
 
 type Opcoes = {
-  metodo?: "GET" | "POST" | "PATCH";
+  metodo?: "GET" | "POST" | "PATCH" | "PUT";
   corpo?: unknown;
   /** Com sessão (padrão), 401 leva ao login e a troca de senha pendente leva à tela de troca. */
   sessao?: boolean;
