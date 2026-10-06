@@ -81,7 +81,7 @@ test("ACESSO-CA-12, ACESSO-CA-13, ACESSO-CA-11 e ACESSO-CA-10: novo professor tr
     await professor.goto("/contabil");
     await expect(professor.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
     await professor.goto("/aulas");
-    await expect(professor.getByRole("heading", { name: "Aulas" })).toBeVisible();
+    await expect(professor.getByRole("heading", { name: "Minhas turmas" })).toBeVisible();
   } finally {
     await contexto.close();
   }
