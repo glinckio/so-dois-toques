@@ -14,30 +14,30 @@ navegador ──cookie sdt_sessao──▶ Next.js (servidor) ──Bearer + cha
 
 ## Modelo de dados (Prisma)
 
-| Tabela | Campos principais | Observações |
-| --- | --- | --- |
-| `Usuario` | id (uuid), nome, email (único, minúsculo), perfil, ativo, senhaHash, trocarSenha, criadoEm, atualizadoEm | Nunca apagado |
-| `Sessao` | id, tokenHash (único), usuarioId, criadaEm, ultimoUsoEm, expiraEm, ip, agente | Apagada no logout e quando o usuário é desativado |
-| `TentativaLogin` | id, email, ip, sucesso, criadaEm | Base do bloqueio por e-mail e por IP |
-| `Auditoria` | id (sequencial), criadaEm, atorId, acao, alvoTipo, alvoId, ip, detalhes (JSON) | Gatilho no banco impede UPDATE, DELETE e TRUNCATE |
+| Tabela           | Campos principais                                                                                        | Observações                                       |
+| ---------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `Usuario`        | id (uuid), nome, email (único, minúsculo), perfil, ativo, senhaHash, trocarSenha, criadoEm, atualizadoEm | Nunca apagado                                     |
+| `Sessao`         | id, tokenHash (único), usuarioId, criadaEm, ultimoUsoEm, expiraEm, ip, agente                            | Apagada no logout e quando o usuário é desativado |
+| `TentativaLogin` | id, email, ip, sucesso, criadaEm                                                                         | Base do bloqueio por e-mail e por IP              |
+| `Auditoria`      | id (sequencial), criadaEm, atorId, acao, alvoTipo, alvoId, ip, detalhes (JSON)                           | Gatilho no banco impede UPDATE, DELETE e TRUNCATE |
 
 `perfil` é um enum: `ADMINISTRADOR`, `PROFESSOR`, `ATENDENTE`.
 
 ## API (NestJS)
 
-| Rota | Quem | O que faz |
-| --- | --- | --- |
-| `POST /auth/login` | público (com chave interna) | Valida e-mail e senha, aplica bloqueios, cria sessão |
-| `POST /auth/logout` | logado | Apaga a sessão atual |
-| `GET /auth/eu` | logado | Dados do usuário da sessão |
-| `POST /auth/senha` | logado | Troca a própria senha |
-| `GET /usuarios` | Administrador | Lista usuários |
-| `POST /usuarios` | Administrador | Cria usuário e devolve a senha temporária uma vez |
-| `PATCH /usuarios/:id/perfil` | Administrador | Altera o perfil |
-| `POST /usuarios/:id/redefinir-senha` | Administrador | Gera nova senha temporária |
-| `POST /usuarios/:id/desativar` | Administrador | Desativa e encerra as sessões |
-| `GET /auditoria` | Administrador | Consulta com filtros e paginação |
-| `GET /acesso/:area` | logado | Diz se o perfil pode acessar a área (usado pelas telas) |
+| Rota                                 | Quem                        | O que faz                                               |
+| ------------------------------------ | --------------------------- | ------------------------------------------------------- |
+| `POST /auth/login`                   | público (com chave interna) | Valida e-mail e senha, aplica bloqueios, cria sessão    |
+| `POST /auth/logout`                  | logado                      | Apaga a sessão atual                                    |
+| `GET /auth/eu`                       | logado                      | Dados do usuário da sessão                              |
+| `POST /auth/senha`                   | logado                      | Troca a própria senha                                   |
+| `GET /usuarios`                      | Administrador               | Lista usuários                                          |
+| `POST /usuarios`                     | Administrador               | Cria usuário e devolve a senha temporária uma vez       |
+| `PATCH /usuarios/:id/perfil`         | Administrador               | Altera o perfil                                         |
+| `POST /usuarios/:id/redefinir-senha` | Administrador               | Gera nova senha temporária                              |
+| `POST /usuarios/:id/desativar`       | Administrador               | Desativa e encerra as sessões                           |
+| `GET /auditoria`                     | Administrador               | Consulta com filtros e paginação                        |
+| `GET /acesso/:area`                  | logado                      | Diz se o perfil pode acessar a área (usado pelas telas) |
 
 - **Guardas globais**: `ChaveInternaGuard` → `SessaoGuard` (lê o Bearer, confere validade, usuário ativo e troca de senha obrigatória) → `PerfisGuard` (`@Perfis(...)`; nega com 403 e registra `ACESSO_NEGADO`). `@Publico()` libera login e health.
 - **Senhas**: Argon2id (`@node-rs/argon2`, parâmetros mínimos do OWASP: 19 MiB, 2 iterações, paralelismo 1). Para e-mail inexistente a API verifica contra um hash fictício, para o tempo de resposta não denunciar o cadastro.
