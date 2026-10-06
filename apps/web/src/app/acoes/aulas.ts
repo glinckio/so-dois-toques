@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { chamarApi, type RespostaApi } from "@/lib/servidor/api";
 import type { EstadoFormulario } from "./estado";
+import { erroComValores } from "./formulario";
 
 // As regras e a permissão de cada ação ficam na API; aqui só montamos o pedido.
 
@@ -13,23 +14,6 @@ const texto = (form: FormData, campo: string) => String(form.get(campo) ?? "").t
 
 function erroDe(resposta: Extract<RespostaApi<unknown>, { ok: false }>): EstadoFormulario {
   return { erro: resposta.campos?.[0]?.mensagem ?? resposta.mensagem };
-}
-
-/**
- * Erro que mantém no formulário o que a pessoa já tinha preenchido. Só copia os campos
- * conhecidos: o nome dos campos vem do navegador e não pode virar chave arbitrária.
- */
-function erroComValores(
-  estado: EstadoFormulario,
-  form: FormData,
-  campos: readonly string[],
-): EstadoFormulario {
-  const valores = new Map<string, string>();
-  for (const campo of campos) {
-    const valor = form.get(campo);
-    if (typeof valor === "string") valores.set(campo, valor);
-  }
-  return { ...estado, valores: Object.fromEntries(valores) };
 }
 
 const CAMPOS_ALUNO = [
