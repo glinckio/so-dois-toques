@@ -6,8 +6,8 @@ Sistema de gestão (aulas, horários das quadras, estoque, caixa, contábil). Us
 
 ## Fluxo SDD (obrigatório)
 
-1. Cada etapa tem `specs/NN-nome/spec.md` (o quê e por quê, critérios de aceite `XXX-CA-NN`), `plan.md` (como) e `tasks.md`.
-2. A spec é aprovada pelo dono antes do código.
+1. Cada etapa tem `specs/NN-nome/spec.md` (com a linha `**Status:** rascunho | aprovada | implementada`) (o quê e por quê, critérios de aceite `XXX-CA-NN`), `plan.md` (como) e `tasks.md`.
+2. A spec entra num PR próprio com status `rascunho`; o dono aprova e ela passa a `aprovada` antes do código. O PR de implementação muda para `implementada`.
 3. Branch `etapa/NN-nome` a partir da `main`; commits pequenos em Conventional Commits (`feat(aulas): ...`).
 4. Todo critério de aceite automatizável aparece no nome de pelo menos um teste (`pnpm check:specs`). Critérios marcados `[manual]` são verificados na revisão.
 5. PR para a `main` usando o modelo; CI verde é obrigatório. Nunca desligue, pule ou apague teste para ficar verde.

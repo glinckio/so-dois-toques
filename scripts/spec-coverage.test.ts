@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractCriteria, findUncoveredCriteria } from "./spec-coverage";
+import { extractCriteria, extractStatus, findUncoveredCriteria } from "./spec-coverage";
 
 const spec = `
 ## Critérios de aceite
@@ -30,5 +30,17 @@ describe("findUncoveredCriteria", () => {
   it("FUND-CA-05: passa quando todos estão cobertos", () => {
     const criteria = extractCriteria(spec);
     expect(findUncoveredCriteria(criteria, ["AULAS-CA-01", "AULAS-CA-03"])).toEqual([]);
+  });
+});
+
+describe("extractStatus", () => {
+  it("FUND-CA-05: lê o status da spec", () => {
+    expect(extractStatus("# Etapa\n\n**Status:** rascunho\n")).toBe("rascunho");
+    expect(extractStatus("Status: aprovada")).toBe("aprovada");
+    expect(extractStatus("**Status:** Implementada")).toBe("implementada");
+  });
+
+  it("FUND-CA-05: spec sem status é tratada como implementada", () => {
+    expect(extractStatus("# Etapa sem status")).toBe("implementada");
   });
 });
