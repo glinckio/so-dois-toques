@@ -1,6 +1,6 @@
 # Etapa 4: Horas e custos das quadras parceiras
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
