@@ -5,6 +5,7 @@ const valid = {
   PORT: "3001",
   DATABASE_URL: "postgresql://usuario:senha@localhost:5432/sdt",
   WEB_ORIGIN: "http://localhost:3000",
+  INTERNAL_API_KEY: "k".repeat(32),
 };
 
 describe("parseEnv", () => {
@@ -38,8 +39,14 @@ describe("parseEnv", () => {
     }
   });
 
+  it("FUND-CA-03: recusa chave interna curta", () => {
+    expect(() => parseEnv({ ...valid, INTERNAL_API_KEY: "curta" })).toThrow(/INTERNAL_API_KEY/);
+  });
+
   it("usa valores padrão para NODE_ENV, PORT e WEB_ORIGIN", () => {
-    expect(parseEnv({ DATABASE_URL: valid.DATABASE_URL })).toMatchObject({
+    expect(
+      parseEnv({ DATABASE_URL: valid.DATABASE_URL, INTERNAL_API_KEY: valid.INTERNAL_API_KEY }),
+    ).toMatchObject({
       NODE_ENV: "development",
       PORT: 3001,
       WEB_ORIGIN: "http://localhost:3000",

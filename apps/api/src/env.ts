@@ -10,6 +10,8 @@ const envSchema = z.object({
       message: "DATABASE_URL precisa ser uma URL PostgreSQL",
     }),
   WEB_ORIGIN: z.string().url().default("http://localhost:3000"),
+  /** Segredo compartilhado com o Next.js; só quem tem a chave fala com a API. */
+  INTERNAL_API_KEY: z.string().min(32, "INTERNAL_API_KEY precisa ter pelo menos 32 caracteres"),
 });
 
 export type Env = z.infer<typeof envSchema>;
