@@ -29,10 +29,15 @@ model Usuario {
   criadoEm     DateTime @default(now()) @db.Timestamptz(3)
   atualizadoEm DateTime @updatedAt @db.Timestamptz(3)
 
-  sessoes              Sessao[]
-  turmas               Turma[]
-  consentimentos       Aluno[]    @relation("ConsentimentoRegistradoPor")
-  presencasRegistradas Presenca[]
+  sessoes                Sessao[]
+  turmas                 Turma[]
+  consentimentos         Aluno[]       @relation("ConsentimentoRegistradoPor")
+  presencasRegistradas   Presenca[]
+  assinaturasCriadas     Assinatura[]
+  mensalidadesCanceladas Mensalidade[]
+  pagamentosRecebidos    Pagamento[]   @relation("PagamentoRecebidoPor")
+  pagamentosEstornados   Pagamento[]   @relation("PagamentoEstornadoPor")
+  lancamentos            Lancamento[]
 
   @@index([perfil, ativo])
 }
@@ -119,8 +124,10 @@ model Aluno {
   criadoEm                     DateTime    @default(now()) @db.Timestamptz(3)
   atualizadoEm                 DateTime    @updatedAt @db.Timestamptz(3)
 
-  matriculas Matricula[]
-  presencas  Presenca[]
+  matriculas   Matricula[]
+  presencas    Presenca[]
+  assinaturas  Assinatura[]
+  mensalidades Mensalidade[]
 
   @@index([nomeBusca])
   @@index([telefone])
@@ -202,4 +209,137 @@ model Presenca {
 
   @@unique([turmaId, alunoId, data])
   @@index([alunoId])
+}
+
+// Etapa 3: Mensalidades e núcleo do Caixa
+
+enum SituacaoMensalidade {
+  ABERTA
+  PAGA
+  CANCELADA
+}
+
+enum FormaPagamento {
+  PIX
+  DINHEIRO
+  CARTAO_DEBITO
+  CARTAO_CREDITO
+}
+
+enum TipoLancamento {
+  ENTRADA
+  SAIDA
+}
+
+enum CategoriaLancamento {
+  MENSALIDADE
+  ESTORNO
+}
+
+model Plano {
+  id             String   @id @default(uuid()) @db.Uuid
+  nome           String   @unique @db.VarChar(60)
+  aulasPorSemana Int      @db.SmallInt
+  valorCentavos  Int
+  ativo          Boolean  @default(true)
+  criadoEm       DateTime @default(now()) @db.Timestamptz(3)
+  atualizadoEm   DateTime @updatedAt @db.Timestamptz(3)
+
+  assinaturas Assinatura[]
+}
+
+/// O plano de um aluno a partir de um mês. Trocar o plano encerra esta e abre outra.
+model Assinatura {
+  id               String    @id @default(uuid()) @db.Uuid
+  alunoId          String    @db.Uuid
+  aluno            Aluno     @relation(fields: [alunoId], references: [id], onDelete: Restrict)
+  planoId          String    @db.Uuid
+  plano            Plano     @relation(fields: [planoId], references: [id], onDelete: Restrict)
+  diaVencimento    Int       @db.SmallInt
+  descontoCentavos Int       @default(0)
+  motivoDesconto   String?   @db.VarChar(200)
+  /// Primeiro dia do primeiro mês cobrado.
+  inicio           DateTime  @db.Date
+  /// Primeiro dia do primeiro mês que não é mais cobrado.
+  fim              DateTime? @db.Date
+  criadaPorId      String    @db.Uuid
+  criadaPor        Usuario   @relation(fields: [criadaPorId], references: [id], onDelete: Restrict)
+  criadaEm         DateTime  @default(now()) @db.Timestamptz(3)
+
+  mensalidades Mensalidade[]
+
+  @@index([alunoId, fim])
+}
+
+model Mensalidade {
+  id                 String              @id @default(uuid()) @db.Uuid
+  alunoId            String              @db.Uuid
+  aluno              Aluno               @relation(fields: [alunoId], references: [id], onDelete: Restrict)
+  assinaturaId       String              @db.Uuid
+  assinatura         Assinatura          @relation(fields: [assinaturaId], references: [id], onDelete: Restrict)
+  /// Primeiro dia do mês da mensalidade.
+  competencia        DateTime            @db.Date
+  /// Valor congelado na geração (plano menos desconto).
+  valorCentavos      Int
+  vencimento         DateTime            @db.Date
+  situacao           SituacaoMensalidade @default(ABERTA)
+  canceladaEm        DateTime?           @db.Timestamptz(3)
+  canceladaPorId     String?             @db.Uuid
+  canceladaPor       Usuario?            @relation(fields: [canceladaPorId], references: [id], onDelete: Restrict)
+  motivoCancelamento String?             @db.VarChar(200)
+  criadaEm           DateTime            @default(now()) @db.Timestamptz(3)
+
+  pagamentos Pagamento[]
+
+  @@unique([alunoId, competencia])
+  @@index([competencia, situacao])
+  @@index([situacao, vencimento])
+}
+
+model Pagamento {
+  id                  String         @id @default(uuid()) @db.Uuid
+  numeroRecibo        Int            @unique @default(autoincrement())
+  mensalidadeId       String         @db.Uuid
+  mensalidade         Mensalidade    @relation(fields: [mensalidadeId], references: [id], onDelete: Restrict)
+  valorCentavos       Int
+  forma               FormaPagamento
+  data                DateTime       @db.Date
+  recebidoPorId       String         @db.Uuid
+  recebidoPor         Usuario        @relation("PagamentoRecebidoPor", fields: [recebidoPorId], references: [id], onDelete: Restrict)
+  recebidoEm          DateTime       @default(now()) @db.Timestamptz(3)
+  lancamentoId        String         @unique @db.Uuid
+  lancamento          Lancamento     @relation("LancamentoDoPagamento", fields: [lancamentoId], references: [id], onDelete: Restrict)
+  estornadoEm         DateTime?      @db.Timestamptz(3)
+  estornadoPorId      String?        @db.Uuid
+  estornadoPor        Usuario?       @relation("PagamentoEstornadoPor", fields: [estornadoPorId], references: [id], onDelete: Restrict)
+  motivoEstorno       String?        @db.VarChar(200)
+  estornoLancamentoId String?        @unique @db.Uuid
+  estornoLancamento   Lancamento?    @relation("EstornoDoPagamento", fields: [estornoLancamentoId], references: [id], onDelete: Restrict)
+
+  @@index([mensalidadeId])
+}
+
+/// Livro-razão do Caixa. Imutável: um gatilho no banco recusa UPDATE, DELETE e TRUNCATE.
+model Lancamento {
+  id            String              @id @default(uuid()) @db.Uuid
+  tipo          TipoLancamento
+  valorCentavos Int
+  forma         FormaPagamento
+  /// Data (São Paulo) em que o dinheiro entrou ou saiu.
+  data          DateTime            @db.Date
+  categoria     CategoriaLancamento
+  descricao     String              @db.VarChar(200)
+  origemTipo    String?             @db.VarChar(40)
+  origemId      String?             @db.VarChar(64)
+  estornoDeId   String?             @unique @db.Uuid
+  estornoDe     Lancamento?         @relation("Estorno", fields: [estornoDeId], references: [id], onDelete: Restrict)
+  estorno       Lancamento?         @relation("Estorno")
+  criadoPorId   String              @db.Uuid
+  criadoPor     Usuario             @relation(fields: [criadoPorId], references: [id], onDelete: Restrict)
+  criadoEm      DateTime            @default(now()) @db.Timestamptz(3)
+
+  pagamento        Pagamento? @relation("LancamentoDoPagamento")
+  estornoPagamento Pagamento? @relation("EstornoDoPagamento")
+
+  @@index([data])
 }

@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
 import type { Prisma } from "../generated/prisma/client.js";
+import { encerrarAssinaturaVigente } from "../mensalidades/planos.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { ehAdmin, negarForaDoEscopo, type Ator } from "./comum.js";
 import {
@@ -244,6 +245,8 @@ export class AlunosService {
       const aluno = await this.travar(tx, id);
       if (!aluno.ativo) return { id, ativo: false };
       const encerradas = await this.encerrarMatriculas(tx, id, hojeEmSaoPaulo(new Date()));
+      // MENS-CA-04: o plano deixa de cobrar a partir do mês seguinte.
+      const assinatura = await encerrarAssinaturaVigente(tx, id);
       await tx.aluno.update({ where: { id }, data: { ativo: false } });
       await this.auditoria.registrar(
         {
@@ -252,7 +255,7 @@ export class AlunosService {
           ip: ator.ip,
           alvoTipo: "Aluno",
           alvoId: id,
-          detalhes: { matriculasEncerradas: encerradas.count },
+          detalhes: { matriculasEncerradas: encerradas.count, assinaturaEncerrada: assinatura },
         },
         tx,
       );
@@ -328,6 +331,7 @@ export class AlunosService {
       const aluno = await this.travar(tx, id);
       if (aluno.anonimizadoEm) throw new ConflictException("Este aluno já foi anonimizado.");
       await this.encerrarMatriculas(tx, id, hojeEmSaoPaulo(new Date()));
+      await encerrarAssinaturaVigente(tx, id);
       await tx.aluno.update({
         where: { id },
         data: { ...dadosAnonimizados(), anonimizadoEm: new Date() },

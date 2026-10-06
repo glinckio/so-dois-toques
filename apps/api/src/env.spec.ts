@@ -10,7 +10,14 @@ const valid = {
 
 describe("parseEnv", () => {
   it("FUND-CA-03: aceita variáveis válidas", () => {
-    expect(parseEnv(valid)).toEqual({ ...valid, PORT: 3001 });
+    expect(parseEnv(valid)).toEqual({ ...valid, PORT: 3001, GERACAO_AUTOMATICA: true });
+  });
+
+  it("MENS-CA-07: a geração automática de mensalidades pode ser desligada", () => {
+    expect(parseEnv({ ...valid, GERACAO_AUTOMATICA: "false" }).GERACAO_AUTOMATICA).toBe(false);
+    expect(() => parseEnv({ ...valid, GERACAO_AUTOMATICA: "talvez" })).toThrow(
+      /GERACAO_AUTOMATICA/,
+    );
   });
 
   it("FUND-CA-03: recusa quando DATABASE_URL está ausente", () => {
