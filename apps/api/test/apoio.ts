@@ -14,7 +14,8 @@ import { configureApp } from "../src/setup.js";
 export const SENHA_BOA = "areia-quadra-2026";
 
 export async function criarApp(overrides: Partial<Env> = {}): Promise<INestApplication> {
-  const env = { ...parseEnv(process.env), ...overrides };
+  // A geração automática de mensalidades fica desligada: cada teste gera o mês que precisa.
+  const env = { ...parseEnv(process.env), GERACAO_AUTOMATICA: false, ...overrides };
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(ENV)
     .useValue(env)
@@ -52,6 +53,7 @@ export function cliente(app: INestApplication, ip = novoIp()) {
       montar(request(servidor).patch(rota), token).send(corpo),
     put: (rota: string, corpo: object, token?: string) =>
       montar(request(servidor).put(rota), token).send(corpo),
+    delete: (rota: string, token?: string) => montar(request(servidor).delete(rota), token),
     async entrar(email: string, senha: string): Promise<string> {
       const resposta = await montar(request(servidor).post("/auth/login")).send({ email, senha });
       if (resposta.status !== 200)
