@@ -1,8 +1,10 @@
 import { Controller, Get, Header, HttpStatus, Res } from "@nestjs/common";
 import type { Response } from "express";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { SemChaveInterna } from "../comum/decoradores.js";
 import { checkHealth, type HealthStatus } from "./health.js";
 
+@SemChaveInterna()
 @Controller("health")
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}

@@ -1,7 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { COOKIE_SESSAO, rotaPublica } from "@/lib/acesso/cookie";
 import { buildCsp, generateNonce } from "@/lib/security/csp";
 
 export function proxy(request: NextRequest) {
+  // ACESSO-CA-05: sem cookie de sessão, qualquer página (menos o login) leva ao login.
+  // A validade da sessão é conferida pela API em cada página.
+  if (!rotaPublica(request.nextUrl.pathname) && !request.cookies.has(COOKIE_SESSAO)) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   const nonce = generateNonce();
   const csp = buildCsp(nonce, { isDev: process.env.NODE_ENV === "development" });
 
