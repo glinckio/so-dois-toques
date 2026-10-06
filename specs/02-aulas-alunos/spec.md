@@ -1,6 +1,6 @@
 # Etapa 2: Aulas, alunos e turmas
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
