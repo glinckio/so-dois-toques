@@ -11,6 +11,11 @@ import { AuditoriaController } from "./auditoria/auditoria.controller.js";
 import { AuditoriaService } from "./auditoria/auditoria.service.js";
 import { ConfigModule } from "./config.module.js";
 import { HealthController } from "./health/health.controller.js";
+import { GeracaoAutomaticaService } from "./mensalidades/geracao-automatica.service.js";
+import { MensalidadesController } from "./mensalidades/mensalidades.controller.js";
+import { MensalidadesService } from "./mensalidades/mensalidades.service.js";
+import { PlanosController } from "./mensalidades/planos.controller.js";
+import { PlanosService } from "./mensalidades/planos.service.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { UsuariosController } from "./usuarios/usuarios.controller.js";
 import { UsuariosService } from "./usuarios/usuarios.service.js";
@@ -24,6 +29,8 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     AuditoriaController,
     AlunosController,
     TurmasController,
+    PlanosController,
+    MensalidadesController,
   ],
   providers: [
     AuditoriaService,
@@ -31,6 +38,9 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     UsuariosService,
     AlunosService,
     TurmasService,
+    PlanosService,
+    MensalidadesService,
+    GeracaoAutomaticaService,
     // A ordem importa: chave interna, depois sessão, depois perfil.
     { provide: APP_GUARD, useClass: ChaveInternaGuard },
     { provide: APP_GUARD, useClass: SessaoGuard },

@@ -12,6 +12,11 @@ const envSchema = z.object({
   WEB_ORIGIN: z.string().url().default("http://localhost:3000"),
   /** Segredo compartilhado com o Next.js; só quem tem a chave fala com a API. */
   INTERNAL_API_KEY: z.string().min(32, "INTERNAL_API_KEY precisa ter pelo menos 32 caracteres"),
+  /** Gera sozinha as mensalidades do mês (MENS-CA-07). Os testes de integração desligam. */
+  GERACAO_AUTOMATICA: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((valor) => valor === "true"),
 });
 
 export type Env = z.infer<typeof envSchema>;
