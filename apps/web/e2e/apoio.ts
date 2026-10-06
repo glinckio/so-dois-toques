@@ -36,3 +36,19 @@ export async function cadastrarUsuario(
   await expect(senha).toBeVisible();
   return (await senha.textContent())!.trim();
 }
+
+/** Entra com a senha temporária e define a senha definitiva. */
+export async function primeiroAcesso(
+  page: Page,
+  email: string,
+  senhaTemporaria: string,
+  novaSenha: string,
+) {
+  await entrar(page, email, senhaTemporaria);
+  await expect(page).toHaveURL("/trocar-senha");
+  await page.getByLabel("Senha atual").fill(senhaTemporaria);
+  await page.getByLabel("Nova senha", { exact: true }).fill(novaSenha);
+  await page.getByLabel("Confirme a nova senha").fill(novaSenha);
+  await page.getByRole("button", { name: "Salvar nova senha" }).click();
+  await expect(page).toHaveURL("/?senha=trocada");
+}

@@ -29,7 +29,10 @@ model Usuario {
   criadoEm     DateTime @default(now()) @db.Timestamptz(3)
   atualizadoEm DateTime @updatedAt @db.Timestamptz(3)
 
-  sessoes Sessao[]
+  sessoes              Sessao[]
+  turmas               Turma[]
+  consentimentos       Aluno[]    @relation("ConsentimentoRegistradoPor")
+  presencasRegistradas Presenca[]
 
   @@index([perfil, ativo])
 }
@@ -73,4 +76,130 @@ model Auditoria {
   @@index([criadaEm])
   @@index([atorId, criadaEm])
   @@index([acao, criadaEm])
+}
+
+// Etapa 2: Aulas (alunos, locais, turmas, matrículas e presença)
+
+enum TipoLocal {
+  PARCEIRA
+  PROPRIA
+}
+
+enum Nivel {
+  INICIANTE
+  INTERMEDIARIO
+  AVANCADO
+}
+
+enum Consentidor {
+  ALUNO
+  RESPONSAVEL
+}
+
+model Aluno {
+  id                           String      @id @default(uuid()) @db.Uuid
+  nome                         String      @db.VarChar(120)
+  /// Nome sem acento e em minúsculas, para a busca.
+  nomeBusca                    String      @db.VarChar(120)
+  /// Só dígitos, com DDD. Vazio depois da anonimização.
+  telefone                     String      @db.VarChar(11)
+  nascimento                   DateTime?   @db.Date
+  email                        String?     @db.VarChar(254)
+  observacoes                  String?     @db.VarChar(500)
+  emergenciaNome               String?     @db.VarChar(120)
+  emergenciaTelefone           String?     @db.VarChar(11)
+  responsavelNome              String?     @db.VarChar(120)
+  responsavelTelefone          String?     @db.VarChar(11)
+  consentimentoEm              DateTime    @db.Timestamptz(3)
+  consentimentoPor             Consentidor
+  consentimentoRegistradoPorId String      @db.Uuid
+  consentimentoRegistradoPor   Usuario     @relation("ConsentimentoRegistradoPor", fields: [consentimentoRegistradoPorId], references: [id], onDelete: Restrict)
+  ativo                        Boolean     @default(true)
+  anonimizadoEm                DateTime?   @db.Timestamptz(3)
+  criadoEm                     DateTime    @default(now()) @db.Timestamptz(3)
+  atualizadoEm                 DateTime    @updatedAt @db.Timestamptz(3)
+
+  matriculas Matricula[]
+  presencas  Presenca[]
+
+  @@index([nomeBusca])
+  @@index([telefone])
+}
+
+model Local {
+  id           String    @id @default(uuid()) @db.Uuid
+  nome         String    @unique @db.VarChar(80)
+  tipo         TipoLocal
+  endereco     String?   @db.VarChar(200)
+  ativo        Boolean   @default(true)
+  criadoEm     DateTime  @default(now()) @db.Timestamptz(3)
+  atualizadoEm DateTime  @updatedAt @db.Timestamptz(3)
+
+  turmas Turma[]
+}
+
+model Turma {
+  id           String    @id @default(uuid()) @db.Uuid
+  nome         String    @db.VarChar(80)
+  nivel        Nivel
+  localId      String    @db.Uuid
+  local        Local     @relation(fields: [localId], references: [id], onDelete: Restrict)
+  professorId  String    @db.Uuid
+  professor    Usuario   @relation(fields: [professorId], references: [id], onDelete: Restrict)
+  vagas        Int
+  ativa        Boolean   @default(true)
+  /// Data (São Paulo) em que a turma passou a existir; presença só a partir dela.
+  inicio       DateTime  @db.Date
+  encerradaEm  DateTime? @db.Timestamptz(3)
+  criadaEm     DateTime  @default(now()) @db.Timestamptz(3)
+  atualizadaEm DateTime  @updatedAt @db.Timestamptz(3)
+
+  horarios   HorarioTurma[]
+  matriculas Matricula[]
+  presencas  Presenca[]
+
+  @@index([professorId, ativa])
+}
+
+model HorarioTurma {
+  id        String @id @default(uuid()) @db.Uuid
+  turmaId   String @db.Uuid
+  turma     Turma  @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  /// 0 = domingo ... 6 = sábado
+  diaSemana Int    @db.SmallInt
+  /// Minutos desde 00:00.
+  inicio    Int    @db.SmallInt
+  fim       Int    @db.SmallInt
+
+  @@index([turmaId])
+}
+
+model Matricula {
+  id       String    @id @default(uuid()) @db.Uuid
+  alunoId  String    @db.Uuid
+  aluno    Aluno     @relation(fields: [alunoId], references: [id], onDelete: Restrict)
+  turmaId  String    @db.Uuid
+  turma    Turma     @relation(fields: [turmaId], references: [id], onDelete: Restrict)
+  inicio   DateTime  @db.Date
+  fim      DateTime? @db.Date
+  criadaEm DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([turmaId, fim])
+  @@index([alunoId, fim])
+}
+
+model Presenca {
+  id              String   @id @default(uuid()) @db.Uuid
+  turmaId         String   @db.Uuid
+  turma           Turma    @relation(fields: [turmaId], references: [id], onDelete: Restrict)
+  alunoId         String   @db.Uuid
+  aluno           Aluno    @relation(fields: [alunoId], references: [id], onDelete: Restrict)
+  data            DateTime @db.Date
+  presente        Boolean
+  registradaPorId String   @db.Uuid
+  registradaPor   Usuario  @relation(fields: [registradaPorId], references: [id], onDelete: Restrict)
+  registradaEm    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([turmaId, alunoId, data])
+  @@index([alunoId])
 }
