@@ -13,6 +13,8 @@ export default async function LayoutAulas({ children }: LayoutProps<"/aulas">) {
       ? [
           { href: "/aulas/locais", rotulo: "Locais" },
           { href: "/aulas/planos", rotulo: "Planos" },
+          { href: "/aulas/custos", rotulo: "Custos" },
+          { href: "/aulas/resultado", rotulo: "Resultado" },
         ]
       : []),
   ];
