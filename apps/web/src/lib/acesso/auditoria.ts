@@ -24,6 +24,14 @@ export const ROTULOS_ACOES = {
   MATRICULA_CRIADA: "Matrícula feita",
   MATRICULA_ENCERRADA: "Matrícula encerrada",
   PRESENCA_REGISTRADA: "Presença registrada",
+  PLANO_CRIADO: "Plano cadastrado",
+  PLANO_ALTERADO: "Plano alterado",
+  ASSINATURA_DEFINIDA: "Plano do aluno definido",
+  ASSINATURA_ENCERRADA: "Plano do aluno encerrado",
+  MENSALIDADES_GERADAS: "Mensalidades geradas",
+  PAGAMENTO_REGISTRADO: "Pagamento registrado",
+  PAGAMENTO_ESTORNADO: "Pagamento estornado",
+  MENSALIDADE_CANCELADA: "Mensalidade cancelada",
 } as const;
 
 export const TAMANHO_PAGINA = 50;

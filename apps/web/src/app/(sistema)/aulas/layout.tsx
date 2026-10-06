@@ -9,13 +9,18 @@ export default async function LayoutAulas({ children }: LayoutProps<"/aulas">) {
   const links = [
     { href: "/aulas", rotulo: "Turmas" },
     { href: "/aulas/alunos", rotulo: admin ? "Alunos" : "Meus alunos" },
-    ...(admin ? [{ href: "/aulas/locais", rotulo: "Locais" }] : []),
+    ...(admin
+      ? [
+          { href: "/aulas/locais", rotulo: "Locais" },
+          { href: "/aulas/planos", rotulo: "Planos" },
+        ]
+      : []),
   ];
   return (
     <div className="flex flex-col gap-6">
       <nav
         aria-label="Menu de Aulas"
-        className="flex gap-2 border-b border-current/10 pb-2 text-sm"
+        className="flex flex-wrap gap-2 border-b border-current/10 pb-2 text-sm"
       >
         {links.map((l) => (
           <Link key={l.href} href={l.href} className="rounded-md px-3 py-1.5 hover:bg-current/10">

@@ -2,12 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { inativarAluno, reativarAluno } from "@/app/acoes/aulas";
+import { encerrarAssinatura } from "@/app/acoes/mensalidades";
 import { FormAnonimizar } from "@/components/aulas/form-anonimizar";
+import { FormAssinatura } from "@/components/mensalidades/form-assinatura";
 import { BotaoAcao } from "@/components/botao-acao";
 import { AcessoNegado, Aviso, classeBotaoSecundario } from "@/components/ui";
 import { formatarData, formatarTelefone } from "@/lib/aulas/formatacao";
 import type { AlunoDetalhe } from "@/lib/aulas/tipos";
 import { formatarDataHora } from "@/lib/acesso/auditoria";
+import {
+  competenciaAtual,
+  deslocarMes,
+  formatarReais,
+  nomeDoMes,
+} from "@/lib/mensalidades/formatacao";
+import type { Assinaturas, Plano } from "@/lib/mensalidades/tipos";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
 
@@ -96,6 +105,8 @@ export default async function PaginaAluno({
         )}
       </section>
 
+      {admin && <SecaoPlano alunoId={aluno.id} ativo={aluno.ativo && !aluno.anonimizado} />}
+
       {admin && !aluno.anonimizado && (
         <section className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-2">
@@ -124,5 +135,63 @@ export default async function PaginaAluno({
         </section>
       )}
     </>
+  );
+}
+
+/** MENS-CA-02 a 04: plano vigente, histórico e troca (só o administrador). */
+async function SecaoPlano({ alunoId, ativo }: { alunoId: string; ativo: boolean }) {
+  const [assinaturas, planos] = await Promise.all([
+    chamarApi<Assinaturas>(`/alunos/${alunoId}/assinaturas`),
+    chamarApi<Plano[]>("/planos"),
+  ]);
+  if (!assinaturas.ok) return <Aviso tipo="erro">{assinaturas.mensagem}</Aviso>;
+  const { vigente, historico } = assinaturas.dados;
+  const mesAtual = competenciaAtual();
+  const meses = [0, 1, 2].map((n) => deslocarMes(mesAtual, n));
+  const anteriores = historico.filter((a) => a.id !== vigente?.id);
+  return (
+    <section className="flex flex-col gap-3" aria-labelledby="titulo-plano">
+      <h2 id="titulo-plano" className="text-lg font-medium">
+        Plano
+      </h2>
+      {vigente ? (
+        <div className="flex flex-col gap-2">
+          <p>
+            <span className="font-medium">{vigente.plano.nome}</span> ·{" "}
+            {formatarReais(vigente.valorCentavos)} por mês · vence todo dia {vigente.diaVencimento}{" "}
+            · desde {nomeDoMes(vigente.inicio)}
+          </p>
+          {vigente.descontoCentavos > 0 && (
+            <p className="text-sm opacity-80">
+              Desconto de {formatarReais(vigente.descontoCentavos)}: {vigente.motivoDesconto}
+            </p>
+          )}
+          <BotaoAcao
+            acao={encerrarAssinatura}
+            campos={{ alunoId }}
+            rotulo="Encerrar plano"
+            confirmar="Encerrar o plano? O aluno deixa de receber mensalidade a partir do mês que vem."
+          />
+        </div>
+      ) : (
+        <p className="opacity-80">Sem plano: o aluno não recebe mensalidade.</p>
+      )}
+      {ativo && planos.ok && (
+        <FormAssinatura alunoId={alunoId} planos={planos.dados} vigente={vigente} meses={meses} />
+      )}
+      {anteriores.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-sm">Planos anteriores</summary>
+          <ul className="mt-2 flex flex-col gap-1 text-sm">
+            {anteriores.map((a) => (
+              <li key={a.id}>
+                {a.plano.nome} · {formatarReais(a.valorCentavos)} · de {nomeDoMes(a.inicio)}
+                {a.fim ? ` até antes de ${nomeDoMes(a.fim)}` : ""}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </section>
   );
 }
