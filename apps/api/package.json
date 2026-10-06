@@ -16,7 +16,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "postinstall": "prisma generate",
-    "admin:criar": "nest build && node --env-file-if-exists=.env dist/cli/criar-admin.js"
+    "admin:criar": "nest build && node --env-file-if-exists=.env dist/cli/criar-admin.js",
+    "e2e:servidor": "node test/preparar-e2e.mjs && node dist/main.js"
   },
   "devDependencies": {
     "@nestjs/cli": "12.0.8",

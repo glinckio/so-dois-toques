@@ -84,6 +84,20 @@ jobs:
     name: Ponta a ponta e build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sdt
+          POSTGRES_PASSWORD: sdt_ci
+          POSTGRES_DB: so_dois_toques
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sdt -d so_dois_toques"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # O Playwright sobe a API com o banco so_dois_toques_e2e, recriado a cada execução.
+      DATABASE_URL: postgresql://sdt:sdt_ci@localhost:5432/so_dois_toques
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

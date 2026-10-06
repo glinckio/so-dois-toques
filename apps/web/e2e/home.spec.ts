@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { entrarComoAdmin } from "./apoio";
 
 test("FUND-CA-01: a página inicial abre em português com os módulos", async ({ page }) => {
   const errors: string[] = [];
@@ -6,7 +7,7 @@ test("FUND-CA-01: a página inicial abre em português com os módulos", async (
     if (message.type() === "error") errors.push(message.text());
   });
 
-  await page.goto("/");
+  await entrarComoAdmin(page);
 
   await expect(page).toHaveTitle("Só Dois Toques");
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
@@ -19,8 +20,8 @@ test("FUND-CA-01: a página inicial abre em português com os módulos", async (
 });
 
 test("FUND-CA-02: a resposta traz os cabeçalhos de segurança", async ({ request }) => {
-  const first = await request.get("/");
-  const second = await request.get("/");
+  const first = await request.get("/login");
+  const second = await request.get("/login");
   const headers = first.headers();
 
   expect(headers["content-security-policy"]).toMatch(/script-src 'self' 'nonce-[^']+'/);
@@ -33,6 +34,7 @@ test("FUND-CA-02: a resposta traz os cabeçalhos de segurança", async ({ reques
 });
 
 test("página inexistente responde 404 em português", async ({ page }) => {
+  await entrarComoAdmin(page);
   const response = await page.goto("/nao-existe");
   expect(response?.status()).toBe(404);
   await expect(page.getByRole("heading", { name: "Página não encontrada" })).toBeVisible();
