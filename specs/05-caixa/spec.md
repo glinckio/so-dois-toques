@@ -1,6 +1,6 @@
 # Etapa 5: Caixa (abertura, fechamento e lançamentos avulsos)
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 

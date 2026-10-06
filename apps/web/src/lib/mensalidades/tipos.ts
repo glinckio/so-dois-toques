@@ -86,11 +86,13 @@ export type CaixaDoDia = {
     tipo: "ENTRADA" | "SAIDA";
     valorCentavos: number;
     forma: Forma;
-    categoria: "MENSALIDADE" | "ESTORNO";
+    categoria: string;
     descricao: string;
     origemTipo: string | null;
     origemId: string | null;
     estornoDeId: string | null;
+    estornado: boolean;
+    sessaoId: string | null;
     criadoPor: string;
     criadoEm: string;
   }[];
