@@ -1,6 +1,6 @@
 # Etapa 3: Mensalidades e núcleo do Caixa
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 

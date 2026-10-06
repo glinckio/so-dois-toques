@@ -43,6 +43,8 @@
 
 O "DELETE" de assinatura só preenche `fim`; nada é apagado.
 
+O livro-razão não guarda dado pessoal: a descrição é só "Mensalidade de outubro de 2026" e o aluno fica na origem (a mensalidade). Assim a anonimização (Etapa 2) continua funcionando, já que o lançamento nunca pode ser alterado.
+
 Concorrência:
 
 - Pagamento e cancelamento travam a mensalidade (`SELECT … FOR UPDATE`); o índice único parcial em `Pagamento` é a última barreira.
