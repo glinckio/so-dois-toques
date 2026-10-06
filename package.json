@@ -14,7 +14,8 @@
     "test:integration": "pnpm --filter @sdt/api test:integration",
     "test:e2e": "pnpm --filter @sdt/web test:e2e",
     "check:specs": "tsx scripts/check-spec-coverage.ts",
-    "db:deploy": "pnpm --filter @sdt/api db:deploy"
+    "db:deploy": "pnpm --filter @sdt/api db:deploy",
+    "admin:criar": "pnpm --filter @sdt/api admin:criar"
   },
   "devDependencies": {
     "@types/node": "^24",
