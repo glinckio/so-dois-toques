@@ -10,6 +10,8 @@ import { TurmasService } from "./aulas/turmas.service.js";
 import { AuditoriaController } from "./auditoria/auditoria.controller.js";
 import { AuditoriaService } from "./auditoria/auditoria.service.js";
 import { ConfigModule } from "./config.module.js";
+import { CaixaController } from "./caixa/caixa.controller.js";
+import { CaixaService } from "./caixa/caixa.service.js";
 import { CustosController } from "./custos/custos.controller.js";
 import { CustosService } from "./custos/custos.service.js";
 import { HealthController } from "./health/health.controller.js";
@@ -27,6 +29,7 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
   controllers: [
     HealthController,
     CustosController,
+    CaixaController,
     AuthController,
     UsuariosController,
     AuditoriaController,
@@ -38,6 +41,7 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
   providers: [
     AuditoriaService,
     CustosService,
+    CaixaService,
     AuthService,
     UsuariosService,
     AlunosService,

@@ -9,6 +9,7 @@ import type { Ator } from "../aulas/comum.js";
 import { deDataDoBanco, hojeEmSaoPaulo, paraDataDoBanco } from "../aulas/regras.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
 import { Prisma } from "../generated/prisma/client.js";
+import { turnoParaLancamento } from "../caixa/sessao.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import {
   competenciaAtual,
@@ -193,8 +194,10 @@ export class CustosService {
       // O lançamento é imutável e vem antes do pagamento, então o id do pagamento
       // é gerado aqui para já entrar na origem. Sem dado pessoal: local e mês bastam.
       const pagamentoId = randomUUID();
+      const sessaoId = await turnoParaLancamento(tx);
       const lancamento = await tx.lancamento.create({
         data: {
+          sessaoId,
           tipo: "SAIDA",
           valorCentavos: dados.valorCentavos,
           forma: dados.forma,
@@ -251,8 +254,10 @@ export class CustosService {
         if (!pagamento) throw new NotFoundException("Pagamento não encontrado.");
         if (pagamento.estornadoEm) throw new ConflictException("Este pagamento já foi estornado.");
         const competencia = competenciaDe(deDataDoBanco(pagamento.competencia));
+        const sessaoId = await turnoParaLancamento(tx);
         const estorno = await tx.lancamento.create({
           data: {
+            sessaoId,
             tipo: "ENTRADA",
             valorCentavos: pagamento.valorCentavos,
             forma: pagamento.forma,
