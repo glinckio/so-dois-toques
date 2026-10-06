@@ -1,6 +1,6 @@
 # Etapa 6: Estoque da lanchonete
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
