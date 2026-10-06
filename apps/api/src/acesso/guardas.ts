@@ -9,7 +9,13 @@ import {
 import { Reflector } from "@nestjs/core";
 import { timingSafeEqual } from "node:crypto";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
-import { AREA, PERMITE_TROCA_PENDENTE, PUBLICO, SEM_CHAVE_INTERNA } from "../comum/decoradores.js";
+import {
+  AREA,
+  PERMITE_TROCA_PENDENTE,
+  PUBLICO,
+  SEM_CHAVE_INTERNA,
+  SOMENTE_ADMIN,
+} from "../comum/decoradores.js";
 import type { RequisicaoApi } from "../comum/requisicao.js";
 import { ENV } from "../config.module.js";
 import type { Env } from "../env.js";
@@ -115,7 +121,7 @@ export class SessaoGuard implements CanActivate {
   }
 }
 
-/** Confere se o perfil acessa a área da rota (ACESSO-CA-10). */
+/** Confere se o perfil acessa a área da rota (ACESSO-CA-10) e as rotas só de administrador (AULAS-CA-21). */
 @Injectable()
 export class PerfisGuard implements CanActivate {
   constructor(
@@ -124,14 +130,14 @@ export class PerfisGuard implements CanActivate {
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
-    const area = this.reflector.getAllAndOverride<Area | undefined>(AREA, [
-      ctx.getHandler(),
-      ctx.getClass(),
-    ]);
+    const alvos = [ctx.getHandler(), ctx.getClass()];
+    const area = this.reflector.getAllAndOverride<Area | undefined>(AREA, alvos);
     if (!area) return true;
+    const somenteAdmin = this.reflector.getAllAndOverride<boolean>(SOMENTE_ADMIN, alvos) ?? false;
     const req = ctx.switchToHttp().getRequest<RequisicaoApi>();
     const usuario = req.usuario;
-    if (usuario && podeAcessar(usuario.perfil, area)) return true;
+    const perfilAceito = !somenteAdmin || usuario?.perfil === "ADMINISTRADOR";
+    if (usuario && podeAcessar(usuario.perfil, area) && perfilAceito) return true;
     await this.auditoria.registrar({
       acao: "ACESSO_NEGADO",
       atorId: usuario?.id,

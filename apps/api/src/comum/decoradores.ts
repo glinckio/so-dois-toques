@@ -18,6 +18,10 @@ export const AREA = "area";
 /** Área do sistema exigida pela rota; o perfil do usuário precisa ter acesso a ela. */
 export const ExigeArea = (area: Area) => SetMetadata(AREA, area);
 
+export const SOMENTE_ADMIN = "somenteAdmin";
+/** Dentro da área, a rota é só do perfil Administrador (cadastros e LGPD). */
+export const SomenteAdministrador = () => SetMetadata(SOMENTE_ADMIN, true);
+
 export const UsuarioAtual = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): UsuarioAutenticado =>
     ctx.switchToHttp().getRequest<RequisicaoApi>().usuario!,
