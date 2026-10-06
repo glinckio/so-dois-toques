@@ -1,6 +1,6 @@
 # Etapa 1: Acesso e auditoria
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
