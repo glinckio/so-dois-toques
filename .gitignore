@@ -1,0 +1,30 @@
+# dependências
+node_modules/
+.pnpm-store/
+
+# build
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# testes
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# ambiente (nunca versionar segredos)
+.env
+.env.*
+!.env.example
+
+# sistema e editores
+.DS_Store
+Thumbs.db
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea/
