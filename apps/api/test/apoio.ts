@@ -50,6 +50,8 @@ export function cliente(app: INestApplication, ip = novoIp()) {
       montar(request(servidor).post(rota), token).send(corpo ?? {}),
     patch: (rota: string, corpo: object, token?: string) =>
       montar(request(servidor).patch(rota), token).send(corpo),
+    put: (rota: string, corpo: object, token?: string) =>
+      montar(request(servidor).put(rota), token).send(corpo),
     async entrar(email: string, senha: string): Promise<string> {
       const resposta = await montar(request(servidor).post("/auth/login")).send({ email, senha });
       if (resposta.status !== 200)
