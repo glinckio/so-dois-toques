@@ -1,0 +1,20 @@
+# Banco local para desenvolvimento e testes de integração.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sdt
+      POSTGRES_PASSWORD: sdt_local_dev
+      POSTGRES_DB: so_dois_toques
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sdt -d so_dois_toques"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:

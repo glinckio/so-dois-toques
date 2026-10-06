@@ -1,0 +1,13 @@
+// Schema do banco. Os modelos de negócio entram a partir da Etapa 1,
+// cada um definido na spec da sua etapa.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "so-dois-toques",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter @sdt/web --filter @sdt/api dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r typecheck && tsc -p tsconfig.scripts.json",
+    "test": "vitest run && pnpm -r test",
+    "test:coverage": "vitest run && pnpm -r test:coverage",
+    "test:integration": "pnpm --filter @sdt/api test:integration",
+    "test:e2e": "pnpm --filter @sdt/web test:e2e",
+    "check:specs": "tsx scripts/check-spec-coverage.ts",
+    "db:deploy": "pnpm --filter @sdt/api db:deploy"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "prettier": "^3.9.9",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^5.0.3"
+  },
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  }
+}

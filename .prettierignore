@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+**/src/generated/
+**/dist/
+**/.next/
+**/coverage/
+**/playwright-report/
+**/test-results/
+apps/web/AGENTS.md
