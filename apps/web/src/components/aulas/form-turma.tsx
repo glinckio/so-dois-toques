@@ -46,7 +46,13 @@ export function FormTurma({
     setLinhas((atuais) => atuais.map((l) => (l.chave === chave ? { ...l, ...mudanca } : l)));
 
   return (
-    <form action={acao} className="flex flex-col gap-4">
+    <form
+      // Remonta o formulário quando os valores devolvidos mudam: o React não atualiza o
+      // valor inicial de um <select> depois de montado.
+      key={JSON.stringify(estado.valores ?? null)}
+      action={acao}
+      className="flex flex-col gap-4"
+    >
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {turma && <input type="hidden" name="id" value={turma.id} />}
       <input type="hidden" name="horarios" value={JSON.stringify(horarios)} />
