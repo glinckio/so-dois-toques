@@ -31,17 +31,22 @@ model Usuario {
 
   sessoes                    Sessao[]
   turmas                     Turma[]
-  consentimentos             Aluno[]           @relation("ConsentimentoRegistradoPor")
+  consentimentos             Aluno[]            @relation("ConsentimentoRegistradoPor")
   presencasRegistradas       Presenca[]
   assinaturasCriadas         Assinatura[]
   mensalidadesCanceladas     Mensalidade[]
-  pagamentosRecebidos        Pagamento[]       @relation("PagamentoRecebidoPor")
-  pagamentosEstornados       Pagamento[]       @relation("PagamentoEstornadoPor")
+  pagamentosRecebidos        Pagamento[]        @relation("PagamentoRecebidoPor")
+  pagamentosEstornados       Pagamento[]        @relation("PagamentoEstornadoPor")
   lancamentos                Lancamento[]
-  pagamentosQuadra           PagamentoQuadra[] @relation("PagamentoQuadraPagoPor")
-  pagamentosQuadraEstornados PagamentoQuadra[] @relation("PagamentoQuadraEstornadoPor")
-  caixasAbertos              SessaoCaixa[]     @relation("SessaoAbertaPor")
-  caixasFechados             SessaoCaixa[]     @relation("SessaoFechadaPor")
+  pagamentosQuadra           PagamentoQuadra[]  @relation("PagamentoQuadraPagoPor")
+  pagamentosQuadraEstornados PagamentoQuadra[]  @relation("PagamentoQuadraEstornadoPor")
+  caixasAbertos              SessaoCaixa[]      @relation("SessaoAbertaPor")
+  caixasFechados             SessaoCaixa[]      @relation("SessaoFechadaPor")
+  vendas                     Venda[]            @relation("VendaFeitaPor")
+  vendasEstornadas           Venda[]            @relation("VendaEstornadaPor")
+  compras                    Compra[]           @relation("CompraFeitaPor")
+  comprasEstornadas          Compra[]           @relation("CompraEstornadaPor")
+  movimentosEstoque          MovimentoEstoque[]
 
   @@index([perfil, ativo])
 }
@@ -246,6 +251,8 @@ enum CategoriaLancamento {
   SANGRIA
   DESPESA
   RECEITA_AVULSA
+  VENDA
+  COMPRA_ESTOQUE
 }
 
 model Plano {
@@ -357,6 +364,10 @@ model Lancamento {
   estornoPagamento       Pagamento?       @relation("EstornoDoPagamento")
   pagamentoQuadra        PagamentoQuadra? @relation("LancamentoDoPagamentoQuadra")
   estornoPagamentoQuadra PagamentoQuadra? @relation("EstornoDoPagamentoQuadra")
+  venda                  Venda?           @relation("LancamentoDaVenda")
+  estornoVenda           Venda?           @relation("EstornoDaVenda")
+  compra                 Compra?          @relation("LancamentoDaCompra")
+  estornoCompra          Compra?          @relation("EstornoDaCompra")
 
   @@index([data])
   @@index([sessaoId])
@@ -409,4 +420,108 @@ model SessaoCaixa {
   lancamentos              Lancamento[]
 
   @@index([abertaEm])
+}
+
+// Etapa 6: Estoque da lanchonete
+
+enum TipoMovimento {
+  COMPRA
+  VENDA
+  AJUSTE
+  ESTORNO_VENDA
+  ESTORNO_COMPRA
+}
+
+model Produto {
+  id                 String   @id @default(uuid()) @db.Uuid
+  nome               String   @unique @db.VarChar(80)
+  precoCentavos      Int
+  estoqueMinimo      Int      @default(0)
+  /// Unidades em estoque; muda só junto com um MovimentoEstoque.
+  saldo              Int      @default(0)
+  /// Custo médio ponderado por unidade, em centavos.
+  custoMedioCentavos Int      @default(0)
+  ativo              Boolean  @default(true)
+  criadoEm           DateTime @default(now()) @db.Timestamptz(3)
+  atualizadoEm       DateTime @updatedAt @db.Timestamptz(3)
+
+  itensVenda ItemVenda[]
+  compras    Compra[]
+  movimentos MovimentoEstoque[]
+}
+
+model Venda {
+  id                  String         @id @default(uuid()) @db.Uuid
+  totalCentavos       Int
+  forma               FormaPagamento
+  feitaPorId          String         @db.Uuid
+  feitaPor            Usuario        @relation("VendaFeitaPor", fields: [feitaPorId], references: [id], onDelete: Restrict)
+  feitaEm             DateTime       @default(now()) @db.Timestamptz(3)
+  lancamentoId        String         @unique @db.Uuid
+  lancamento          Lancamento     @relation("LancamentoDaVenda", fields: [lancamentoId], references: [id], onDelete: Restrict)
+  estornadaEm         DateTime?      @db.Timestamptz(3)
+  estornadaPorId      String?        @db.Uuid
+  estornadaPor        Usuario?       @relation("VendaEstornadaPor", fields: [estornadaPorId], references: [id], onDelete: Restrict)
+  motivoEstorno       String?        @db.VarChar(200)
+  estornoLancamentoId String?        @unique @db.Uuid
+  estornoLancamento   Lancamento?    @relation("EstornoDaVenda", fields: [estornoLancamentoId], references: [id], onDelete: Restrict)
+
+  itens ItemVenda[]
+
+  @@index([feitaEm])
+}
+
+model ItemVenda {
+  id            String  @id @default(uuid()) @db.Uuid
+  vendaId       String  @db.Uuid
+  venda         Venda   @relation(fields: [vendaId], references: [id], onDelete: Restrict)
+  produtoId     String  @db.Uuid
+  produto       Produto @relation(fields: [produtoId], references: [id], onDelete: Restrict)
+  quantidade    Int
+  precoCentavos Int
+  custoCentavos Int
+
+  @@index([vendaId])
+  @@index([produtoId])
+}
+
+model Compra {
+  id                  String         @id @default(uuid()) @db.Uuid
+  produtoId           String         @db.Uuid
+  produto             Produto        @relation(fields: [produtoId], references: [id], onDelete: Restrict)
+  quantidade          Int
+  totalCentavos       Int
+  forma               FormaPagamento
+  data                DateTime       @db.Date
+  feitaPorId          String         @db.Uuid
+  feitaPor            Usuario        @relation("CompraFeitaPor", fields: [feitaPorId], references: [id], onDelete: Restrict)
+  feitaEm             DateTime       @default(now()) @db.Timestamptz(3)
+  lancamentoId        String         @unique @db.Uuid
+  lancamento          Lancamento     @relation("LancamentoDaCompra", fields: [lancamentoId], references: [id], onDelete: Restrict)
+  estornadaEm         DateTime?      @db.Timestamptz(3)
+  estornadaPorId      String?        @db.Uuid
+  estornadaPor        Usuario?       @relation("CompraEstornadaPor", fields: [estornadaPorId], references: [id], onDelete: Restrict)
+  motivoEstorno       String?        @db.VarChar(200)
+  estornoLancamentoId String?        @unique @db.Uuid
+  estornoLancamento   Lancamento?    @relation("EstornoDaCompra", fields: [estornoLancamentoId], references: [id], onDelete: Restrict)
+
+  @@index([produtoId])
+}
+
+/// Histórico do saldo de cada produto. Imutável: um gatilho recusa UPDATE e DELETE.
+model MovimentoEstoque {
+  id          String        @id @default(uuid()) @db.Uuid
+  produtoId   String        @db.Uuid
+  produto     Produto       @relation(fields: [produtoId], references: [id], onDelete: Restrict)
+  tipo        TipoMovimento
+  /// Positiva entra, negativa sai.
+  quantidade  Int
+  saldoDepois Int
+  motivo      String?       @db.VarChar(200)
+  origemId    String?       @db.Uuid
+  criadoPorId String        @db.Uuid
+  criadoPor   Usuario       @relation(fields: [criadoPorId], references: [id], onDelete: Restrict)
+  criadoEm    DateTime      @default(now()) @db.Timestamptz(3)
+
+  @@index([produtoId, criadoEm])
 }
