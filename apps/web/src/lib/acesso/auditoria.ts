@@ -32,6 +32,9 @@ export const ROTULOS_ACOES = {
   PAGAMENTO_REGISTRADO: "Pagamento registrado",
   PAGAMENTO_ESTORNADO: "Pagamento estornado",
   MENSALIDADE_CANCELADA: "Mensalidade cancelada",
+  LOCAL_VALOR_HORA_ALTERADO: "Valor da hora alterado",
+  PAGAMENTO_QUADRA_REGISTRADO: "Pagamento à quadra registrado",
+  PAGAMENTO_QUADRA_ESTORNADO: "Pagamento à quadra estornado",
 } as const;
 
 export const TAMANHO_PAGINA = 50;
