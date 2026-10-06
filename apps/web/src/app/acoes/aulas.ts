@@ -15,14 +15,37 @@ function erroDe(resposta: Extract<RespostaApi<unknown>, { ok: false }>): EstadoF
   return { erro: resposta.campos?.[0]?.mensagem ?? resposta.mensagem };
 }
 
-/** Erro que mantém no formulário o que a pessoa já tinha preenchido. */
-function erroComValores(estado: EstadoFormulario, form: FormData): EstadoFormulario {
-  const valores: Record<string, string> = {};
-  for (const [campo, valor] of form) {
-    if (typeof valor === "string" && !campo.startsWith("$")) valores[campo] = valor;
+/**
+ * Erro que mantém no formulário o que a pessoa já tinha preenchido. Só copia os campos
+ * conhecidos: o nome dos campos vem do navegador e não pode virar chave arbitrária.
+ */
+function erroComValores(
+  estado: EstadoFormulario,
+  form: FormData,
+  campos: readonly string[],
+): EstadoFormulario {
+  const valores = new Map<string, string>();
+  for (const campo of campos) {
+    const valor = form.get(campo);
+    if (typeof valor === "string") valores.set(campo, valor);
   }
-  return { ...estado, valores };
+  return { ...estado, valores: Object.fromEntries(valores) };
 }
+
+const CAMPOS_ALUNO = [
+  "nome",
+  "telefone",
+  "nascimento",
+  "email",
+  "observacoes",
+  "emergenciaNome",
+  "emergenciaTelefone",
+  "responsavelNome",
+  "responsavelTelefone",
+  "consentimento",
+] as const;
+
+const CAMPOS_TURMA = ["nome", "nivel", "localId", "professorId", "vagas"] as const;
 
 export async function salvarAluno(_: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
   const alunoId = texto(form, "id");
@@ -44,7 +67,7 @@ export async function salvarAluno(_: EstadoFormulario, form: FormData): Promise<
         metodo: "POST",
         corpo: { ...dados, consentimento: form.get("consentimento") === "on" },
       });
-  if (!resposta.ok) return erroComValores(erroDe(resposta), form);
+  if (!resposta.ok) return erroComValores(erroDe(resposta), form, CAMPOS_ALUNO);
   redirect(`/aulas/alunos/${resposta.dados.id}?salvo=1`);
 }
 
@@ -146,7 +169,7 @@ export async function salvarTurma(_: EstadoFormulario, form: FormData): Promise<
   const resposta = turmaId
     ? await chamarApi<{ id: string }>(`/turmas/${turmaId}`, { metodo: "PATCH", corpo })
     : await chamarApi<{ id: string }>("/turmas", { metodo: "POST", corpo });
-  if (!resposta.ok) return erroComValores(erroDe(resposta), form);
+  if (!resposta.ok) return erroComValores(erroDe(resposta), form, CAMPOS_TURMA);
   redirect(`/aulas/turmas/${resposta.dados.id}?salva=1`);
 }
 
