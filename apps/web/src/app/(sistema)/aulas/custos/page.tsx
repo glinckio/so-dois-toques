@@ -38,7 +38,7 @@ export default async function PaginaCustos({ searchParams }: PageProps<"/aulas/c
     <>
       <header className="flex flex-col gap-3">
         <h1 className="text-2xl font-semibold">Custos das quadras em {nomeDoMes(competencia)}</h1>
-        <p className="opacity-80">
+        <p className="text-suave">
           Horas de aula de cada quadra parceira no mês e o custo previsto pelo valor da hora. O que
           você paga sai do Caixa.
         </p>
@@ -54,7 +54,7 @@ export default async function PaginaCustos({ searchParams }: PageProps<"/aulas/c
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
       ) : resposta.dados.locais.length === 0 ? (
-        <p className="opacity-80">
+        <p className="text-suave">
           Nenhuma quadra parceira cadastrada. Cadastre em{" "}
           <Link href="/aulas/locais" className="underline">
             Locais
@@ -87,7 +87,7 @@ function Local({ local, competencia }: { local: CustoDoLocal; competencia: strin
     local.previstoCentavos === null ? null : local.previstoCentavos - local.pagoCentavos;
   return (
     <li
-      className={`flex flex-col gap-4 rounded-lg border border-current/15 p-4 ${local.ativo ? "" : "opacity-80"}`}
+      className={`border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4 ${local.ativo ? "" : "text-suave"}`}
       aria-label={local.nome}
     >
       <header className="flex flex-col gap-1">
@@ -95,7 +95,7 @@ function Local({ local, competencia }: { local: CustoDoLocal; competencia: strin
           {local.nome}
           {local.ativo ? "" : " (inativo)"}
         </h2>
-        <p className="text-sm opacity-80" data-testid="resumo-local">
+        <p className="text-suave text-sm" data-testid="resumo-local">
           {formatarHoras(local.minutos)} de aula · previsto{" "}
           {local.previstoCentavos === null
             ? "sem valor da hora"
@@ -127,9 +127,9 @@ function Local({ local, competencia }: { local: CustoDoLocal; competencia: strin
             {local.pagamentos.map((p) => (
               <li
                 key={p.id}
-                className="flex flex-col gap-2 rounded-md border border-current/10 p-3"
+                className="border-borda bg-elevado/50 flex flex-col gap-2 rounded-xl border p-3"
               >
-                <p className={p.estornadoEm ? "line-through opacity-70" : ""}>
+                <p className={p.estornadoEm ? "text-apagado line-through" : ""}>
                   {formatarReais(p.valorCentavos)} · {FORMAS[p.forma]} · {formatarData(p.data)} ·
                   pago por {p.pagoPor}
                 </p>
@@ -170,8 +170,8 @@ function Local({ local, competencia }: { local: CustoDoLocal; competencia: strin
 
 function Total({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
-    <div className="rounded-lg border border-current/15 p-4">
-      <p className="text-sm opacity-80">{rotulo}</p>
+    <div className="border-borda bg-cartao rounded-2xl border p-4">
+      <p className="text-suave text-sm">{rotulo}</p>
       <p className="text-xl font-semibold">{valor}</p>
     </div>
   );

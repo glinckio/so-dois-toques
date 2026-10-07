@@ -43,7 +43,7 @@ export default async function PaginaTurma({
       {salva && <Aviso tipo="sucesso">Turma salva.</Aviso>}
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">{turma.nome}</h1>
-        <p className="opacity-80">
+        <p className="text-suave">
           {NIVEIS[turma.nivel]} · {turma.local.nome} · Professor: {turma.professor.nome}
         </p>
         <p>{descreverHorarios(turma.horarios)}</p>
@@ -77,16 +77,16 @@ export default async function PaginaTurma({
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium">Alunos matriculados</h2>
         {turma.matriculas.length === 0 ? (
-          <p className="opacity-80">Nenhum aluno matriculado.</p>
+          <p className="text-suave">Nenhum aluno matriculado.</p>
         ) : (
-          <ul className="flex flex-col divide-y divide-current/10" aria-label="Alunos matriculados">
+          <ul className="divide-borda flex flex-col divide-y" aria-label="Alunos matriculados">
             {turma.matriculas.map((m) => (
               <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span>
                   <Link href={`/aulas/alunos/${m.aluno.id}`} className="font-medium underline">
                     {m.aluno.nome}
                   </Link>
-                  <span className="block text-sm opacity-80">
+                  <span className="text-suave block text-sm">
                     {formatarTelefone(m.aluno.telefone)} · desde {formatarData(m.inicio)}
                   </span>
                 </span>
@@ -105,7 +105,7 @@ export default async function PaginaTurma({
       </section>
 
       {admin && turma.ativa && (
-        <section className="flex flex-col gap-3 rounded-lg border border-current/15 p-4">
+        <section className="border-borda bg-cartao flex flex-col gap-3 rounded-2xl border p-4">
           <h2 className="text-lg font-medium">Matricular aluno</h2>
           <form method="get" className="flex flex-wrap items-end gap-2">
             <label className="flex flex-1 flex-col gap-1 text-sm font-medium">
@@ -123,21 +123,18 @@ export default async function PaginaTurma({
           </form>
           {candidatos && !candidatos.ok && <Aviso tipo="erro">{candidatos.mensagem}</Aviso>}
           {candidatos?.ok && (
-            <ul
-              className="flex flex-col divide-y divide-current/10"
-              aria-label="Alunos encontrados"
-            >
+            <ul className="divide-borda flex flex-col divide-y" aria-label="Alunos encontrados">
               {candidatos.dados.itens.length === 0 && (
-                <li className="py-2 opacity-80">Nenhum aluno ativo encontrado.</li>
+                <li className="text-suave py-2">Nenhum aluno ativo encontrado.</li>
               )}
               {candidatos.dados.itens.map((a) => (
                 <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                   <span>
                     {a.nome}{" "}
-                    <span className="text-sm opacity-80">{formatarTelefone(a.telefone)}</span>
+                    <span className="text-suave text-sm">{formatarTelefone(a.telefone)}</span>
                   </span>
                   {matriculados.has(a.id) ? (
-                    <span className="text-sm opacity-80">Já está na turma</span>
+                    <span className="text-suave text-sm">Já está na turma</span>
                   ) : (
                     <BotaoAcao
                       acao={matricular}

@@ -36,7 +36,7 @@ export default async function PaginaGrade({ searchParams }: PageProps<"/horarios
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Horários das quadras</h1>
-          <p className="opacity-80" data-testid="dia-da-grade">
+          <p className="text-suave" data-testid="dia-da-grade">
             {DIAS_SEMANA[new Date(`${data}T12:00:00Z`).getUTCDay()]}, {formatarData(data)}
             {data === hoje && " (hoje)"}
           </p>
@@ -104,8 +104,8 @@ function GradeDoDia({ grade, hoje, horaAgora }: { grade: Grade; hoje: string; ho
       </thead>
       <tbody>
         {horas.map((hora, linha) => (
-          <tr key={hora} className="border-t border-current/10">
-            <th scope="row" className="p-1 text-left align-top font-normal opacity-80">
+          <tr key={hora} className="border-borda border-t">
+            <th scope="row" className="text-suave p-1 text-left align-top font-normal">
               {rotuloHora(hora)}
             </th>
             {grade.quadras.map((quadra, i) => {
@@ -119,7 +119,7 @@ function GradeDoDia({ grade, hoje, horaAgora }: { grade: Grade; hoje: string; ho
                     ) : (
                       <Link
                         href={`/horarios/nova?data=${grade.data}&quadra=${quadra.id}&hora=${hora}`}
-                        className="block rounded-md border border-dashed border-current/30 px-2 py-2 hover:bg-current/10"
+                        className="border-borda hover:bg-elevado block rounded-md border border-dashed px-2 py-2"
                         aria-label={`Reservar ${quadra.nome} às ${rotuloHora(hora)}`}
                       >
                         Livre
@@ -135,7 +135,7 @@ function GradeDoDia({ grade, hoje, horaAgora }: { grade: Grade; hoje: string; ho
                   <Link
                     href={`/horarios/reservas/${r.id}`}
                     className={`block rounded-md px-2 py-2 ${
-                      bloqueio ? "bg-slate-500/20" : r.pago ? "bg-green-600/20" : "bg-amber-500/25"
+                      bloqueio ? "bg-apagado/20" : r.pago ? "bg-sucesso/20" : "bg-ouro/20"
                     } ${celula.primeira ? "" : "opacity-60"}`}
                   >
                     <span className="block truncate font-medium">

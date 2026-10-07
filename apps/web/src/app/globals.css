@@ -1,30 +1,114 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Cores do Só Dois Toques, tiradas do logo (VIS-CA-01). Os mesmos valores estão em src/lib/tema.ts. */
+@theme {
+  --color-fundo: #07041a;
+  --color-cartao: #120c2b;
+  --color-elevado: #1b1440;
+  --color-borda: #2c2354;
+  --color-texto: #f4f2ff;
+  --color-suave: #c4bddf;
+  --color-apagado: #9d96bb;
+  --color-roxo: #a667fc;
+  --color-roxo-forte: #7c3aed;
+  --color-ouro: #e9ab02;
+  --color-sucesso: #34d399;
+  --color-perigo: #f87171;
+  --color-serie-1: #a667fc;
+  --color-serie-2: #c98500;
+
+  --font-sans: var(--fonte-marca), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
+  }
+
+  html {
+    background-color: var(--color-fundo);
+  }
+
+  body {
+    background-color: var(--color-fundo);
+    background-image:
+      radial-gradient(60rem 30rem at 85% -10%, rgb(124 58 237 / 0.18), transparent 70%),
+      radial-gradient(40rem 24rem at -10% 110%, rgb(166 103 252 / 0.1), transparent 70%);
+    background-attachment: fixed;
+    color: var(--color-texto);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background: rgb(166 103 252 / 0.45);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ouro);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.01em;
+  }
+
+  a {
+    text-underline-offset: 3px;
+  }
+
+  /* Tabelas das telas: cabeçalho discreto, linhas separadas por fio. */
+  table thead th {
+    color: var(--color-apagado);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  table td,
+  table th {
+    border-color: var(--color-borda);
+  }
+
+  input,
+  select,
+  textarea {
+    color-scheme: dark;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--color-roxo-forte);
+  }
+
+  details > summary {
+    cursor: pointer;
+  }
+
+  /* Valores em colunas alinhados. */
+  td,
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+/* Impressão (recibos, fechamento do caixa): papel branco e tinta preta. */
+@media print {
+  :root {
+    --color-fundo: #ffffff;
+    --color-cartao: #ffffff;
+    --color-elevado: #f2f2f2;
+    --color-borda: #cccccc;
+    --color-texto: #000000;
+    --color-suave: #333333;
+    --color-apagado: #555555;
+    color-scheme: light;
+  }
+
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
 }

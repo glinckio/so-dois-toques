@@ -28,7 +28,7 @@ export default async function PaginaMensalidade({ params }: PageProps<"/caixa/me
     <>
       <header>
         <h1 className="text-2xl font-semibold">{m.aluno.nome}</h1>
-        <p className="opacity-80">
+        <p className="text-suave">
           Mensalidade de {nomeDoMes(m.competencia)} · {formatarReais(m.valorCentavos)} · vence em{" "}
           {formatarData(m.vencimento)}
         </p>
@@ -53,13 +53,13 @@ export default async function PaginaMensalidade({ params }: PageProps<"/caixa/me
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium">Pagamentos</h2>
         {m.pagamentos.length === 0 ? (
-          <p className="opacity-80">Nenhum pagamento registrado.</p>
+          <p className="text-suave">Nenhum pagamento registrado.</p>
         ) : (
           <ul className="flex flex-col gap-3" aria-label="Pagamentos">
             {m.pagamentos.map((p) => (
               <li
                 key={p.id}
-                className="flex flex-col gap-2 rounded-lg border border-current/15 p-3"
+                className="border-borda bg-cartao flex flex-col gap-2 rounded-2xl border p-3"
               >
                 <p>
                   <span className="font-medium">Recibo nº {p.numeroRecibo}</span> ·{" "}

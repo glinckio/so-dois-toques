@@ -19,16 +19,16 @@ export default async function PaginaTurnos() {
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
       ) : resposta.dados.length === 0 ? (
-        <p className="opacity-80">O caixa ainda não foi aberto nenhuma vez.</p>
+        <p className="text-suave">O caixa ainda não foi aberto nenhuma vez.</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-current/10" aria-label="Turnos">
+        <ul className="divide-borda flex flex-col divide-y" aria-label="Turnos">
           {resposta.dados.map((t) => (
             <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
               <span>
                 <Link href={`/caixa/turnos/${t.id}`} className="font-medium underline">
                   {formatarDataHora(t.abertaEm)}
                 </Link>
-                <span className="block text-sm opacity-80">
+                <span className="text-suave block text-sm">
                   Aberto por {t.abertaPor}
                   {t.fechadaEm
                     ? ` · fechado por ${t.fechadaPor} em ${formatarDataHora(t.fechadaEm)}`
@@ -37,7 +37,7 @@ export default async function PaginaTurnos() {
               </span>
               {t.diferencaCentavos !== null && (
                 <span
-                  className={`text-sm font-medium ${t.diferencaCentavos === 0 ? "" : "text-red-700 dark:text-red-400"}`}
+                  className={`text-sm font-medium ${t.diferencaCentavos === 0 ? "" : "text-perigo dark:text-perigo"}`}
                 >
                   {t.diferencaCentavos === 0
                     ? "Bateu"

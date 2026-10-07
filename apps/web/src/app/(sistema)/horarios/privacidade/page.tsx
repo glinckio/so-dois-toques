@@ -19,7 +19,7 @@ export default async function PaginaPrivacidade() {
   return (
     <>
       <h1 className="text-2xl font-semibold">Privacidade dos clientes</h1>
-      <p className="opacity-80">
+      <p className="text-suave">
         Nome e telefone de quem aluga quadra servem para o atendimento. Depois de 12 meses, eles
         podem ser apagados: a reserva continua com valor, horário e pagamento, mas o cliente vira
         &quot;Cliente anonimizado&quot;. Isso não pode ser desfeito.
@@ -42,7 +42,7 @@ export default async function PaginaPrivacidade() {
               confirmar="Apagar nome e telefone desses clientes? Isso não pode ser desfeito."
             />
           ) : (
-            <p className="text-sm opacity-80">Nada para anonimizar agora.</p>
+            <p className="text-suave text-sm">Nada para anonimizar agora.</p>
           )}
         </section>
       )}

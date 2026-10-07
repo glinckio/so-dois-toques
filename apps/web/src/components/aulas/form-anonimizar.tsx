@@ -9,9 +9,12 @@ import { Aviso, Campo, classeBotaoSecundario } from "@/components/ui";
 export function FormAnonimizar({ id }: { id: string }) {
   const [estado, acao, enviando] = useActionState(anonimizarAluno, ESTADO_INICIAL);
   return (
-    <form action={acao} className="flex flex-col gap-3 rounded-lg border border-red-600/40 p-4">
+    <form
+      action={acao}
+      className="border-perigo/40 bg-perigo/5 flex flex-col gap-3 rounded-2xl border p-4"
+    >
       <h2 className="font-medium">Anonimizar (pedido do aluno, LGPD)</h2>
-      <p className="text-sm opacity-80">
+      <p className="text-suave text-sm">
         Apaga nome, telefones, e-mail, nascimento, responsável e observações e encerra as
         matrículas. As presenças continuam contando, sem identificar a pessoa. Não dá para desfazer.
       </p>

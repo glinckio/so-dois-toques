@@ -30,7 +30,7 @@ export function FormReserva({
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
       aria-label="Nova reserva"
-      className="flex flex-col gap-4 rounded-lg border border-current/15 p-4"
+      className="border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4"
     >
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {admin && (
@@ -175,7 +175,7 @@ export function FormReserva({
           </>
         )}
       </div>
-      <p className="text-sm opacity-80">
+      <p className="text-suave text-sm">
         O valor é calculado pelos preços de cada hora e aparece na reserva.
       </p>
       <button type="submit" className={`${classeBotao} self-start`} disabled={enviando}>

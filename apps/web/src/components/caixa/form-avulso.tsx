@@ -16,7 +16,7 @@ export function FormAvulso() {
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
       aria-label="Lançamento avulso"
-      className="flex flex-col gap-3 rounded-lg border border-current/15 p-4"
+      className="border-borda bg-cartao flex flex-col gap-3 rounded-2xl border p-4"
     >
       <h3 className="font-medium">Lançamento avulso</h3>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -73,7 +73,7 @@ export function FormAvulso() {
           defaultValue={valor("descricao")}
         />
       </div>
-      <p className="text-sm opacity-80">
+      <p className="text-suave text-sm">
         Suprimento e sangria são só em dinheiro. Não escreva nome de aluno: o lançamento não pode
         ser alterado depois.
       </p>

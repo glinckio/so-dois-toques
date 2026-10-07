@@ -23,15 +23,18 @@ export default async function PaginaFixas() {
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
       ) : resposta.dados.length === 0 ? (
-        <p className="opacity-80">Nenhuma reserva fixa em vigor.</p>
+        <p className="text-suave">Nenhuma reserva fixa em vigor.</p>
       ) : (
         <ul className="flex flex-col gap-3" aria-label="Reservas fixas">
           {resposta.dados.map((s) => (
-            <li key={s.id} className="flex flex-col gap-2 rounded-lg border border-current/15 p-3">
+            <li
+              key={s.id}
+              className="border-borda bg-cartao flex flex-col gap-2 rounded-2xl border p-3"
+            >
               <p className="font-medium">
                 {s.tipo === "BLOQUEIO" ? `Bloqueio: ${s.motivo}` : s.clienteNome}
               </p>
-              <p className="text-sm opacity-80">
+              <p className="text-suave text-sm">
                 {s.quadra} · {DIAS_SEMANA[s.diaSemana]}s · {faixaDeHoras(s.horaInicio, s.horaFim)} ·
                 de {formatarData(s.dataInicio)} a {formatarData(s.dataFim)}
               </p>

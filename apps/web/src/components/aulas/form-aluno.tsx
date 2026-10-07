@@ -99,10 +99,10 @@ export function FormAluno({ aluno }: { aluno?: AlunoDetalhe }) {
           className={`${classeCampo} py-2`}
           defaultValue={valor("observacoes", aluno?.observacoes)}
         />
-        <p className="text-xs opacity-70">Não registre aqui dados de saúde detalhados.</p>
+        <p className="text-apagado text-xs">Não registre aqui dados de saúde detalhados.</p>
       </div>
       {!aluno && (
-        <label className="flex items-start gap-3 rounded-md border border-current/15 p-3 text-sm">
+        <label className="border-borda bg-elevado/50 flex items-start gap-3 rounded-xl border p-3 text-sm">
           <input
             type="checkbox"
             name="consentimento"

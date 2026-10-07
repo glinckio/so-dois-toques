@@ -19,14 +19,14 @@ export default async function PaginaInadimplentes() {
     <>
       <header>
         <h1 className="text-2xl font-semibold">Inadimplentes</h1>
-        <p className="opacity-80">
+        <p className="text-suave">
           {itens.length === 0
             ? "Nenhuma mensalidade atrasada."
             : `${itens.length} ${itens.length === 1 ? "aluno" : "alunos"} · ${formatarReais(totalCentavos)} em atraso`}
         </p>
       </header>
       {itens.length > 0 && (
-        <ul className="flex flex-col divide-y divide-current/10" aria-label="Inadimplentes">
+        <ul className="divide-borda flex flex-col divide-y" aria-label="Inadimplentes">
           {itens.map((i) => (
             <li key={i.aluno.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
               <span>
@@ -36,7 +36,7 @@ export default async function PaginaInadimplentes() {
                 >
                   {i.aluno.nome}
                 </Link>
-                <span className="block text-sm opacity-80">
+                <span className="text-suave block text-sm">
                   {formatarTelefone(i.aluno.telefone)} · {i.quantidade}{" "}
                   {i.quantidade === 1 ? "mensalidade" : "mensalidades"} · a mais antiga venceu em{" "}
                   {formatarData(i.vencimentoMaisAntigo)}
@@ -44,7 +44,7 @@ export default async function PaginaInadimplentes() {
               </span>
               <span className="text-right">
                 <span className="block font-medium">{formatarReais(i.totalCentavos)}</span>
-                <span className="text-sm text-red-700 dark:text-red-400">
+                <span className="text-perigo dark:text-perigo text-sm">
                   {i.diasDeAtraso} {i.diasDeAtraso === 1 ? "dia" : "dias"} de atraso
                 </span>
               </span>
@@ -52,7 +52,7 @@ export default async function PaginaInadimplentes() {
           ))}
         </ul>
       )}
-      <p className="text-sm opacity-70">
+      <p className="text-apagado text-sm">
         Mês atual:{" "}
         <Link href={`/caixa/mensalidades?competencia=${competenciaAtual()}`} className="underline">
           ver mensalidades

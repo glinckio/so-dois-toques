@@ -26,7 +26,7 @@ function Linha({ rotulo, valor }: { rotulo: string; valor: string | null | undef
   if (!valor) return null;
   return (
     <div className="flex flex-col sm:flex-row sm:gap-2">
-      <dt className="text-sm opacity-70 sm:w-48">{rotulo}</dt>
+      <dt className="text-apagado text-sm sm:w-48">{rotulo}</dt>
       <dd>{valor}</dd>
     </div>
   );
@@ -51,7 +51,7 @@ export default async function PaginaAluno({
       {salvo && <Aviso tipo="sucesso">Aluno salvo.</Aviso>}
       <header>
         <h1 className="text-2xl font-semibold">{aluno.nome}</h1>
-        <p className="opacity-80">
+        <p className="text-suave">
           {aluno.anonimizado ? "Anonimizado" : aluno.ativo ? "Ativo" : "Inativo"}
         </p>
       </header>
@@ -87,7 +87,7 @@ export default async function PaginaAluno({
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Turmas</h2>
         {aluno.matriculas.length === 0 ? (
-          <p className="opacity-80">Sem matrículas.</p>
+          <p className="text-suave">Sem matrículas.</p>
         ) : (
           <ul className="flex flex-col gap-1" aria-label="Matrículas">
             {aluno.matriculas.map((m) => (
@@ -95,7 +95,7 @@ export default async function PaginaAluno({
                 <Link href={`/aulas/turmas/${m.turma.id}`} className="underline">
                   {m.turma.nome}
                 </Link>{" "}
-                <span className="text-sm opacity-80">
+                <span className="text-suave text-sm">
                   desde {formatarData(m.inicio)}
                   {m.fim ? `, saiu em ${formatarData(m.fim)}` : ""}
                 </span>
@@ -162,7 +162,7 @@ async function SecaoPlano({ alunoId, ativo }: { alunoId: string; ativo: boolean 
             · desde {nomeDoMes(vigente.inicio)}
           </p>
           {vigente.descontoCentavos > 0 && (
-            <p className="text-sm opacity-80">
+            <p className="text-suave text-sm">
               Desconto de {formatarReais(vigente.descontoCentavos)}: {vigente.motivoDesconto}
             </p>
           )}
@@ -174,7 +174,7 @@ async function SecaoPlano({ alunoId, ativo }: { alunoId: string; ativo: boolean 
           />
         </div>
       ) : (
-        <p className="opacity-80">Sem plano: o aluno não recebe mensalidade.</p>
+        <p className="text-suave">Sem plano: o aluno não recebe mensalidade.</p>
       )}
       {ativo && planos.ok && (
         <FormAssinatura alunoId={alunoId} planos={planos.dados} vigente={vigente} meses={meses} />

@@ -39,7 +39,7 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Caixa do dia</h1>
-          <p className="opacity-80">{data === hoje ? "Hoje" : formatarData(data)}</p>
+          <p className="text-suave">{data === hoje ? "Hoje" : formatarData(data)}</p>
         </div>
         <form className="flex items-end gap-2" action="/caixa">
           <div className="flex flex-col gap-1">
@@ -64,7 +64,7 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
         <Aviso tipo="erro">{atual.mensagem}</Aviso>
       ) : turno ? (
         <section aria-label="Caixa aberto" className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1 rounded-lg border border-green-600/40 bg-green-600/10 p-4">
+          <div className="border-sucesso/40 bg-sucesso/10 flex flex-col gap-1 rounded-lg border p-4">
             <h2 className="text-lg font-medium">Caixa aberto</h2>
             <p className="text-sm" data-testid="turno-aberto">
               Aberto por {turno.abertaPor} em {formatarDataHora(turno.abertaEm)} · troco{" "}
@@ -81,7 +81,7 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
       ) : (
         <section
           aria-label="Caixa fechado"
-          className="flex flex-col gap-3 rounded-lg border border-amber-600/40 bg-amber-600/10 p-4"
+          className="border-ouro/40 bg-ouro/10 flex flex-col gap-3 rounded-lg border p-4"
         >
           <h2 className="text-lg font-medium">Caixa fechado</h2>
           <p className="text-sm">
@@ -104,7 +104,7 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
             <h2 className="text-lg font-medium">Por forma de pagamento</h2>
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-current/15">
+                <tr className="border-borda border-b">
                   <th className="py-2 font-medium">Forma</th>
                   <th className="py-2 text-right font-medium">Entradas</th>
                   <th className="py-2 text-right font-medium">Saídas</th>
@@ -115,7 +115,7 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
                 {(Object.keys(FORMAS) as Forma[]).map((f) => {
                   const linha = resposta.dados.resumo.porForma[f];
                   return (
-                    <tr key={f} className="border-b border-current/10">
+                    <tr key={f} className="border-borda border-b">
                       <td className="py-2">{FORMAS[f]}</td>
                       <td className="py-2 text-right">{formatarReais(linha.entradas)}</td>
                       <td className="py-2 text-right">{formatarReais(linha.saidas)}</td>
@@ -129,18 +129,18 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
           <section className="flex flex-col gap-2">
             <h2 className="text-lg font-medium">Lançamentos</h2>
             {resposta.dados.lancamentos.length === 0 ? (
-              <p className="opacity-80">Nenhum lançamento neste dia.</p>
+              <p className="text-suave">Nenhum lançamento neste dia.</p>
             ) : (
-              <ul className="flex flex-col divide-y divide-current/10" aria-label="Lançamentos">
+              <ul className="divide-borda flex flex-col divide-y" aria-label="Lançamentos">
                 {resposta.dados.lancamentos.map((l) => (
                   <li key={l.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                     <span>
                       <span
-                        className={`font-medium ${l.estornado ? "line-through opacity-70" : ""}`}
+                        className={`font-medium ${l.estornado ? "text-apagado line-through" : ""}`}
                       >
                         {l.descricao}
                       </span>
-                      <span className="block text-sm opacity-80">
+                      <span className="text-suave block text-sm">
                         {nomeDaCategoria(l.categoria)} · {FORMAS[l.forma]} · {l.criadoPor} ·{" "}
                         {new Intl.DateTimeFormat("pt-BR", {
                           timeZone: "America/Sao_Paulo",
@@ -157,7 +157,7 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
                       </span>
                     </span>
                     <span
-                      className={`font-medium ${l.tipo === "SAIDA" ? "text-red-700 dark:text-red-400" : ""}`}
+                      className={`font-medium ${l.tipo === "SAIDA" ? "text-perigo dark:text-perigo" : ""}`}
                     >
                       {l.tipo === "SAIDA" ? "− " : "+ "}
                       {formatarReais(l.valorCentavos)}
@@ -191,9 +191,9 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
 function Total({ rotulo, valor, destaque }: { rotulo: string; valor: number; destaque?: boolean }) {
   return (
     <div
-      className={`rounded-lg border p-4 ${destaque ? "border-amber-600/50 bg-amber-600/10" : "border-current/15"}`}
+      className={`rounded-2xl border p-4 ${destaque ? "border-roxo/50 bg-roxo-forte/15" : "border-borda bg-cartao"}`}
     >
-      <p className="text-sm opacity-80">{rotulo}</p>
+      <p className="text-suave text-sm">{rotulo}</p>
       <p className="text-xl font-semibold">{formatarReais(valor)}</p>
     </div>
   );

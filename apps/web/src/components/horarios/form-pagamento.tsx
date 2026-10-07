@@ -19,7 +19,7 @@ export function FormPagamento({
     <form
       action={acao}
       aria-label="Receber pagamento"
-      className="flex flex-col gap-3 rounded-lg border border-current/15 p-4"
+      className="border-borda bg-cartao flex flex-col gap-3 rounded-2xl border p-4"
     >
       <h2 className="font-medium">Receber {formatarReais(valorCentavos)}</h2>
       <input type="hidden" name="reservaId" value={reservaId} />

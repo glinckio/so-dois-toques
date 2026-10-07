@@ -32,7 +32,7 @@ export default async function PaginaVenda() {
       {!produtos.ok ? (
         <Aviso tipo="erro">{produtos.mensagem}</Aviso>
       ) : ativos.length === 0 ? (
-        <p className="opacity-80">Nenhum produto ativo para vender.</p>
+        <p className="text-suave">Nenhum produto ativo para vender.</p>
       ) : (
         <FormVenda
           produtos={ativos.map((p) => ({

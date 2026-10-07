@@ -33,12 +33,12 @@ export function FormVenda({ produtos }: { produtos: ProdutoVenda[] }) {
     >
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {estado.sucesso && <Aviso tipo="sucesso">{estado.sucesso}</Aviso>}
-      <ul className="flex flex-col divide-y divide-current/10" aria-label="Produtos à venda">
+      <ul className="divide-borda flex flex-col divide-y" aria-label="Produtos à venda">
         {produtos.map((p) => (
           <li key={p.id} className="flex items-center justify-between gap-3 py-2">
             <label htmlFor={`qtd-${p.id}`} className="flex flex-col">
               <span className="font-medium">{p.nome}</span>
-              <span className="text-sm opacity-80">
+              <span className="text-suave text-sm">
                 {formatarReais(p.precoCentavos)} · tem {p.saldo}
               </span>
             </label>
@@ -63,7 +63,7 @@ export function FormVenda({ produtos }: { produtos: ProdutoVenda[] }) {
           {Object.entries(FORMAS).map(([valor, rotulo]) => (
             <label
               key={valor}
-              className="flex min-h-11 items-center gap-2 rounded-md border border-current/25 px-3 has-checked:border-amber-600 has-checked:bg-amber-600/10"
+              className="border-borda has-checked:border-roxo has-checked:bg-roxo/15 flex min-h-11 items-center gap-2 rounded-md border px-3"
             >
               <input
                 type="radio"

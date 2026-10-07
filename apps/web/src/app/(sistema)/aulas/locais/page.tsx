@@ -23,7 +23,7 @@ export default async function PaginaLocais() {
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
       ) : (
-        <ul className="flex flex-col divide-y divide-current/10" aria-label="Locais">
+        <ul className="divide-borda flex flex-col divide-y" aria-label="Locais">
           {resposta.dados.map((l) => (
             <li
               key={l.id}
@@ -31,7 +31,7 @@ export default async function PaginaLocais() {
             >
               <span>
                 <span className="font-medium">{l.nome}</span>
-                <span className="block text-sm opacity-80">
+                <span className="text-suave block text-sm">
                   {TIPOS_LOCAL[l.tipo]}
                   {l.endereco ? ` · ${l.endereco}` : ""}
                   {l.ativo ? "" : " · inativo"}

@@ -44,17 +44,17 @@ export default async function PaginaTurmas({ searchParams }: PageProps<"/aulas">
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
       ) : resposta.dados.length === 0 ? (
-        <p className="opacity-80">Nenhuma turma {encerradas ? "encerrada" : "ativa"}.</p>
+        <p className="text-suave">Nenhuma turma {encerradas ? "encerrada" : "ativa"}.</p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2" aria-label="Turmas">
           {resposta.dados.map((t) => (
             <li key={t.id}>
               <Link
                 href={`/aulas/turmas/${t.id}`}
-                className="flex h-full flex-col gap-1 rounded-lg border border-current/15 p-4 hover:bg-current/5"
+                className="border-borda bg-cartao hover:border-roxo/60 hover:bg-elevado flex h-full flex-col gap-1 rounded-2xl border p-4 transition-colors"
               >
                 <h2 className="text-lg font-medium">{t.nome}</h2>
-                <p className="text-sm opacity-80">
+                <p className="text-suave text-sm">
                   {NIVEIS[t.nivel]} · {t.local.nome} · {t.professor.nome}
                 </p>
                 <p className="text-sm">{descreverHorarios(t.horarios)}</p>

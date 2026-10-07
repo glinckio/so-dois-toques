@@ -36,3 +36,16 @@ export const PERFIS = {
   ATENDENTE: "Atendente",
 } as const;
 export type Perfil = keyof typeof PERFIS;
+
+/**
+ * VIS-CA-02: qual link do menu corresponde à página aberta. Vale o caminho mais
+ * longo que contém a página ("/aulas/alunos/1" marca "/aulas/alunos", não "/aulas");
+ * o Início ("/") só fica marcado nele mesmo.
+ */
+export function linkAtivo(caminho: string, hrefs: readonly string[]): string | undefined {
+  return hrefs
+    .filter((href) =>
+      href === "/" ? caminho === "/" : caminho === href || caminho.startsWith(`${href}/`),
+    )
+    .sort((a, b) => b.length - a.length)[0];
+}

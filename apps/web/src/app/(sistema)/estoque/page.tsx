@@ -30,26 +30,26 @@ export default async function PaginaEstoque() {
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
       ) : resposta.dados.length === 0 ? (
-        <p className="opacity-80">Nenhum produto cadastrado.</p>
+        <p className="text-suave">Nenhum produto cadastrado.</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-current/10" aria-label="Produtos">
+        <ul className="divide-borda flex flex-col divide-y" aria-label="Produtos">
           {resposta.dados.map((p) => (
             <li
               key={p.id}
-              className={`flex flex-wrap items-center justify-between gap-2 py-3 ${p.ativo ? "" : "opacity-70"}`}
+              className={`flex flex-wrap items-center justify-between gap-2 py-3 ${p.ativo ? "" : "text-apagado"}`}
             >
               <span>
                 <Link href={`/estoque/produtos/${p.id}`} className="font-medium underline">
                   {p.nome}
                 </Link>
-                <span className="block text-sm opacity-80">
+                <span className="text-suave block text-sm">
                   {formatarReais(p.precoCentavos)} · custo médio{" "}
                   {formatarReais(p.custoMedioCentavos)} · mínimo {p.estoqueMinimo}
                   {p.ativo ? "" : " · inativo"}
                 </span>
               </span>
               <span
-                className={`font-semibold ${p.abaixoDoMinimo ? "text-red-700 dark:text-red-400" : ""}`}
+                className={`font-semibold ${p.abaixoDoMinimo ? "text-perigo dark:text-perigo" : ""}`}
               >
                 {p.saldo} {p.saldo === 1 ? "unidade" : "unidades"}
                 {p.abaixoDoMinimo && " · repor"}

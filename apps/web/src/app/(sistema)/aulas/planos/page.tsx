@@ -17,23 +17,23 @@ export default async function PaginaPlanos() {
   return (
     <>
       <h1 className="text-2xl font-semibold">Planos</h1>
-      <p className="opacity-80">
+      <p className="text-suave">
         Mudar o valor de um plano vale para as mensalidades geradas depois; as já geradas não mudam.
       </p>
       <FormPlano />
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
       ) : resposta.dados.length === 0 ? (
-        <p className="opacity-80">Nenhum plano cadastrado.</p>
+        <p className="text-suave">Nenhum plano cadastrado.</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-current/10" aria-label="Planos">
+        <ul className="divide-borda flex flex-col divide-y" aria-label="Planos">
           {resposta.dados.map((p) => (
-            <li key={p.id} className={`py-3 ${p.ativo ? "" : "opacity-70"}`}>
+            <li key={p.id} className={`py-3 ${p.ativo ? "" : "text-apagado"}`}>
               <details>
                 <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2">
                   <span>
                     <span className="font-medium">{p.nome}</span>
-                    <span className="block text-sm opacity-80">
+                    <span className="text-suave block text-sm">
                       {p.aulasPorSemana}x por semana · {formatarReais(p.valorCentavos)} por mês ·{" "}
                       {p.alunos} {p.alunos === 1 ? "aluno" : "alunos"}
                       {p.ativo ? "" : " · inativo"}

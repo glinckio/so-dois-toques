@@ -2,7 +2,7 @@ export function SenhaTemporaria({ senha, email }: { senha: string; email?: strin
   return (
     <div
       role="status"
-      className="flex flex-col gap-1 rounded-md border border-amber-600/40 bg-amber-600/10 p-3 text-sm"
+      className="border-ouro/40 bg-ouro/10 flex flex-col gap-1 rounded-md border p-3 text-sm"
     >
       <p>
         Senha temporária{email ? ` de ${email}` : ""}. Ela aparece só agora; repasse com cuidado. No

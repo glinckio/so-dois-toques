@@ -29,7 +29,7 @@ export default async function PaginaRecibo({
       )}
       <article
         aria-label={`Recibo nº ${r.numero}`}
-        className="mx-auto flex w-full max-w-lg flex-col gap-4 rounded-lg border border-current/25 p-6 print:border-black"
+        className="border-borda mx-auto flex w-full max-w-lg flex-col gap-4 rounded-lg border p-6 print:border-black"
       >
         <header className="flex items-baseline justify-between gap-2">
           <h1 className="text-xl font-semibold">Recibo nº {r.numero}</h1>
@@ -42,11 +42,11 @@ export default async function PaginaRecibo({
           {nomeDoMes(r.competencia)}.
         </p>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="opacity-70">Forma</dt>
+          <dt className="text-apagado">Forma</dt>
           <dd>{FORMAS[r.forma]}</dd>
-          <dt className="opacity-70">Data do pagamento</dt>
+          <dt className="text-apagado">Data do pagamento</dt>
           <dd>{formatarData(r.data)}</dd>
-          <dt className="opacity-70">Recebido por</dt>
+          <dt className="text-apagado">Recebido por</dt>
           <dd>{r.recebidoPor}</dd>
         </dl>
       </article>

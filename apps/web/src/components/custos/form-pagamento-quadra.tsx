@@ -27,7 +27,7 @@ export function FormPagamentoQuadra({
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
       aria-label={`Registrar pagamento a ${localNome}`}
-      className="flex flex-col gap-3 rounded-lg border border-current/15 p-3"
+      className="border-borda bg-cartao flex flex-col gap-3 rounded-2xl border p-3"
     >
       <h3 className="font-medium">Registrar pagamento de {nomeDoMes(competencia)}</h3>
       <input type="hidden" name="localId" value={localId} />

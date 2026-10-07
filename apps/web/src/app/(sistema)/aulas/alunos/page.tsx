@@ -77,18 +77,18 @@ export default async function PaginaAlunos({ searchParams }: PageProps<"/aulas/a
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
       ) : resposta.dados.itens.length === 0 ? (
-        <p className="opacity-80">Nenhum aluno encontrado.</p>
+        <p className="text-suave">Nenhum aluno encontrado.</p>
       ) : (
         <>
-          <ul className="flex flex-col divide-y divide-current/10" aria-label="Alunos">
+          <ul className="divide-borda flex flex-col divide-y" aria-label="Alunos">
             {resposta.dados.itens.map((a) => (
               <li key={a.id}>
                 <Link
                   href={`/aulas/alunos/${a.id}`}
-                  className="flex justify-between gap-2 py-3 hover:bg-current/5"
+                  className="hover:bg-elevado flex justify-between gap-2 py-3"
                 >
                   <span className="font-medium">{a.nome}</span>
-                  <span className="text-sm opacity-80">
+                  <span className="text-suave text-sm">
                     {a.anonimizado
                       ? "anonimizado"
                       : a.ativo

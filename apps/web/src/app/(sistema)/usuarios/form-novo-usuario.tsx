@@ -10,7 +10,10 @@ import { SenhaTemporaria } from "./senha-temporaria";
 export function FormNovoUsuario() {
   const [estado, acao, enviando] = useActionState(criarUsuario, ESTADO_INICIAL);
   return (
-    <form action={acao} className="flex flex-col gap-4 rounded-lg border border-current/15 p-4">
+    <form
+      action={acao}
+      className="border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4"
+    >
       <h2 className="text-lg font-medium">Cadastrar usuário</h2>
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {estado.senhaTemporaria && (

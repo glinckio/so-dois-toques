@@ -26,7 +26,7 @@ export default async function PaginaFaixas() {
   return (
     <>
       <h1 className="text-2xl font-semibold">Preços e quadras</h1>
-      <p className="opacity-80">
+      <p className="text-suave">
         As faixas definem quando as quadras funcionam e quanto custa cada hora. Mudar uma faixa não
         muda reservas já feitas.
       </p>
@@ -34,14 +34,14 @@ export default async function PaginaFaixas() {
       {!faixas.ok ? (
         <Aviso tipo="erro">{faixas.mensagem}</Aviso>
       ) : (
-        <ul className="flex flex-col divide-y divide-current/10" aria-label="Faixas de preço">
+        <ul className="divide-borda flex flex-col divide-y" aria-label="Faixas de preço">
           {DIAS_SEMANA.map((dia, i) => {
             const doDia = faixas.dados.filter((f) => f.diaSemana === i);
             return (
               <li key={dia} className="flex flex-col gap-2 py-3">
                 <h2 className="font-medium">{dia}</h2>
                 {doDia.length === 0 ? (
-                  <p className="text-sm opacity-80">Fechado</p>
+                  <p className="text-suave text-sm">Fechado</p>
                 ) : (
                   doDia.map((f) => (
                     <div key={f.id} className="flex flex-wrap items-center justify-between gap-2">
