@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { FormReserva } from "@/components/horarios/form-reserva";
 import { Aviso } from "@/components/ui";
 import { hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
-import type { Quadra } from "@/lib/horarios/tipos";
+import type { Faixa, Quadra } from "@/lib/horarios/tipos";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
 
@@ -17,16 +18,30 @@ export default async function PaginaNovaReserva({ searchParams }: PageProps<"/ho
   const { usuario } = await exigirArea("horarios");
   const { data, quadra, hora } = await searchParams;
   const hoje = hojeEmSaoPaulo();
-  const quadras = await chamarApi<Quadra[]>("/horarios/quadras");
+  // As faixas só servem para a prévia do valor; sem elas, a reserva funciona igual.
+  const [quadras, faixas] = await Promise.all([
+    chamarApi<Quadra[]>("/horarios/quadras"),
+    chamarApi<Faixa[]>("/horarios/faixas"),
+  ]);
   const horaPedida = typeof hora === "string" && /^\d{1,2}$/.test(hora) ? hora : "";
   return (
     <>
-      <h1 className="text-2xl font-semibold">Nova reserva</h1>
+      <Cabecalho
+        etiqueta="Quadras de areia"
+        icone="horarios"
+        titulo={
+          <>
+            Nova <Destaque>reserva</Destaque>
+          </>
+        }
+        descricao="Escolha a quadra, o dia e a hora. O resumo mostra o ingresso e o valor antes de reservar."
+      />
       {!quadras.ok ? (
         <Aviso tipo="erro">{quadras.mensagem}</Aviso>
       ) : (
         <FormReserva
           quadras={quadras.dados}
+          faixas={faixas.ok ? faixas.dados : null}
           hoje={hoje}
           admin={usuario.perfil === "ADMINISTRADOR"}
           inicial={{

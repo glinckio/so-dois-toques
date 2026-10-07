@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Aviso, classeBotaoSecundario, classeCampo } from "@/components/ui";
+import { Cabecalho, Destaque } from "@/components/base/cabecalho";
+import { FaixaDeDias } from "@/components/base/faixa-de-dias";
+import { Vazio } from "@/components/base/vazio";
+import { AgendaDasQuadras } from "@/components/horarios/agenda-das-quadras";
+import { ResumoDoDia } from "@/components/horarios/resumo-do-dia";
+import { Icone } from "@/components/icones";
+import { Aviso, classeBotaoIcone, classeBotaoSecundario, classeCampo } from "@/components/ui";
 import { DIAS_SEMANA, formatarData, hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
-import {
-  celulasDaQuadra,
-  horaAgoraEmSaoPaulo,
-  horaPassou,
-  horasDeFuncionamento,
-  rotuloHora,
-  somarDias,
-} from "@/lib/horarios/formatacao";
+import { agendaDoDia } from "@/lib/horarios/agenda";
 import type { Grade } from "@/lib/horarios/tipos";
-import { formatarReais } from "@/lib/mensalidades/formatacao";
+import { minutoEmSaoPaulo } from "@/lib/painel/inicio";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
 
@@ -20,140 +19,102 @@ export const metadata: Metadata = { title: "Horários | Só Dois Toques" };
 
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 
-/** HOR-CA-02: grade do dia, com livre e ocupado em cada quadra. */
+/**
+ * HOR-CA-02 e VIVO-CA-06: grade do dia. A faixa de dias escolhe a data, o resumo mostra
+ * a ocupação e a legenda, e a agenda tem uma coluna por quadra com cada reserva num
+ * bloco que ocupa todas as suas horas.
+ */
 export default async function PaginaGrade({ searchParams }: PageProps<"/horarios">) {
   await connection();
   const { usuario } = await exigirArea("horarios");
   const admin = usuario.perfil === "ADMINISTRADOR";
   const { data: pedida } = await searchParams;
-  const hoje = hojeEmSaoPaulo();
+  const agora = new Date();
+  const hoje = hojeEmSaoPaulo(agora);
   const data = typeof pedida === "string" && DATA.test(pedida) ? pedida : hoje;
   const resposta = await chamarApi<Grade>(`/horarios/grade?data=${data}`);
-  const horaAgora = horaAgoraEmSaoPaulo();
+  const agenda = resposta.ok ? agendaDoDia(resposta.dados, hoje, minutoEmSaoPaulo(agora)) : null;
 
   return (
     <>
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Horários das quadras</h1>
-          <p className="text-suave" data-testid="dia-da-grade">
+      <Cabecalho
+        etiqueta="Quadras de areia"
+        icone="horarios"
+        titulo={
+          <>
+            Horários das <Destaque>quadras</Destaque>
+          </>
+        }
+        descricao={
+          <>
             {DIAS_SEMANA[new Date(`${data}T12:00:00Z`).getUTCDay()]}, {formatarData(data)}
             {data === hoje && " (hoje)"}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <Link href={`/horarios?data=${somarDias(data, -1)}`} className={classeBotaoSecundario}>
-            ← Dia anterior
-          </Link>
-          <Link href={`/horarios?data=${somarDias(data, 1)}`} className={classeBotaoSecundario}>
-            Próximo dia →
-          </Link>
-          <form className="flex items-end gap-2" action="/horarios">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="data" className="text-sm font-medium">
-                Dia
-              </label>
-              <input
-                id="data"
-                name="data"
-                type="date"
-                defaultValue={data}
-                className={classeCampo}
-              />
-            </div>
-            <button type="submit" className={classeBotaoSecundario}>
-              Ver
+          </>
+        }
+        testIdDescricao="dia-da-grade"
+        acoes={
+          <form action="/horarios" className="flex items-center gap-2">
+            <label htmlFor="ir-para-data" className="sr-only">
+              Ir para a data
+            </label>
+            <input
+              id="ir-para-data"
+              name="data"
+              type="date"
+              required
+              defaultValue={data}
+              className={`${classeCampo} w-auto`}
+            />
+            <button type="submit" className={classeBotaoIcone}>
+              <Icone nome="seta" width={18} height={18} />
+              <span className="sr-only">Ver a data</span>
             </button>
           </form>
-        </div>
-      </header>
+        }
+      />
+
+      <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+        <FaixaDeDias data={data} hoje={hoje} caminho="/horarios" />
+        {resposta.ok && agenda && agenda.horas.length > 0 && (
+          <ResumoDoDia agenda={agenda} grade={resposta.dados} />
+        )}
+      </div>
+
       {!resposta.ok ? (
         <Aviso tipo="erro">{resposta.mensagem}</Aviso>
-      ) : resposta.dados.faixas.length === 0 ? (
-        <Aviso tipo="info">
-          As quadras não funcionam neste dia da semana.{" "}
-          {admin && (
-            <Link href="/horarios/faixas" className="underline">
-              Configurar horários e preços
-            </Link>
-          )}
-        </Aviso>
+      ) : !agenda || agenda.horas.length === 0 ? (
+        <Vazio
+          titulo="As quadras não funcionam neste dia da semana."
+          acao={
+            admin && (
+              <Link href="/horarios/faixas" className={classeBotaoSecundario}>
+                Configurar horários e preços
+              </Link>
+            )
+          }
+        >
+          Escolha outro dia na faixa acima.
+        </Vazio>
       ) : (
-        <GradeDoDia grade={resposta.dados} hoje={hoje} horaAgora={horaAgora} />
+        <section
+          aria-labelledby="titulo-agenda"
+          className="superficie flex flex-col gap-4 rounded-[1.75rem] p-3 sm:p-5"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-2 sm:px-1 sm:pt-0">
+            <h2 id="titulo-agenda" className="text-lg font-bold">
+              Agenda das quadras
+            </h2>
+            <p className="text-apagado text-sm">
+              {data < hoje
+                ? "Este dia já passou."
+                : agenda.livresParaReservar > 0
+                  ? "Toque num horário livre para reservar."
+                  : "Nenhum horário livre para reservar."}
+            </p>
+          </div>
+          <AgendaDasQuadras agenda={agenda} data={data} />
+        </section>
       )}
     </>
-  );
-}
-
-function GradeDoDia({ grade, hoje, horaAgora }: { grade: Grade; hoje: string; horaAgora: number }) {
-  const horas = horasDeFuncionamento(grade.faixas);
-  const colunas = grade.quadras.map((q) => celulasDaQuadra(horas, q.reservas));
-  return (
-    <table className="w-full table-fixed border-collapse text-sm" aria-label="Grade do dia">
-      <thead>
-        <tr>
-          <th scope="col" className="w-16 p-1 text-left">
-            Hora
-          </th>
-          {grade.quadras.map((q) => (
-            <th key={q.id} scope="col" className="p-1 text-left">
-              {q.nome}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {horas.map((hora, linha) => (
-          <tr key={hora} className="border-borda border-t">
-            <th scope="row" className="text-suave p-1 text-left align-top font-normal">
-              {rotuloHora(hora)}
-            </th>
-            {grade.quadras.map((quadra, i) => {
-              const celula = colunas[i]?.[linha];
-              if (!celula) return <td key={quadra.id} />;
-              if (celula.tipo === "livre") {
-                return (
-                  <td key={quadra.id} className="p-1">
-                    {horaPassou(grade.data, hora, hoje, horaAgora) ? (
-                      <span className="block rounded-md px-2 py-2 opacity-50">Livre</span>
-                    ) : (
-                      <Link
-                        href={`/horarios/nova?data=${grade.data}&quadra=${quadra.id}&hora=${hora}`}
-                        className="border-borda hover:bg-elevado block rounded-md border border-dashed px-2 py-2"
-                        aria-label={`Reservar ${quadra.nome} às ${rotuloHora(hora)}`}
-                      >
-                        Livre
-                      </Link>
-                    )}
-                  </td>
-                );
-              }
-              const r = celula.reserva;
-              const bloqueio = r.tipo === "BLOQUEIO";
-              return (
-                <td key={quadra.id} className="p-1">
-                  <Link
-                    href={`/horarios/reservas/${r.id}`}
-                    className={`block rounded-md px-2 py-2 ${
-                      bloqueio ? "bg-apagado/20" : r.pago ? "bg-sucesso/20" : "bg-ouro/20"
-                    } ${celula.primeira ? "" : "opacity-60"}`}
-                  >
-                    <span className="block truncate font-medium">
-                      {bloqueio ? `Bloqueado: ${r.motivo}` : r.clienteNome}
-                    </span>
-                    {celula.primeira && !bloqueio && (
-                      <span className="block truncate text-xs">
-                        {formatarReais(r.valorCentavos)} · {r.pago ? "Pago" : "A pagar"}
-                        {r.serieId ? " · fixa" : ""}
-                      </span>
-                    )}
-                  </Link>
-                </td>
-              );
-            })}
-          </tr>
-        ))}
-      </tbody>
-    </table>
   );
 }

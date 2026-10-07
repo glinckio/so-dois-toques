@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { ESTADO_INICIAL } from "@/app/acoes/estado";
 import { renomearQuadra } from "@/app/acoes/horarios";
+import { BotaoEnviar } from "@/components/base/enviar";
 import { Aviso, Campo, classeBotaoSecundario } from "@/components/ui";
 import type { Quadra } from "@/lib/horarios/tipos";
 
@@ -23,15 +24,16 @@ export function FormQuadra({ quadra }: { quadra: Quadra }) {
             rotulo={`Nome da ${quadra.nome}`}
             id={`nome-${quadra.id}`}
             name="nome"
+            icone="areia"
             required
             minLength={2}
             maxLength={40}
             defaultValue={estado.valores?.["nome"] ?? quadra.nome}
           />
         </div>
-        <button type="submit" className={classeBotaoSecundario} disabled={enviando}>
+        <BotaoEnviar enviando={enviando} className={classeBotaoSecundario}>
           Salvar
-        </button>
+        </BotaoEnviar>
       </div>
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {estado.sucesso && <Aviso tipo="sucesso">{estado.sucesso}</Aviso>}
