@@ -23,9 +23,19 @@ export function usePilula(chave: unknown) {
         p.style.opacity = "0";
         return;
       }
+      // Soma as posições até chegar à lista: um item com `relative` no caminho vira o
+      // offsetParent e zeraria a conta. offsetLeft ignora transformações (cascata).
+      let x = 0;
+      let y = 0;
+      for (let el: Element | null = ativo; el && el !== ul;) {
+        const caixa = el as HTMLElement;
+        x += caixa.offsetLeft;
+        y += caixa.offsetTop;
+        el = caixa.offsetParent;
+      }
       p.style.width = `${ativo.offsetWidth}px`;
       p.style.height = `${ativo.offsetHeight}px`;
-      p.style.transform = `translate(${ativo.offsetLeft}px, ${ativo.offsetTop}px)`;
+      p.style.transform = `translate(${x}px, ${y}px)`;
       p.style.opacity = "1";
       // Primeiro posiciona sem animar; depois, cada troca desliza.
       requestAnimationFrame(() => {
