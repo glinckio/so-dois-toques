@@ -3,8 +3,8 @@ import { connection } from "next/server";
 import { Avatar } from "@/components/base/avatar";
 import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { Selo, SeloIcone, type Tom } from "@/components/base/selo";
-import type { NomeIcone } from "@/components/icones";
-import { AcessoNegado, Aviso } from "@/components/ui";
+import { Icone, type NomeIcone } from "@/components/icones";
+import { AcessoNegado, Aviso, classeBotao } from "@/components/ui";
 import { PERFIS, type Perfil } from "@/lib/acesso/areas";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
@@ -47,6 +47,13 @@ export default async function PaginaUsuarios() {
           </>
         }
         descricao="Quem entra no sistema e o que cada perfil pode ver. Cada pessoa tem o próprio login."
+        acoes={
+          // No celular o cadastro fica depois da lista; o atalho leva direto a ele.
+          <a href="#novo-usuario" className={`${classeBotao} lg:hidden`}>
+            <Icone nome="mais" width={18} height={18} />
+            Novo usuário
+          </a>
+        }
       />
       {resposta.ok && (
         <ul className="grid grid-cols-3 gap-3" aria-label="Resumo da equipe">

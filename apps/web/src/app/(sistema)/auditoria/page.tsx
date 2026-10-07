@@ -95,14 +95,8 @@ export default async function PaginaAuditoria({ searchParams }: PageProps<"/audi
           method="get"
           className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.3fr_1.5fr_auto] lg:items-end"
         >
-          <Campo
-            rotulo="De"
-            id="inicio"
-            type="date"
-            icone="calendario"
-            defaultValue={filtro.inicio}
-          />
-          <Campo rotulo="Até" id="fim" type="date" icone="calendario" defaultValue={filtro.fim} />
+          <Campo rotulo="De" id="inicio" type="date" defaultValue={filtro.inicio} />
+          <Campo rotulo="Até" id="fim" type="date" defaultValue={filtro.fim} />
           <Escolha id="usuarioId" rotulo="Usuário" icone="pessoa" valor={filtro.usuarioId}>
             <option value="">Todos</option>
             {usuarios.ok &&

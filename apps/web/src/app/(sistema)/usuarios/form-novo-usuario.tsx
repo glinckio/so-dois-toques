@@ -20,8 +20,9 @@ export function FormNovoUsuario() {
   const [estado, acao, enviando] = useActionState(criarUsuario, ESTADO_INICIAL);
   return (
     <form
+      id="novo-usuario"
       action={acao}
-      className="superficie-destaque flex flex-col gap-4 rounded-[1.75rem] p-5 sm:p-6 lg:sticky lg:top-6"
+      className="superficie-destaque flex scroll-mt-20 flex-col gap-4 rounded-[1.75rem] p-5 sm:p-6 lg:sticky lg:top-6"
     >
       <div className="flex items-center gap-3">
         <SeloIcone nome="mais" tom="ouro" />
