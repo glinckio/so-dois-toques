@@ -34,7 +34,7 @@ export function OpcoesEmBlocos({
             <label
               key={o.valor}
               htmlFor={id}
-              className="group border-borda bg-elevado/40 has-checked:border-roxo has-checked:bg-roxo-forte/20 has-focus-visible:outline-ouro relative flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-3 transition duration-200 hover:border-[#3a2f6b] active:scale-[0.98] has-checked:shadow-[0_10px_30px_-16px_rgb(166_103_252_/_0.9)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2"
+              className="group border-borda bg-elevado/40 has-checked:border-roxo has-checked:bg-roxo-forte/20 has-focus-visible:outline-ouro relative flex min-h-14 cursor-pointer items-center gap-2.5 rounded-2xl border px-3 py-3 transition duration-200 hover:border-[#3a2f6b] active:scale-[0.98] has-checked:shadow-[0_10px_30px_-16px_rgb(166_103_252_/_0.9)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 sm:gap-3 sm:px-3.5"
             >
               <input
                 id={id}
@@ -50,13 +50,13 @@ export function OpcoesEmBlocos({
                   <Icone nome={o.icone} width={18} height={18} />
                 </span>
               )}
-              <span className="flex min-w-0 flex-col">
-                <span className="font-semibold">{o.rotulo}</span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="font-semibold break-words">{o.rotulo}</span>
                 {o.detalhe && <span className="text-apagado text-xs">{o.detalhe}</span>}
               </span>
               <span
                 aria-hidden="true"
-                className="border-borda group-has-checked:border-roxo group-has-checked:bg-roxo ml-auto grid size-5 shrink-0 place-items-center rounded-full border-2 transition-colors"
+                className="border-borda group-has-checked:border-roxo group-has-checked:bg-roxo grid size-5 shrink-0 place-items-center rounded-full border-2 transition-colors"
               >
                 <Icone
                   nome="check"
