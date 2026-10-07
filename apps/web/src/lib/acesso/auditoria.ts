@@ -39,6 +39,13 @@ export const ROTULOS_ACOES = {
   CAIXA_FECHADO: "Caixa fechado",
   LANCAMENTO_AVULSO_REGISTRADO: "Lançamento avulso registrado",
   LANCAMENTO_AVULSO_ESTORNADO: "Lançamento avulso estornado",
+  PRODUTO_CRIADO: "Produto cadastrado",
+  PRODUTO_ALTERADO: "Produto alterado",
+  COMPRA_REGISTRADA: "Compra registrada",
+  VENDA_REGISTRADA: "Venda registrada",
+  ESTOQUE_AJUSTADO: "Estoque ajustado",
+  VENDA_ESTORNADA: "Venda estornada",
+  COMPRA_ESTORNADA: "Compra estornada",
 } as const;
 
 export const TAMANHO_PAGINA = 50;

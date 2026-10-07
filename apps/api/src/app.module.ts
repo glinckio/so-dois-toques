@@ -14,6 +14,8 @@ import { CaixaController } from "./caixa/caixa.controller.js";
 import { CaixaService } from "./caixa/caixa.service.js";
 import { CustosController } from "./custos/custos.controller.js";
 import { CustosService } from "./custos/custos.service.js";
+import { EstoqueController } from "./estoque/estoque.controller.js";
+import { EstoqueService } from "./estoque/estoque.service.js";
 import { HealthController } from "./health/health.controller.js";
 import { GeracaoAutomaticaService } from "./mensalidades/geracao-automatica.service.js";
 import { MensalidadesController } from "./mensalidades/mensalidades.controller.js";
@@ -30,6 +32,7 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     HealthController,
     CustosController,
     CaixaController,
+    EstoqueController,
     AuthController,
     UsuariosController,
     AuditoriaController,
@@ -42,6 +45,7 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     AuditoriaService,
     CustosService,
     CaixaService,
+    EstoqueService,
     AuthService,
     UsuariosService,
     AlunosService,
