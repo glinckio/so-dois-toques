@@ -25,6 +25,7 @@ export function CartaoNumero({
   subirEhRuim = false,
   nota,
   destaque = false,
+  testId,
 }: {
   rotulo: string;
   icone: NomeIcone;
@@ -36,6 +37,8 @@ export function CartaoNumero({
   subirEhRuim?: boolean;
   nota?: string;
   destaque?: boolean;
+  /** Padrão: `kpi-<rótulo>`. */
+  testId?: string;
 }) {
   const bom = mudanca != null && (subirEhRuim ? mudanca <= 0 : mudanca >= 0);
   const linha = minigrafico(serie, 120, 40);
@@ -55,7 +58,12 @@ export function CartaoNumero({
           <span
             className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-bold ${bom ? "bg-sucesso/15 text-sucesso" : "bg-perigo/15 text-perigo"}`}
           >
-            <Icone nome={mudanca >= 0 ? "subir" : "descer"} width={12} height={12} strokeWidth={2.4} />
+            <Icone
+              nome={mudanca >= 0 ? "subir" : "descer"}
+              width={12}
+              height={12}
+              strokeWidth={2.4}
+            />
             {formatarPorcentagem(Math.abs(mudanca))}
           </span>
         )}
@@ -63,7 +71,7 @@ export function CartaoNumero({
       <NumeroAnimado
         valor={valor}
         centavosMenores
-        testId={`kpi-${rotulo}`}
+        testId={testId ?? `kpi-${rotulo}`}
         className={`text-[1.75rem] leading-none font-extrabold tracking-tight ${valor < 0 ? "text-perigo" : ""}`}
       />
       <div className="flex items-end justify-between gap-3">
@@ -74,7 +82,11 @@ export function CartaoNumero({
               : `${mudanca >= 0 ? "Acima" : "Abaixo"} de ${mesAnterior ?? "o mês anterior"}`)}
         </span>
         {linha && (
-          <svg viewBox="-3 -3 126 46" className="h-10 w-24 shrink-0 overflow-visible" aria-hidden="true">
+          <svg
+            viewBox="-3 -3 126 46"
+            className="h-10 w-24 shrink-0 overflow-visible"
+            aria-hidden="true"
+          >
             <path d={linha.area} className={`${traco.area} animate-entrar`} />
             <path
               d={linha.linha}
@@ -86,7 +98,12 @@ export function CartaoNumero({
               strokeDasharray="100 200"
               className={`${traco.linha} animate-desenhar`}
             />
-            <circle cx={linha.ultimo.x} cy={linha.ultimo.y} r={3.5} className={`${traco.ponto} animate-marcar [animation-delay:900ms]`} />
+            <circle
+              cx={linha.ultimo.x}
+              cy={linha.ultimo.y}
+              r={3.5}
+              className={`${traco.ponto} animate-marcar [animation-delay:900ms]`}
+            />
           </svg>
         )}
       </div>

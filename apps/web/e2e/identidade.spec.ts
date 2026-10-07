@@ -119,7 +119,7 @@ test("VIS-CA-06: o Contábil mostra gráficos com legenda e tabela, sem erros de
   await expect(grafico.getByText("Receitas", { exact: true })).toBeVisible();
   await expect(page.getByRole("table", { name: "Comparativo mensal" })).toBeVisible();
   for (const barras of ["Receitas por origem", "Despesas por tipo"]) {
-    await expect(page.getByTestId(`barras-${barras}`)).toBeVisible();
+    await expect(page.getByTestId(`grafico-${barras}`)).toBeVisible();
     await expect(page.getByRole("table", { name: barras })).toBeVisible();
   }
   expect(erros).toEqual([]);

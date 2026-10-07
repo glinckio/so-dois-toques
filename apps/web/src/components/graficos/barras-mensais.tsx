@@ -199,13 +199,7 @@ function Dica({ mes, x }: { mes: MesDoGrafico; x: number }) {
         rx={16}
         className="fill-noite/95 stroke-borda"
       />
-      <text
-        x={x + 14}
-        y={MARGEM.topo + 13}
-        fontSize={12}
-        fontWeight={700}
-        className="fill-texto"
-      >
+      <text x={x + 14} y={MARGEM.topo + 13} fontSize={12} fontWeight={700} className="fill-texto">
         {nomeDoMes(mes.competencia)}
       </text>
       {SERIES.map((s, j) => (

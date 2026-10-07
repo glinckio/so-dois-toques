@@ -11,8 +11,8 @@ const CORES = [
 ] as const;
 
 /**
- * Rosca que se desenha fatia por fatia, com o total no meio e a legenda com nome,
- * valor e percentual de cada parte (VIVO-CA-12: o rótulo diz o mesmo em texto).
+ * Rosca que se desenha fatia por fatia, com o total no meio. A legenda é uma tabela
+ * com nome, valor e percentual de cada parte (VIVO-CA-12: o texto equivalente).
  */
 export function Rosca({
   rotulo,
@@ -20,6 +20,8 @@ export function Rosca({
   centro,
   tamanho = 176,
   lado = false,
+  comTotal = false,
+  testId,
 }: {
   rotulo: string;
   partes: readonly { nome: string; valor: number }[];
@@ -27,6 +29,9 @@ export function Rosca({
   tamanho?: number;
   /** Legenda ao lado da rosca (cartões largos); senão, embaixo. */
   lado?: boolean;
+  /** Linha de total no fim da tabela da legenda. */
+  comTotal?: boolean;
+  testId?: string;
 }) {
   const fatias = fatiasDaRosca(partes.map((p) => p.valor));
   const total = partes.reduce((t, p) => t + Math.max(0, p.valor), 0);
@@ -36,7 +41,10 @@ export function Rosca({
       ? `${rotulo}: ${partes.map((p, i) => `${p.nome}, ${percentual(i)}%`).join("; ")}.`
       : `${rotulo}: nada lançado ainda.`;
   return (
-    <div className={`flex flex-col items-center gap-5 ${lado ? "sm:flex-row" : ""}`}>
+    <div
+      className={`flex flex-col items-center gap-5 ${lado ? "sm:flex-row sm:gap-8" : ""}`}
+      data-testid={testId}
+    >
       <div role="img" aria-label={descricao} className="relative grid shrink-0 place-items-center">
         <svg viewBox="0 0 100 100" width={tamanho} height={tamanho} aria-hidden="true">
           <circle cx="50" cy="50" r="40" fill="none" strokeWidth="11" className="stroke-elevado" />
@@ -61,24 +69,40 @@ export function Rosca({
           {centro}
         </span>
       </div>
-      <ul className="flex w-full flex-col gap-1">
-        {partes.map((p, i) => (
-          <li
-            key={p.nome}
-            className="hover:bg-elevado/50 flex items-center gap-3 rounded-xl px-2 py-1.5 text-sm transition-colors"
-          >
-            <span
-              aria-hidden="true"
-              className={`size-2.5 shrink-0 rounded-full ${CORES[i % CORES.length]!.ponto}`}
-            />
-            <span className="text-suave min-w-0 flex-1 truncate">{p.nome}</span>
-            <span className="font-semibold tabular-nums">{formatarReais(p.valor)}</span>
-            <span className="text-apagado w-10 text-right text-xs tabular-nums">
-              {total > 0 ? `${percentual(i)}%` : "—"}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <table className="w-full border-separate border-spacing-y-1 text-sm" aria-label={rotulo}>
+        <tbody>
+          {partes.map((p, i) => (
+            <tr key={p.nome}>
+              <th scope="row" className="py-1 pr-2 text-left font-normal">
+                <span className="flex items-center gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className={`size-2.5 shrink-0 rounded-full ${CORES[i % CORES.length]!.ponto}`}
+                  />
+                  <span className="text-suave">{p.nome}</span>
+                </span>
+              </th>
+              <td className="py-1 text-right font-semibold whitespace-nowrap tabular-nums">
+                {formatarReais(p.valor)}
+              </td>
+              <td className="text-apagado w-12 py-1 text-right text-xs tabular-nums">
+                {total > 0 ? `${percentual(i)}%` : "—"}
+              </td>
+            </tr>
+          ))}
+          {comTotal && (
+            <tr>
+              <th scope="row" className="border-borda border-t pt-2 text-left font-semibold">
+                Total
+              </th>
+              <td className="border-borda border-t pt-2 text-right font-bold whitespace-nowrap tabular-nums">
+                {formatarReais(total)}
+              </td>
+              <td className="border-borda border-t pt-2" />
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
