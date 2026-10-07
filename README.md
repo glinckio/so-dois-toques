@@ -23,3 +23,10 @@ pnpm dev
 O site abre em http://localhost:3000 e a API em http://localhost:3001. Em produção, gere uma `INTERNAL_API_KEY` aleatória e use o mesmo valor no web e na API.
 
 Os comandos de teste e o fluxo de trabalho estão em [CLAUDE.md](CLAUDE.md).
+
+## Documentação
+
+- [Manual de uso](docs/manual.md): cada tela, por perfil.
+- [Implantação](docs/implantacao.md): hospedagem, variáveis, domínio, primeiro administrador, backup e restauração.
+- [LGPD](docs/lgpd.md): dados pessoais guardados, prazos e pedidos dos titulares.
+- [Changelog](CHANGELOG.md).

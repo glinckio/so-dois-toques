@@ -31,3 +31,6 @@ Thumbs.db
 
 /apps/api/src/generated/
 /apps/api/dist/
+
+# backups do banco (pnpm db:backup)
+backups/

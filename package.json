@@ -1,6 +1,6 @@
 {
   "name": "so-dois-toques",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "pnpm --parallel --filter @sdt/web --filter @sdt/api dev",
@@ -15,7 +15,9 @@
     "test:e2e": "pnpm --filter @sdt/web test:e2e",
     "check:specs": "tsx scripts/check-spec-coverage.ts",
     "db:deploy": "pnpm --filter @sdt/api db:deploy",
-    "admin:criar": "pnpm --filter @sdt/api admin:criar"
+    "admin:criar": "pnpm --filter @sdt/api admin:criar",
+    "db:backup": "pnpm --filter @sdt/api db:backup",
+    "db:restaurar": "pnpm --filter @sdt/api db:restaurar"
   },
   "devDependencies": {
     "@types/node": "^24",

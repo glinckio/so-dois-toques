@@ -1,6 +1,6 @@
 {
   "name": "@sdt/api",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +17,8 @@
     "db:deploy": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "admin:criar": "nest build && node --env-file-if-exists=.env dist/cli/criar-admin.js",
+    "db:backup": "nest build && node --env-file-if-exists=.env dist/cli/backup.js",
+    "db:restaurar": "nest build && node --env-file-if-exists=.env dist/cli/restaurar.js",
     "e2e:servidor": "node test/preparar-e2e.mjs && node dist/main.js"
   },
   "devDependencies": {

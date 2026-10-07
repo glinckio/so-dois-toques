@@ -55,6 +55,8 @@ export const ROTULOS_ACOES = {
   RESERVA_CANCELADA: "Reserva cancelada",
   RESERVA_PAGA: "Reserva paga",
   PAGAMENTO_RESERVA_ESTORNADO: "Pagamento de reserva estornado",
+  CONTABIL_EXPORTADO: "Lançamentos exportados do Contábil",
+  CLIENTES_ANONIMIZADOS: "Clientes de reservas antigas anonimizados",
 } as const;
 
 export const TAMANHO_PAGINA = 50;

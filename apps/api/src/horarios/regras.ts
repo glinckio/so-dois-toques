@@ -60,6 +60,24 @@ export function somarDias(data: string, dias: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** Nome que fica no lugar do cliente depois do prazo de guarda (LANC-CA-07). */
+export const CLIENTE_ANONIMIZADO = "Cliente anonimizado";
+export const MESES_DE_GUARDA_DO_CLIENTE = 12;
+
+/**
+ * Primeiro dia ainda dentro do prazo de guarda: reservas com data anterior a
+ * ele podem ter o cliente anonimizado. Dia que não existe no mês de destino
+ * (29/02, 31/04) vira o último dia daquele mês.
+ */
+export function limiteDeRetencao(hoje: string, meses = MESES_DE_GUARDA_DO_CLIENTE): string {
+  const [ano, mes, dia] = hoje.split("-").map(Number) as [number, number, number];
+  const indice = ano * 12 + (mes - 1) - meses;
+  const anoAlvo = Math.floor(indice / 12);
+  const mesAlvo = indice % 12;
+  const ultimoDia = new Date(Date.UTC(anoAlvo, mesAlvo + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(anoAlvo, mesAlvo, Math.min(dia, ultimoDia))).toISOString().slice(0, 10);
+}
+
 export type ProblemaDeData = "JA_COMECOU" | "MUITO_LONGE";
 
 export const MENSAGENS_DATA: Record<ProblemaDeData, string> = {

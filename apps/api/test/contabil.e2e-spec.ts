@@ -345,8 +345,10 @@ describe("Etapa 8: painel contábil", () => {
 
   it("CONT-CA-07: a receber mostra mensalidades vencidas e reservas começadas sem pagamento", async () => {
     const { api, token, usuario } = admin;
-    const ontem = somarDias(hoje(), -1);
-    const consulta = `?de=${ontem}&ate=${ontem}`;
+    // O teste de Horários grava uma reserva 26 horas atrás na mesma quadra,
+    // que cai ontem às 20h ou 21h quando ele roda às 22h ou 23h.
+    const anteontem = somarDias(hoje(), -2);
+    const consulta = `?de=${anteontem}&ate=${anteontem}`;
     const antes = (await painel(consulta)).aReceber;
 
     const alunoId = await criarAluno(api, token);
@@ -356,7 +358,7 @@ describe("Etapa 8: painel contábil", () => {
       data: {
         tipo: "RESERVA",
         quadraId: quadra2,
-        data: paraDataDoBanco(ontem),
+        data: paraDataDoBanco(anteontem),
         horaInicio: 21,
         horaFim: 22,
         clienteNome: "Cliente Atrasado",
@@ -368,7 +370,7 @@ describe("Etapa 8: painel contábil", () => {
       data: {
         tipo: "RESERVA",
         quadraId: quadra2,
-        data: paraDataDoBanco(ontem),
+        data: paraDataDoBanco(anteontem),
         horaInicio: 20,
         horaFim: 21,
         clienteNome: "Cliente em Dia",

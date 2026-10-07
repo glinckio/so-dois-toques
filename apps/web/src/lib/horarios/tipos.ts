@@ -79,3 +79,10 @@ export type Serie = {
   proximas: number;
   proximasPagas: number;
 };
+
+export type ClientesAnonimizaveis = {
+  antesDe: string;
+  meses: number;
+  reservas: number;
+  series: number;
+};

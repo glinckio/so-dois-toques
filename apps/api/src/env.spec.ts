@@ -59,4 +59,44 @@ describe("parseEnv", () => {
       WEB_ORIGIN: "http://localhost:3000",
     });
   });
+
+  describe("em produção", () => {
+    const producao = {
+      ...valid,
+      NODE_ENV: "production",
+      WEB_ORIGIN: "https://sodoistoques.com.br",
+    };
+
+    it("LANC-CA-01: aceita chave gerada e origem https", () => {
+      expect(parseEnv(producao).NODE_ENV).toBe("production");
+    });
+
+    it("LANC-CA-01: recusa a chave de exemplo sem mostrar o valor", () => {
+      const exemplo = "troque-por-uma-chave-aleatoria-de-32-caracteres-ou-mais";
+      try {
+        parseEnv({ ...producao, INTERNAL_API_KEY: exemplo });
+        expect.fail("deveria ter lançado erro");
+      } catch (error) {
+        expect((error as InvalidEnvError).fields).toEqual(["INTERNAL_API_KEY"]);
+        expect((error as Error).message).not.toContain(exemplo);
+      }
+    });
+
+    it("LANC-CA-01: recusa origem sem https, menos localhost e 127.0.0.1", () => {
+      expect(() => parseEnv({ ...producao, WEB_ORIGIN: "http://sodoistoques.com.br" })).toThrow(
+        /WEB_ORIGIN/,
+      );
+      expect(parseEnv({ ...producao, WEB_ORIGIN: "http://127.0.0.1:3000" }).WEB_ORIGIN).toBe(
+        "http://127.0.0.1:3000",
+      );
+      expect(parseEnv({ ...producao, WEB_ORIGIN: "http://localhost:3000" }).WEB_ORIGIN).toBe(
+        "http://localhost:3000",
+      );
+    });
+
+    it("LANC-CA-01: fora de produção, a chave de exemplo continua aceita", () => {
+      const exemplo = "troque-por-uma-chave-aleatoria-de-32-caracteres-ou-mais";
+      expect(parseEnv({ ...valid, INTERNAL_API_KEY: exemplo }).INTERNAL_API_KEY).toBe(exemplo);
+    });
+  });
 });

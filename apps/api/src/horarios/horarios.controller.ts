@@ -17,6 +17,7 @@ import type { UsuarioAutenticado } from "../comum/requisicao.js";
 import { ZodPipe } from "../comum/zod.pipe.js";
 import { motivoSchema } from "../mensalidades/esquemas.js";
 import {
+  anonimizarClientesSchema,
   consultaGradeSchema,
   faixasSchema,
   pagamentoReservaSchema,
@@ -140,5 +141,23 @@ export class HorariosController {
     @IpCliente() ip: string | undefined,
   ) {
     return this.horarios.encerrarSerie(ator(usuario, ip), id);
+  }
+
+  /** Prazo de guarda dos clientes das quadras (LANC-CA-07 e 08). */
+  @SomenteAdministrador()
+  @Get("clientes/anonimizaveis")
+  clientesAnonimizaveis() {
+    return this.horarios.clientesAnonimizaveis();
+  }
+
+  @SomenteAdministrador()
+  @HttpCode(200)
+  @Post("clientes/anonimizar")
+  anonimizarClientes(
+    @Body(new ZodPipe(anonimizarClientesSchema)) _dados: z.infer<typeof anonimizarClientesSchema>,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+    @IpCliente() ip: string | undefined,
+  ) {
+    return this.horarios.anonimizarClientes(ator(usuario, ip));
   }
 }
