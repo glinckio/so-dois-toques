@@ -32,7 +32,7 @@ const textoOpcional = (maximo: number) =>
     .nullish()
     .transform((v) => (v ? v : null));
 
-const telefoneOpcional = z
+export const telefoneOpcional = z
   .string()
   .max(30)
   .nullish()

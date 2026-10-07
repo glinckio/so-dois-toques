@@ -29,24 +29,30 @@ model Usuario {
   criadoEm     DateTime @default(now()) @db.Timestamptz(3)
   atualizadoEm DateTime @updatedAt @db.Timestamptz(3)
 
-  sessoes                    Sessao[]
-  turmas                     Turma[]
-  consentimentos             Aluno[]            @relation("ConsentimentoRegistradoPor")
-  presencasRegistradas       Presenca[]
-  assinaturasCriadas         Assinatura[]
-  mensalidadesCanceladas     Mensalidade[]
-  pagamentosRecebidos        Pagamento[]        @relation("PagamentoRecebidoPor")
-  pagamentosEstornados       Pagamento[]        @relation("PagamentoEstornadoPor")
-  lancamentos                Lancamento[]
-  pagamentosQuadra           PagamentoQuadra[]  @relation("PagamentoQuadraPagoPor")
-  pagamentosQuadraEstornados PagamentoQuadra[]  @relation("PagamentoQuadraEstornadoPor")
-  caixasAbertos              SessaoCaixa[]      @relation("SessaoAbertaPor")
-  caixasFechados             SessaoCaixa[]      @relation("SessaoFechadaPor")
-  vendas                     Venda[]            @relation("VendaFeitaPor")
-  vendasEstornadas           Venda[]            @relation("VendaEstornadaPor")
-  compras                    Compra[]           @relation("CompraFeitaPor")
-  comprasEstornadas          Compra[]           @relation("CompraEstornadaPor")
-  movimentosEstoque          MovimentoEstoque[]
+  sessoes                     Sessao[]
+  turmas                      Turma[]
+  consentimentos              Aluno[]            @relation("ConsentimentoRegistradoPor")
+  presencasRegistradas        Presenca[]
+  assinaturasCriadas          Assinatura[]
+  mensalidadesCanceladas      Mensalidade[]
+  pagamentosRecebidos         Pagamento[]        @relation("PagamentoRecebidoPor")
+  pagamentosEstornados        Pagamento[]        @relation("PagamentoEstornadoPor")
+  lancamentos                 Lancamento[]
+  pagamentosQuadra            PagamentoQuadra[]  @relation("PagamentoQuadraPagoPor")
+  pagamentosQuadraEstornados  PagamentoQuadra[]  @relation("PagamentoQuadraEstornadoPor")
+  caixasAbertos               SessaoCaixa[]      @relation("SessaoAbertaPor")
+  caixasFechados              SessaoCaixa[]      @relation("SessaoFechadaPor")
+  vendas                      Venda[]            @relation("VendaFeitaPor")
+  vendasEstornadas            Venda[]            @relation("VendaEstornadaPor")
+  compras                     Compra[]           @relation("CompraFeitaPor")
+  comprasEstornadas           Compra[]           @relation("CompraEstornadaPor")
+  movimentosEstoque           MovimentoEstoque[]
+  reservasCriadas             Reserva[]          @relation("ReservaCriadaPor")
+  reservasCanceladas          Reserva[]          @relation("ReservaCanceladaPor")
+  seriesCriadas               SerieReserva[]     @relation("SerieCriadaPor")
+  seriesEncerradas            SerieReserva[]     @relation("SerieEncerradaPor")
+  pagamentosReserva           PagamentoReserva[] @relation("PagamentoReservaRecebidoPor")
+  pagamentosReservaEstornados PagamentoReserva[] @relation("PagamentoReservaEstornadoPor")
 
   @@index([perfil, ativo])
 }
@@ -253,6 +259,7 @@ enum CategoriaLancamento {
   RECEITA_AVULSA
   VENDA
   COMPRA_ESTOQUE
+  ALUGUEL_QUADRA
 }
 
 model Plano {
@@ -360,14 +367,16 @@ model Lancamento {
   sessaoId      String?             @db.Uuid
   sessao        SessaoCaixa?        @relation(fields: [sessaoId], references: [id], onDelete: Restrict)
 
-  pagamento              Pagamento?       @relation("LancamentoDoPagamento")
-  estornoPagamento       Pagamento?       @relation("EstornoDoPagamento")
-  pagamentoQuadra        PagamentoQuadra? @relation("LancamentoDoPagamentoQuadra")
-  estornoPagamentoQuadra PagamentoQuadra? @relation("EstornoDoPagamentoQuadra")
-  venda                  Venda?           @relation("LancamentoDaVenda")
-  estornoVenda           Venda?           @relation("EstornoDaVenda")
-  compra                 Compra?          @relation("LancamentoDaCompra")
-  estornoCompra          Compra?          @relation("EstornoDaCompra")
+  pagamento               Pagamento?        @relation("LancamentoDoPagamento")
+  estornoPagamento        Pagamento?        @relation("EstornoDoPagamento")
+  pagamentoQuadra         PagamentoQuadra?  @relation("LancamentoDoPagamentoQuadra")
+  estornoPagamentoQuadra  PagamentoQuadra?  @relation("EstornoDoPagamentoQuadra")
+  venda                   Venda?            @relation("LancamentoDaVenda")
+  estornoVenda            Venda?            @relation("EstornoDaVenda")
+  compra                  Compra?           @relation("LancamentoDaCompra")
+  estornoCompra           Compra?           @relation("EstornoDaCompra")
+  pagamentoReserva        PagamentoReserva? @relation("LancamentoDoPagamentoReserva")
+  estornoPagamentoReserva PagamentoReserva? @relation("EstornoDoPagamentoReserva")
 
   @@index([data])
   @@index([sessaoId])
@@ -524,4 +533,118 @@ model MovimentoEstoque {
   criadoEm    DateTime      @default(now()) @db.Timestamptz(3)
 
   @@index([produtoId, criadoEm])
+}
+
+// Etapa 7: Horários das quadras
+
+enum TipoReserva {
+  RESERVA
+  BLOQUEIO
+}
+
+/// As quadras de areia do local. As duas nascem na migração.
+model Quadra {
+  id       String   @id @default(uuid()) @db.Uuid
+  nome     String   @unique @db.VarChar(40)
+  ordem    Int      @db.SmallInt
+  criadaEm DateTime @default(now()) @db.Timestamptz(3)
+
+  reservas Reserva[]
+  series   SerieReserva[]
+}
+
+/// Preço da hora num dia da semana. Também define o horário de funcionamento.
+/// Faixas do mesmo dia não se sobrepõem (restrição de exclusão na migração).
+model FaixaPreco {
+  id                String   @id @default(uuid()) @db.Uuid
+  /// 0 = domingo ... 6 = sábado
+  diaSemana         Int      @db.SmallInt
+  /// Horas inteiras: início de 0 a 23, fim de 1 a 24.
+  horaInicio        Int      @db.SmallInt
+  horaFim           Int      @db.SmallInt
+  valorHoraCentavos Int
+  criadaEm          DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([diaSemana])
+}
+
+/// Reserva fixa semanal (mensalista) ou bloqueio semanal. Gera as reservas de uma vez.
+model SerieReserva {
+  id              String      @id @default(uuid()) @db.Uuid
+  tipo            TipoReserva
+  quadraId        String      @db.Uuid
+  quadra          Quadra      @relation(fields: [quadraId], references: [id], onDelete: Restrict)
+  diaSemana       Int         @db.SmallInt
+  horaInicio      Int         @db.SmallInt
+  horaFim         Int         @db.SmallInt
+  clienteNome     String?     @db.VarChar(80)
+  clienteTelefone String?     @db.VarChar(11)
+  motivo          String?     @db.VarChar(200)
+  dataInicio      DateTime    @db.Date
+  dataFim         DateTime    @db.Date
+  criadaPorId     String      @db.Uuid
+  criadaPor       Usuario     @relation("SerieCriadaPor", fields: [criadaPorId], references: [id], onDelete: Restrict)
+  criadaEm        DateTime    @default(now()) @db.Timestamptz(3)
+  encerradaEm     DateTime?   @db.Timestamptz(3)
+  encerradaPorId  String?     @db.Uuid
+  encerradaPor    Usuario?    @relation("SerieEncerradaPor", fields: [encerradaPorId], references: [id], onDelete: Restrict)
+
+  reservas Reserva[]
+
+  @@index([encerradaEm])
+}
+
+/// Uma ocupação da quadra: reserva de cliente ou bloqueio. Duas ativas nunca se
+/// sobrepõem na mesma quadra e data (restrição de exclusão na migração).
+model Reserva {
+  id                 String        @id @default(uuid()) @db.Uuid
+  tipo               TipoReserva
+  quadraId           String        @db.Uuid
+  quadra             Quadra        @relation(fields: [quadraId], references: [id], onDelete: Restrict)
+  data               DateTime      @db.Date
+  horaInicio         Int           @db.SmallInt
+  horaFim            Int           @db.SmallInt
+  clienteNome        String?       @db.VarChar(80)
+  /// Só dígitos, com DDD.
+  clienteTelefone    String?       @db.VarChar(11)
+  motivo             String?       @db.VarChar(200)
+  /// Valor congelado na criação (zero no bloqueio).
+  valorCentavos      Int
+  serieId            String?       @db.Uuid
+  serie              SerieReserva? @relation(fields: [serieId], references: [id], onDelete: Restrict)
+  criadaPorId        String        @db.Uuid
+  criadaPor          Usuario       @relation("ReservaCriadaPor", fields: [criadaPorId], references: [id], onDelete: Restrict)
+  criadaEm           DateTime      @default(now()) @db.Timestamptz(3)
+  canceladaEm        DateTime?     @db.Timestamptz(3)
+  canceladaPorId     String?       @db.Uuid
+  canceladaPor       Usuario?      @relation("ReservaCanceladaPor", fields: [canceladaPorId], references: [id], onDelete: Restrict)
+  motivoCancelamento String?       @db.VarChar(200)
+
+  pagamentos PagamentoReserva[]
+
+  @@index([data, quadraId])
+  @@index([serieId])
+}
+
+/// Pagamento de uma reserva. Só um não estornado por reserva (índice único parcial).
+model PagamentoReserva {
+  id                  String         @id @default(uuid()) @db.Uuid
+  reservaId           String         @db.Uuid
+  reserva             Reserva        @relation(fields: [reservaId], references: [id], onDelete: Restrict)
+  valorCentavos       Int
+  forma               FormaPagamento
+  data                DateTime       @db.Date
+  recebidoPorId       String         @db.Uuid
+  recebidoPor         Usuario        @relation("PagamentoReservaRecebidoPor", fields: [recebidoPorId], references: [id], onDelete: Restrict)
+  recebidoEm          DateTime       @default(now()) @db.Timestamptz(3)
+  lancamentoId        String         @unique @db.Uuid
+  lancamento          Lancamento     @relation("LancamentoDoPagamentoReserva", fields: [lancamentoId], references: [id], onDelete: Restrict)
+  estornadoEm         DateTime?      @db.Timestamptz(3)
+  estornadoPorId      String?        @db.Uuid
+  estornadoPor        Usuario?       @relation("PagamentoReservaEstornadoPor", fields: [estornadoPorId], references: [id], onDelete: Restrict)
+  motivoEstorno       String?        @db.VarChar(200)
+  estornoLancamentoId String?        @unique @db.Uuid
+  estornoLancamento   Lancamento?    @relation("EstornoDoPagamentoReserva", fields: [estornoLancamentoId], references: [id], onDelete: Restrict)
+
+  @@index([reservaId])
 }
