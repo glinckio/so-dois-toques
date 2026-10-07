@@ -1,6 +1,6 @@
 # Etapa 8: Painel contábil
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
