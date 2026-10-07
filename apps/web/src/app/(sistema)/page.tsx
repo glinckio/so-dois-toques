@@ -187,7 +187,7 @@ function Financeiro({ resposta }: { resposta: RespostaApi<Painel> }) {
   const p = resposta.dados;
   const anterior = p.comparativo.at(-2);
   const mesAnterior = anterior ? mesSemAno(anterior.competencia) : undefined;
-  const ultimos = p.comparativo.slice(-6);
+  const ultimos = p.comparativo.slice(-12);
   const aReceber = p.aReceber.mensalidades.valorCentavos + p.aReceber.reservas.valorCentavos;
   const frases = leituraDoMes({
     comparativo: p.comparativo,
