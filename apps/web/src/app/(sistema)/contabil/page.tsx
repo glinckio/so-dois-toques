@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
-import { AcessoNegado, Aviso, classeBotaoSecundario, classeCampo } from "@/components/ui";
+import { BarrasHorizontais } from "@/components/graficos/barras-horizontais";
+import { BarrasMensais } from "@/components/graficos/barras-mensais";
+import { TabelaMensal } from "@/components/graficos/tabela-mensal";
+import {
+  AcessoNegado,
+  Aviso,
+  classeBotaoSecundario,
+  classeCampo,
+  classeCartao,
+} from "@/components/ui";
 import {
   consultaDoPeriodo,
   descreverPeriodo,
@@ -11,7 +20,7 @@ import {
   TURNOS,
 } from "@/lib/contabil/formatacao";
 import type { Painel, Turno } from "@/lib/contabil/tipos";
-import { competenciaAtual, FORMAS, formatarReais, nomeDoMes } from "@/lib/mensalidades/formatacao";
+import { competenciaAtual, FORMAS, formatarReais } from "@/lib/mensalidades/formatacao";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
 
@@ -104,7 +113,7 @@ function Conteudo({ painel, consulta }: { painel: Painel; consulta: string }) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="opacity-80" data-testid="periodo">
+        <p className="text-suave" data-testid="periodo">
           {descreverPeriodo(p.periodo.de, p.periodo.ate)} · regime de caixa
         </p>
         <a
@@ -134,6 +143,12 @@ function Conteudo({ painel, consulta }: { painel: Painel; consulta: string }) {
 
       <div className="grid gap-6 md:grid-cols-2">
         <Secao titulo="Receitas por origem">
+          <BarrasHorizontais
+            rotulo="Receitas por origem"
+            linhas={Object.entries(ORIGENS_RECEITA).map(
+              ([chave, nome]) => [nome, p.receitas[chave as keyof Painel["receitas"]]] as const,
+            )}
+          />
           <TabelaValores
             rotulo="Receitas por origem"
             linhas={Object.entries(ORIGENS_RECEITA).map(([chave, nome]) => [
@@ -144,6 +159,13 @@ function Conteudo({ painel, consulta }: { painel: Painel; consulta: string }) {
           />
         </Secao>
         <Secao titulo="Despesas por tipo">
+          <BarrasHorizontais
+            rotulo="Despesas por tipo"
+            cor="serie-2"
+            linhas={Object.entries(TIPOS_DESPESA).map(
+              ([chave, nome]) => [nome, p.despesas[chave as keyof Painel["despesas"]]] as const,
+            )}
+          />
           <TabelaValores
             rotulo="Despesas por tipo"
             linhas={Object.entries(TIPOS_DESPESA).map(([chave, nome]) => [
@@ -197,7 +219,7 @@ function Conteudo({ painel, consulta }: { painel: Painel; consulta: string }) {
             </thead>
             <tbody>
               {p.ocupacao.map((q) => (
-                <tr key={q.id} className="border-t border-current/10">
+                <tr key={q.id} className="border-borda border-t">
                   <th scope="row" className="text-left font-medium">
                     {q.nome}
                   </th>
@@ -214,7 +236,7 @@ function Conteudo({ painel, consulta }: { painel: Painel; consulta: string }) {
             </tbody>
           </table>
         </div>
-        <p className="text-sm opacity-80">
+        <p className="text-suave text-sm">
           Horas reservadas sobre horas abertas, sem contar as bloqueadas. As horas abertas seguem os
           preços e horários de hoje.
         </p>
@@ -239,7 +261,7 @@ function Conteudo({ painel, consulta }: { painel: Painel; consulta: string }) {
             </thead>
             <tbody>
               {(Object.keys(FORMAS) as (keyof typeof FORMAS)[]).map((forma) => (
-                <tr key={forma} className="border-t border-current/10">
+                <tr key={forma} className="border-borda border-t">
                   <th scope="row" className="text-left font-normal">
                     {FORMAS[forma]}
                   </th>
@@ -254,40 +276,8 @@ function Conteudo({ painel, consulta }: { painel: Painel; consulta: string }) {
       </Secao>
 
       <Secao titulo="Últimos 12 meses">
-        <div className="overflow-x-auto">
-          <table className={classeTabela} aria-label="Comparativo mensal">
-            <thead>
-              <tr className="text-left">
-                <th scope="col">Mês</th>
-                <th scope="col" className={numero}>
-                  Receitas
-                </th>
-                <th scope="col" className={numero}>
-                  Despesas
-                </th>
-                <th scope="col" className={numero}>
-                  Resultado
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {p.comparativo.map((m) => (
-                <tr key={m.competencia} className="border-t border-current/10">
-                  <th scope="row" className="text-left font-normal">
-                    {nomeDoMes(m.competencia)}
-                  </th>
-                  <td className={numero}>{formatarReais(m.receitas)}</td>
-                  <td className={numero}>{formatarReais(m.despesas)}</td>
-                  <td
-                    className={`${numero} ${m.resultado < 0 ? "text-red-700 dark:text-red-400" : ""}`}
-                  >
-                    {formatarReais(m.resultado)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <BarrasMensais meses={p.comparativo} />
+        <TabelaMensal meses={p.comparativo} />
       </Secao>
     </>
   );
@@ -295,7 +285,7 @@ function Conteudo({ painel, consulta }: { painel: Painel; consulta: string }) {
 
 function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-2" aria-label={titulo}>
+    <section className={`${classeCartao} flex flex-col gap-4`} aria-label={titulo}>
       <h2 className="text-lg font-semibold">{titulo}</h2>
       {children}
     </section>
@@ -313,9 +303,9 @@ function Indicador({
 }) {
   return (
     <div
-      className={`flex flex-col gap-1 rounded-lg border p-3 ${destaque ? "border-amber-600/60" : "border-current/15"}`}
+      className={`flex flex-col gap-1 rounded-2xl border p-4 ${destaque ? "border-roxo/50 bg-roxo-forte/15" : "border-borda bg-cartao"}`}
     >
-      <span className="text-sm opacity-80">{rotulo}</span>
+      <span className="text-suave text-sm">{rotulo}</span>
       <span className="text-xl font-semibold tabular-nums" data-testid={`indicador-${rotulo}`}>
         {valor}
       </span>
@@ -336,7 +326,7 @@ function TabelaValores({
     <table className={classeTabela} aria-label={rotulo}>
       <tbody>
         {linhas.map(([nome, valor]) => (
-          <tr key={nome} className="border-b border-current/10">
+          <tr key={nome} className="border-borda border-b">
             <th scope="row" className="text-left font-normal">
               {nome}
             </th>
@@ -367,7 +357,7 @@ function Ocupacao({
   return (
     <span className="flex flex-col items-end">
       <span className="font-medium">{formatarPorcentagem(dados.ocupacaoPercentual)}</span>
-      <span className="text-xs opacity-80">
+      <span className="text-suave text-xs">
         {dados.reservadas} de {Math.max(dados.abertas - dados.bloqueadas, 0)} h
       </span>
     </span>
