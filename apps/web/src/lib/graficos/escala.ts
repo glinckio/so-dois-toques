@@ -26,3 +26,31 @@ export function mesCurto(competencia: string): string {
     mes - 1
   ]!;
 }
+
+export type Minigrafico = { linha: string; area: string; ultimo: { x: number; y: number } };
+
+/**
+ * Caminho do minigráfico dos cartões de número: a linha dos valores em
+ * `largura` × `altura`, com uma folga em cima e embaixo, e a área sob ela.
+ * Com menos de dois valores não há linha.
+ */
+export function minigrafico(
+  valores: readonly number[],
+  largura: number,
+  altura: number,
+  folga = 4,
+): Minigrafico | null {
+  if (valores.length < 2) return null;
+  const menor = Math.min(...valores);
+  const maior = Math.max(...valores);
+  const faixa = maior - menor || 1;
+  const pontos = valores.map((v, i) => ({
+    x: Math.round((i / (valores.length - 1)) * largura * 10) / 10,
+    y:
+      maior === menor
+        ? altura / 2
+        : Math.round((folga + (1 - (v - menor) / faixa) * (altura - 2 * folga)) * 10) / 10,
+  }));
+  const linha = pontos.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+  return { linha, area: `${linha} L${largura},${altura} L0,${altura} Z`, ultimo: pontos.at(-1)! };
+}

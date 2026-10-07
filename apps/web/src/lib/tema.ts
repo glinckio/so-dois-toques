@@ -4,6 +4,7 @@
  * contraste atende a WCAG AA (VIS-CA-01).
  */
 export const CORES = {
+  noite: "#04020e",
   fundo: "#07041a",
   cartao: "#120c2b",
   elevado: "#1b1440",
@@ -12,12 +13,16 @@ export const CORES = {
   suave: "#c4bddf",
   apagado: "#9d96bb",
   roxo: "#a667fc",
+  "roxo-claro": "#cdb2ff",
   "roxo-forte": "#7c3aed",
   ouro: "#e9ab02",
+  areia: "#e8c99a",
   sucesso: "#34d399",
   perigo: "#f87171",
   "serie-1": "#a667fc",
   "serie-2": "#c98500",
+  "serie-3": "#2b9fd6",
+  "serie-4": "#d9589a",
 } as const;
 
 export type Cor = keyof typeof CORES;
