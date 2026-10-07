@@ -63,6 +63,7 @@ export default async function PaginaAuditoria({ searchParams }: PageProps<"/audi
   const totalPaginas = registros.ok
     ? Math.max(1, Math.ceil(registros.dados.total / TAMANHO_PAGINA))
     : 1;
+  const dias = registros.ok ? agruparPorDia(registros.dados.itens, agora) : [];
   const filtrando = Boolean(filtro.inicio || filtro.fim || filtro.usuarioId || filtro.acao);
   const nomeDoUsuario = usuarios.ok
     ? usuarios.dados.find((u) => u.id === filtro.usuarioId)?.nome
@@ -93,7 +94,7 @@ export default async function PaginaAuditoria({ searchParams }: PageProps<"/audi
         </div>
         <form
           method="get"
-          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.3fr_1.5fr_auto] lg:items-end"
+          className="grid grid-cols-2 gap-3 lg:grid-cols-[1fr_1fr_1.3fr_1.5fr_auto] lg:items-end [&>*]:min-w-0"
         >
           <Campo rotulo="De" id="inicio" type="date" defaultValue={filtro.inicio} />
           <Campo rotulo="Até" id="fim" type="date" defaultValue={filtro.fim} />
@@ -114,7 +115,7 @@ export default async function PaginaAuditoria({ searchParams }: PageProps<"/audi
               </option>
             ))}
           </Escolha>
-          <button type="submit" className={`${classeBotao} sm:col-span-2 lg:col-span-1`}>
+          <button type="submit" className={`${classeBotao} col-span-2 lg:col-span-1`}>
             <Icone nome="busca" width={18} height={18} />
             Filtrar
           </button>
@@ -159,17 +160,19 @@ export default async function PaginaAuditoria({ searchParams }: PageProps<"/audi
         </Vazio>
       ) : (
         <Cartao className="flex flex-col gap-2">
-          <p className="text-suave flex items-center gap-2 text-sm">
-            <Icone nome="lista" width={16} height={16} className="text-roxo-claro" />
-            <span>
-              <strong className="text-texto tabular-nums">{registros.dados.total}</strong>{" "}
-              {registros.dados.total === 1 ? "registro" : "registros"}
-              {totalPaginas > 1 &&
-                ` · mostrando ${(filtro.pagina - 1) * TAMANHO_PAGINA + 1} a ${Math.min(filtro.pagina * TAMANHO_PAGINA, registros.dados.total)}`}
-            </span>
-          </p>
+          {(totalPaginas > 1 || dias.length > 1) && (
+            <p className="text-suave flex items-center gap-2 text-sm">
+              <Icone nome="lista" width={16} height={16} className="text-roxo-claro" />
+              <span>
+                <strong className="text-texto tabular-nums">{registros.dados.total}</strong>{" "}
+                {registros.dados.total === 1 ? "registro" : "registros"}
+                {totalPaginas > 1 &&
+                  ` · mostrando ${(filtro.pagina - 1) * TAMANHO_PAGINA + 1} a ${Math.min(filtro.pagina * TAMANHO_PAGINA, registros.dados.total)}`}
+              </span>
+            </p>
+          )}
           <ul className="flex flex-col gap-4" aria-label="Registros de auditoria">
-            {agruparPorDia(registros.dados.itens, agora).map((grupo) => (
+            {dias.map((grupo) => (
               <li key={grupo.dia} className="flex flex-col gap-1">
                 <h2 className="flex items-center gap-2 py-2 text-sm font-bold">
                   <Icone nome="calendario" width={16} height={16} className="text-ouro" />
