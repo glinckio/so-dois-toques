@@ -71,7 +71,9 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
   - Gráfico de barras arredondadas dos 12 meses, com o mês atual em destaque.
   - Rosca "De onde veio a receita", com o total no centro.
   - Cartão "Leitura do mês", com a bola brilhando e frases calculadas dos números (por exemplo "O resultado subiu 12% em relação a setembro").
-- **Agenda de hoje:** uma linha do tempo que junta aulas e reservas, com a hora atual marcada.
+- **Seu dia em números:** anéis com o que o perfil acompanha no dia (quadras ocupadas, presença nas aulas, caixa).
+- **Quadras hoje:** mapa do dia com uma faixa por quadra, as reservas como blocos, a hora atual marcada e as próximas reservas.
+- **Aulas de hoje:** linha do tempo das turmas do dia, com a aula em andamento marcada.
 - **Caixa:** cartão ao vivo com o saldo e o tempo aberto.
 - **Estoque:** barras de nível dos produtos abaixo do mínimo.
 
@@ -122,9 +124,9 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
 ### Contábil
 
 - **Período:** escolha em pílulas (mês ou período).
-- **Números:** cartões com mini-gráfico, o gráfico de 12 meses e a rosca das receitas.
+- **Números:** cartões com mini-gráfico (receitas, despesas, resultado), a margem num anel, o gráfico de 12 meses, a rosca das receitas por origem e barras das despesas por tipo.
 - **Lanchonete:** anel de margem.
-- **Ocupação:** barras por turno.
+- **Ocupação:** barras de ocupação por quadra e turno.
 - **Conferência com o Caixa:** um selo com check animado.
 
 ### Usuários e Auditoria
@@ -133,7 +135,7 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
   - Cartões com avatar, selo do perfil e situação.
   - Cadastro num cartão próprio.
   - A senha temporária aparece num cartão com botão "Copiar".
-- **Auditoria:** linha do tempo com ícone por tipo de evento e filtros.
+- **Auditoria:** linha do tempo agrupada por dia ("Hoje", "Ontem" ou a data), com ícone e cor por tipo de evento (alertas de segurança em vermelho), os detalhes em campos legíveis e o registro completo à mão. Filtros num cartão, com atalhos de período em pílula.
 
 ## Critérios de aceite
 
@@ -156,6 +158,7 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
 - **VIVO-CA-11**: Nenhuma tela das áreas tem erro de CSP no navegador, no celular e no computador.
 - **VIVO-CA-12**: Anéis, barras e números animados têm texto equivalente para leitor de tela (rótulo ou tabela).
 - **VIVO-CA-13** [manual]: O visual segue as referências enviadas, com um destaque por tela, no celular e no computador.
+- **VIVO-CA-14**: Na auditoria, os registros ficam agrupados por dia ("Hoje", "Ontem" ou a data), cada um com ícone e cor pelo tipo de evento, e os detalhes aparecem como campos legíveis (valores em reais).
 
 ## Decisões registradas
 
