@@ -1,6 +1,6 @@
 # Etapa 7: Horários das quadras
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
@@ -12,17 +12,17 @@ Hoje a agenda das quadras fica no caderno ou no WhatsApp, o que gera reserva dob
 
 ## Quem faz o quê
 
-| Ação                                                 | Administrador | Atendente               | Professor |
-| ---------------------------------------------------- | ------------- | ----------------------- | --------- |
-| Ver a grade das quadras                              | Sim           | Sim                     | Não       |
-| Reservar (avulsa ou fixa semanal)                    | Sim           | Sim                     | Não       |
-| Receber o pagamento da reserva                       | Sim           | Sim                     | Não       |
+| Ação                                                  | Administrador | Atendente               | Professor |
+| ----------------------------------------------------- | ------------- | ----------------------- | --------- |
+| Ver a grade das quadras                               | Sim           | Sim                     | Não       |
+| Reservar (avulsa ou fixa semanal)                     | Sim           | Sim                     | Não       |
+| Receber o pagamento da reserva                        | Sim           | Sim                     | Não       |
 | Cancelar reserva com 24 horas ou mais de antecedência | Sim           | Sim                     | Não       |
-| Cancelar reserva com menos de 24 horas               | Sim           | Não                     | Não       |
-| Encerrar série fixa                                  | Sim           | Sim (ocorrências ≥ 24h) | Não       |
-| Bloquear horário (aulas, manutenção, evento)         | Sim           | Não                     | Não       |
-| Configurar faixas de preço e nome das quadras        | Sim           | Não                     | Não       |
-| Estornar pagamento de reserva                        | Sim           | Não                     | Não       |
+| Cancelar reserva com menos de 24 horas                | Sim           | Não                     | Não       |
+| Encerrar série fixa                                   | Sim           | Sim (ocorrências ≥ 24h) | Não       |
+| Bloquear horário (aulas, manutenção, evento)          | Sim           | Não                     | Não       |
+| Configurar faixas de preço e nome das quadras         | Sim           | Não                     | Não       |
+| Estornar pagamento de reserva                         | Sim           | Não                     | Não       |
 
 A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 
