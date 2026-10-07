@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { itensDoMenu } from "./areas";
+import { itensDoMenu, linkAtivo } from "./areas";
 import { filtroAuditoria, formatarDataHora, linkPagina } from "./auditoria";
 import { COOKIE_SESSAO, opcoesCookieSessao, rotaPublica } from "./cookie";
 import { ipDoCliente } from "./ip";
@@ -106,5 +106,24 @@ describe("filtro da auditoria", () => {
 
   it("mostra data e hora no horário de Brasília", () => {
     expect(formatarDataHora("2026-10-06T03:30:00.000Z")).toBe("06/10/2026, 00:30:00");
+  });
+});
+
+describe("linkAtivo", () => {
+  const menu = ["/", "/aulas", "/horarios", "/caixa"];
+  const abas = ["/aulas", "/aulas/alunos", "/aulas/locais"];
+
+  it("VIS-CA-02: marca a área da página aberta, inclusive em subpáginas", () => {
+    expect(linkAtivo("/", menu)).toBe("/");
+    expect(linkAtivo("/aulas/turmas/123", menu)).toBe("/aulas");
+    expect(linkAtivo("/caixa", menu)).toBe("/caixa");
+    expect(linkAtivo("/trocar-senha", menu)).toBeUndefined();
+    expect(linkAtivo("/caixafalso", menu)).toBeUndefined();
+  });
+
+  it("VIS-CA-02: nas abas, vale o caminho mais longo", () => {
+    expect(linkAtivo("/aulas/alunos/9/editar", abas)).toBe("/aulas/alunos");
+    expect(linkAtivo("/aulas/turmas/nova", abas)).toBe("/aulas");
+    expect(linkAtivo("/aulas", abas)).toBe("/aulas");
   });
 });

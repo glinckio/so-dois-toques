@@ -22,9 +22,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Os ícones do site ficam de fora: o navegador os pede antes de qualquer login.
   matcher: [
     {
-      source: "/((?!api|_next/static|_next/image|favicon.ico).*)",
+      source: "/((?!api|_next/static|_next/image|favicon.ico|icon.png|apple-icon.png).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

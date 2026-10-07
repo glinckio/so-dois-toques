@@ -27,7 +27,7 @@ export function FormTrocaSenha() {
         maxLength={128}
         aria-describedby="regras-senha"
       />
-      <p id="regras-senha" className="-mt-2 text-sm opacity-70">
+      <p id="regras-senha" className="text-apagado -mt-2 text-sm">
         De 10 a 128 caracteres, diferente do e-mail e de senhas muito comuns.
       </p>
       <Campo
