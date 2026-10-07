@@ -22,7 +22,9 @@ describe("avatar", () => {
       expect(cor).toBeLessThan(CORES_DE_AVATAR);
       expect(corDoAvatar(` ${nome.toUpperCase()} `)).toBe(cor);
     }
-    const cores = new Set(["Ana", "Bruno", "Carla", "Davi", "Eva", "Fábio", "Gil"].map(corDoAvatar));
+    const cores = new Set(
+      ["Ana", "Bruno", "Carla", "Davi", "Eva", "Fábio", "Gil"].map(corDoAvatar),
+    );
     expect(cores.size).toBeGreaterThan(2);
   });
 });

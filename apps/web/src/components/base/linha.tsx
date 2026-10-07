@@ -26,7 +26,9 @@ export function Linha({
     <>
       {inicio}
       <span className="min-w-0 flex-1">
-        <span className={`block truncate font-semibold ${riscada ? "text-apagado line-through" : ""}`}>
+        <span
+          className={`block truncate font-semibold ${riscada ? "text-apagado line-through" : ""}`}
+        >
           {titulo}
         </span>
         {detalhe && <span className="text-apagado block truncate text-sm">{detalhe}</span>}

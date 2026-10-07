@@ -52,7 +52,10 @@ export function JanelaDeConfirmacao({
     >
       <div className="flex flex-col gap-4">
         <span className="bg-ouro/15 text-ouro relative grid size-12 place-items-center rounded-2xl">
-          <span className="animate-pulsar text-ouro/50 absolute inset-0 rounded-2xl" aria-hidden="true" />
+          <span
+            className="animate-pulsar text-ouro/50 absolute inset-0 rounded-2xl"
+            aria-hidden="true"
+          />
           <Icone nome="alerta" />
         </span>
         <div className="flex flex-col gap-1.5">

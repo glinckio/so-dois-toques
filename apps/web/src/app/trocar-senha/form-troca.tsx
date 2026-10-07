@@ -16,12 +16,7 @@ export function FormTrocaSenha() {
   return (
     <form action={acao} className="flex flex-col gap-4">
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
-      <CampoSenha
-        rotulo="Senha atual"
-        id="senhaAtual"
-        autoComplete="current-password"
-        required
-      />
+      <CampoSenha rotulo="Senha atual" id="senhaAtual" autoComplete="current-password" required />
       <div className="flex flex-col gap-2">
         <CampoSenha
           rotulo="Nova senha"
@@ -60,7 +55,11 @@ export function FormTrocaSenha() {
           </p>
         )}
       </div>
-      <BotaoEnviar enviando={enviando} textoEnviando="Salvando..." className={`${classeBotao} w-full`}>
+      <BotaoEnviar
+        enviando={enviando}
+        textoEnviando="Salvando..."
+        className={`${classeBotao} w-full`}
+      >
         Salvar nova senha
       </BotaoEnviar>
     </form>

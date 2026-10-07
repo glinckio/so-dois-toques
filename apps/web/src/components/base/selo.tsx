@@ -72,6 +72,9 @@ export function SeloIcone({
 /** Ponto "ao vivo" que pulsa (caixa aberto, estoque baixo). */
 export function PontoVivo({ tom = "sucesso" }: { tom?: Tom }) {
   return (
-    <span aria-hidden="true" className={`animate-pulsar inline-block size-2.5 rounded-full ${PONTOS[tom]}`} />
+    <span
+      aria-hidden="true"
+      className={`animate-pulsar inline-block size-2.5 rounded-full ${PONTOS[tom]}`}
+    />
   );
 }

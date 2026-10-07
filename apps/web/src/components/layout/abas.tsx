@@ -55,7 +55,10 @@ export function Abas({
   );
   const { lista, pilula } = usePilula(ativo);
   return (
-    <nav aria-label={rotulo} className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
+    <nav
+      aria-label={rotulo}
+      className="-mx-4 [scrollbar-width:none] overflow-x-auto px-4 sm:mx-0 sm:px-0"
+    >
       <ul
         ref={lista}
         className="group/abas superficie relative inline-flex gap-1 rounded-full p-1.5"
@@ -63,7 +66,7 @@ export function Abas({
         <span
           ref={pilula}
           aria-hidden="true"
-          className="bg-ouro pointer-events-none absolute top-0 left-0 rounded-full opacity-0 shadow-[0_8px_24px_-10px_rgb(233_171_2_/_0.9)] group-data-pronto/abas:transition-[transform,width,opacity] group-data-pronto/abas:duration-500 group-data-pronto/abas:ease-mola"
+          className="bg-ouro group-data-pronto/abas:ease-mola pointer-events-none absolute top-0 left-0 rounded-full opacity-0 shadow-[0_8px_24px_-10px_rgb(233_171_2_/_0.9)] group-data-pronto/abas:transition-[transform,width,opacity] group-data-pronto/abas:duration-500"
         />
         {links.map((l) => {
           const atual = l.href === ativo;

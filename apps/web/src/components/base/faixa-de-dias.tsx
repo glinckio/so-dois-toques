@@ -31,7 +31,10 @@ export function FaixaDeDias({
   const seta =
     "grid size-10 shrink-0 place-items-center rounded-full border border-borda bg-elevado/60 text-suave transition hover:border-roxo/50 hover:text-texto";
   return (
-    <nav aria-label={rotulo} className="superficie flex flex-col gap-3 rounded-[1.75rem] p-3 sm:p-4">
+    <nav
+      aria-label={rotulo}
+      className="superficie flex flex-col gap-3 rounded-[1.75rem] p-3 sm:p-4"
+    >
       <div className="flex items-center justify-between gap-2 px-1">
         <p className="font-bold first-letter:uppercase">{mes}</p>
         <div className="flex items-center gap-2">
@@ -51,7 +54,11 @@ export function FaixaDeDias({
               <Icone nome="proximo" width={18} height={18} />
             </span>
           ) : (
-            <Link href={href(ateHoje && proxima > hoje ? hoje : proxima)} className={seta} aria-label="Próxima semana">
+            <Link
+              href={href(ateHoje && proxima > hoje ? hoje : proxima)}
+              className={seta}
+              aria-label="Próxima semana"
+            >
               <Icone nome="proximo" width={18} height={18} />
             </Link>
           )}
@@ -64,7 +71,9 @@ export function FaixaDeDias({
           const futuroBloqueado = ateHoje && d.data > hoje;
           const conteudo = (
             <>
-              <span className={`text-[0.7rem] font-semibold uppercase ${escolhido ? "text-white/80" : "text-apagado"}`}>
+              <span
+                className={`text-[0.7rem] font-semibold uppercase ${escolhido ? "text-white/80" : "text-apagado"}`}
+              >
                 {DIAS_CURTOS[d.diaSemana]}
               </span>
               <span className="text-lg leading-none font-extrabold tabular-nums">{d.dia}</span>

@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 /* Classes montadas a partir de números (linhas da grade das quadras, atrasos das cascatas). */
-@source inline("row-start-{1..25} row-span-{1..8} col-start-{1..25} col-span-{1..24} grid-cols-{1..24} atraso-{0..24}");
+@source inline(
+  "row-start-{1..25} row-span-{1..8} col-start-{1..25} col-span-{1..24} grid-cols-{1..24} atraso-{0..24}"
+);
 
 /* Cores do Só Dois Toques, tiradas do logo (VIS-CA-01). Os mesmos valores estão em src/lib/tema.ts. */
 @theme {
@@ -34,9 +36,7 @@
   --animate-surgir: surgir 0.28s var(--ease-mola) both;
   --animate-subir-folha: subir-folha 0.35s var(--ease-mola) both;
   --animate-balancar: balancar 0.45s ease-in-out;
-  --animate-recusar:
-    surgir 0.28s var(--ease-mola) both,
-    balancar 0.45s ease-in-out 0.1s;
+  --animate-recusar: surgir 0.28s var(--ease-mola) both, balancar 0.45s ease-in-out 0.1s;
   --animate-pulsar: pulsar 2.2s ease-out infinite;
   --animate-flutuar: flutuar 7s ease-in-out infinite;
   --animate-girar: girar 0.9s linear infinite;

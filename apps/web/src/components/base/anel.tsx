@@ -39,7 +39,14 @@ export function Anel({
       data-fracao={pct}
     >
       <svg viewBox="0 0 100 100" width={tamanho} height={tamanho} aria-hidden="true">
-        <circle cx="50" cy="50" r={raio} fill="none" strokeWidth={espessura} className="stroke-elevado" />
+        <circle
+          cx="50"
+          cy="50"
+          r={raio}
+          fill="none"
+          strokeWidth={espessura}
+          className="stroke-elevado"
+        />
         {pct > 0 && (
           <circle
             cx="50"
@@ -56,7 +63,10 @@ export function Anel({
         )}
       </svg>
       {children && (
-        <span className="absolute inset-0 grid place-items-center text-center leading-tight" aria-hidden="true">
+        <span
+          className="absolute inset-0 grid place-items-center text-center leading-tight"
+          aria-hidden="true"
+        >
           {children}
         </span>
       )}

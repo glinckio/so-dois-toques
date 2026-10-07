@@ -34,7 +34,7 @@ export function OpcoesEmBlocos({
             <label
               key={o.valor}
               htmlFor={id}
-              className="group border-borda bg-elevado/40 has-checked:border-roxo has-checked:bg-roxo-forte/20 has-checked:shadow-[0_10px_30px_-16px_rgb(166_103_252_/_0.9)] has-focus-visible:outline-ouro relative flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-3 transition duration-200 hover:border-[#3a2f6b] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 active:scale-[0.98]"
+              className="group border-borda bg-elevado/40 has-checked:border-roxo has-checked:bg-roxo-forte/20 has-focus-visible:outline-ouro relative flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-3 transition duration-200 hover:border-[#3a2f6b] active:scale-[0.98] has-checked:shadow-[0_10px_30px_-16px_rgb(166_103_252_/_0.9)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2"
             >
               <input
                 id={id}

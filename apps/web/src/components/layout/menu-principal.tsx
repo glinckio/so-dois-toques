@@ -34,7 +34,7 @@ export function MenuLateral({ itens }: { itens: Item[] }) {
         <span
           ref={pilula}
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 left-0 rounded-2xl bg-linear-to-r from-[#7c3aed] to-[#9b5cf6] opacity-0 shadow-[0_12px_30px_-12px_rgb(124_58_237_/_0.95)] group-data-pronto/menu:transition-[transform,width,height,opacity] group-data-pronto/menu:duration-500 group-data-pronto/menu:ease-mola"
+          className="group-data-pronto/menu:ease-mola pointer-events-none absolute top-0 left-0 rounded-2xl bg-linear-to-r from-[#7c3aed] to-[#9b5cf6] opacity-0 shadow-[0_12px_30px_-12px_rgb(124_58_237_/_0.95)] group-data-pronto/menu:transition-[transform,width,height,opacity] group-data-pronto/menu:duration-500"
         />
         {grupos.map((grupo) => (
           <li key={grupo.rotulo} className="flex flex-col gap-1">

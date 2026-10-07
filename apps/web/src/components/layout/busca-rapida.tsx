@@ -159,7 +159,12 @@ export function BuscaRapida({
           Esc
         </kbd>
       </div>
-      <ul id={idLista} role="listbox" aria-label="Resultados" className="max-h-[50vh] overflow-y-auto p-2">
+      <ul
+        id={idLista}
+        role="listbox"
+        aria-label="Resultados"
+        className="max-h-[50vh] overflow-y-auto p-2"
+      >
         {opcoes.length === 0 && (
           <li className="text-apagado px-4 py-8 text-center text-sm">Nada encontrado.</li>
         )}

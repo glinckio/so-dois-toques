@@ -37,7 +37,13 @@ export function Avatar({
 }
 
 /** Avatares empilhados, com "+N" quando passa do máximo. */
-export function GrupoAvatares({ nomes, maximo = 4 }: { nomes: readonly string[]; maximo?: number }) {
+export function GrupoAvatares({
+  nomes,
+  maximo = 4,
+}: {
+  nomes: readonly string[];
+  maximo?: number;
+}) {
   const visiveis = nomes.slice(0, maximo);
   const resto = nomes.length - visiveis.length;
   return (

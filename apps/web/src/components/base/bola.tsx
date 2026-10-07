@@ -25,7 +25,15 @@ export function Bola({
     >
       <circle cx="32" cy="32" r="29" fill="#8b5cf6" />
       <circle cx="40" cy="40" r="24" fill="#4c1d95" opacity="0.55" />
-      <circle cx="32" cy="32" r="29" fill="none" stroke="#cdb2ff" strokeOpacity="0.5" strokeWidth="1.5" />
+      <circle
+        cx="32"
+        cy="32"
+        r="29"
+        fill="none"
+        stroke="#cdb2ff"
+        strokeOpacity="0.5"
+        strokeWidth="1.5"
+      />
       <circle cx="22" cy="19" r="11" fill="#ffffff" opacity="0.16" />
       <g fill="none" stroke="#f4f2ff" strokeWidth="2.4" strokeLinecap="round" strokeOpacity="0.92">
         <path d="M32 3.5C23 13 21.5 25 32 32" />
@@ -45,7 +53,13 @@ export function Carregando({ tamanho = 18 }: { tamanho?: number }) {
 }
 
 /** A bola grande, flutuando sobre um brilho roxo (login, leitura do mês, vazio). */
-export function BolaBrilhante({ tamanho = 96, className = "" }: { tamanho?: number; className?: string }) {
+export function BolaBrilhante({
+  tamanho = 96,
+  className = "",
+}: {
+  tamanho?: number;
+  className?: string;
+}) {
   return (
     <span
       className={`inline-grid place-items-center ${/\b(absolute|fixed)\b/.test(className) ? "" : "relative"} ${className}`}
@@ -53,7 +67,10 @@ export function BolaBrilhante({ tamanho = 96, className = "" }: { tamanho?: numb
     >
       <span className="bg-roxo/40 absolute inset-[-30%] rounded-full blur-2xl" />
       <span className="bg-ouro/20 absolute inset-[10%] translate-x-1/4 translate-y-1/4 rounded-full blur-xl" />
-      <Bola tamanho={tamanho} className="animate-flutuar relative drop-shadow-[0_12px_24px_rgb(124_58_237_/_0.6)]" />
+      <Bola
+        tamanho={tamanho}
+        className="animate-flutuar relative drop-shadow-[0_12px_24px_rgb(124_58_237_/_0.6)]"
+      />
     </span>
   );
 }

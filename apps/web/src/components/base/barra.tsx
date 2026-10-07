@@ -41,7 +41,14 @@ export function BarraNivel({
         />
       )}
       {marca !== undefined && marca > 0 && marca < 1 && (
-        <rect x={`${marca * 100}%`} y="-40%" width="2" height="180%" rx="1" className="fill-texto/70" />
+        <rect
+          x={`${marca * 100}%`}
+          y="-40%"
+          width="2"
+          height="180%"
+          rx="1"
+          className="fill-texto/70"
+        />
       )}
     </svg>
   );

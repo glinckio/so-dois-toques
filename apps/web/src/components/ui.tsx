@@ -96,7 +96,9 @@ export function Aviso({
       role={tipo === "erro" ? "alert" : "status"}
       className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm ${estilos[tipo]}`}
     >
-      <span className={`mt-px grid size-6 shrink-0 place-items-center rounded-full ${icones[tipo]}`}>
+      <span
+        className={`mt-px grid size-6 shrink-0 place-items-center rounded-full ${icones[tipo]}`}
+      >
         {tipo === "sucesso" ? (
           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
             <path
@@ -112,7 +114,12 @@ export function Aviso({
             />
           </svg>
         ) : (
-          <Icone nome={tipo === "erro" ? "alerta" : "raio"} width={14} height={14} strokeWidth={2.4} />
+          <Icone
+            nome={tipo === "erro" ? "alerta" : "raio"}
+            width={14}
+            height={14}
+            strokeWidth={2.4}
+          />
         )}
       </span>
       <span className="min-w-0 self-center">{children}</span>
