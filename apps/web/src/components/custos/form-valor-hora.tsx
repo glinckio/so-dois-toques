@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { definirValorHora } from "@/app/acoes/custos";
 import { ESTADO_INICIAL } from "@/app/acoes/estado";
+import { BotaoEnviar } from "@/components/base/enviar";
 import { Aviso, Campo, classeBotaoSecundario } from "@/components/ui";
 import { valorParaCampo } from "@/lib/mensalidades/formatacao";
 
@@ -25,19 +26,20 @@ export function FormValorHora({
     >
       <input type="hidden" name="localId" value={localId} />
       <div className="flex flex-wrap items-end gap-2">
-        <div className="w-40">
+        <div className="w-44">
           <Campo
             rotulo="Valor da hora (R$)"
             id={`valorHora-${localId}`}
             name="valorHora"
+            prefixo="R$"
             inputMode="decimal"
             placeholder="80,00"
             defaultValue={estado.valores?.valorHora ?? salvo}
           />
         </div>
-        <button type="submit" className={classeBotaoSecundario} disabled={enviando}>
+        <BotaoEnviar enviando={enviando} className={classeBotaoSecundario}>
           Salvar valor
-        </button>
+        </BotaoEnviar>
       </div>
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {estado.sucesso && <Aviso tipo="sucesso">{estado.sucesso}</Aviso>}

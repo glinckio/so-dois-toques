@@ -3,7 +3,9 @@
 import { useActionState } from "react";
 import { ESTADO_INICIAL } from "@/app/acoes/estado";
 import { definirAssinatura } from "@/app/acoes/mensalidades";
-import { Aviso, Campo, classeBotao, classeCampo } from "@/components/ui";
+import { BotaoEnviar } from "@/components/base/enviar";
+import { Icone } from "@/components/icones";
+import { Aviso, Campo, classeCampo, classeRotulo } from "@/components/ui";
 import { formatarReais, nomeDoMes, valorParaCampo } from "@/lib/mensalidades/formatacao";
 import type { Assinatura, Plano } from "@/lib/mensalidades/tipos";
 
@@ -30,15 +32,23 @@ export function FormAssinatura({
       // valor inicial de um <select> depois de montado.
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
-      className="border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4"
+      className="border-borda bg-elevado/30 flex flex-col gap-4 rounded-[1.5rem] border p-4 sm:p-5"
     >
-      <h3 className="font-medium">{vigente ? "Trocar o plano" : "Definir o plano"}</h3>
+      <h3 className="flex items-center gap-2 font-bold">
+        <Icone
+          nome={vigente ? "repetir" : "mais"}
+          width={17}
+          height={17}
+          className="text-roxo-claro"
+        />
+        {vigente ? "Trocar o plano" : "Definir o plano"}
+      </h3>
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {estado.sucesso && <Aviso tipo="sucesso">{estado.sucesso}</Aviso>}
       <input type="hidden" name="alunoId" value={alunoId} />
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="planoId" className="text-sm font-medium">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="planoId" className={classeRotulo}>
             Plano
           </label>
           <select
@@ -58,8 +68,8 @@ export function FormAssinatura({
             ))}
           </select>
         </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="inicio" className="text-sm font-medium">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="inicio" className={classeRotulo}>
             A partir de
           </label>
           <select
@@ -78,6 +88,7 @@ export function FormAssinatura({
         <Campo
           rotulo="Dia de vencimento (1 a 28)"
           id="diaVencimento"
+          icone="calendario"
           type="number"
           min={1}
           max={28}
@@ -87,6 +98,7 @@ export function FormAssinatura({
         <Campo
           rotulo="Desconto mensal (R$, opcional)"
           id="desconto"
+          prefixo="R$"
           inputMode="decimal"
           placeholder="0,00"
           defaultValue={valor(
@@ -94,16 +106,23 @@ export function FormAssinatura({
             vigente && vigente.descontoCentavos > 0 ? valorParaCampo(vigente.descontoCentavos) : "",
           )}
         />
-        <Campo
-          rotulo="Motivo do desconto"
-          id="motivoDesconto"
-          maxLength={200}
-          defaultValue={valor("motivoDesconto", vigente?.motivoDesconto ?? "")}
-        />
+        <div className="sm:col-span-2">
+          <Campo
+            rotulo="Motivo do desconto"
+            id="motivoDesconto"
+            maxLength={200}
+            defaultValue={valor("motivoDesconto", vigente?.motivoDesconto ?? "")}
+          />
+        </div>
       </div>
-      <button type="submit" className={`${classeBotao} self-start`} disabled={enviando}>
-        Salvar plano do aluno
-      </button>
+      <div>
+        <BotaoEnviar
+          enviando={enviando}
+          icone={<Icone nome="check" width={18} height={18} strokeWidth={2.4} />}
+        >
+          Salvar plano do aluno
+        </BotaoEnviar>
+      </div>
     </form>
   );
 }

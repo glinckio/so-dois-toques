@@ -3,38 +3,64 @@
 import { useActionState } from "react";
 import { criarLocal } from "@/app/acoes/aulas";
 import { ESTADO_INICIAL } from "@/app/acoes/estado";
-import { Aviso, Campo, classeBotao, classeCampo } from "@/components/ui";
-import { TIPOS_LOCAL } from "@/lib/aulas/formatacao";
+import { CabecalhoCartao } from "@/components/base/cartao";
+import { BotaoEnviar } from "@/components/base/enviar";
+import { OpcoesEmBlocos } from "@/components/base/opcoes";
+import { Icone } from "@/components/icones";
+import { Aviso, Campo } from "@/components/ui";
 
+/** Cadastro de local: nome, tipo em blocos (parceira ou própria) e endereço. */
 export function FormLocal() {
   const [estado, acao, enviando] = useActionState(criarLocal, ESTADO_INICIAL);
   return (
     <form
       action={acao}
-      className="border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4"
+      aria-labelledby="titulo-cadastrar-local"
+      className="superficie flex flex-col gap-5 rounded-[1.75rem] p-5 sm:p-6"
     >
-      <h2 className="text-lg font-medium">Cadastrar local</h2>
+      <CabecalhoCartao
+        id="titulo-cadastrar-local"
+        icone="mais"
+        titulo="Cadastrar local"
+        descricao="Quadras onde as turmas treinam."
+      />
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {estado.sucesso && <Aviso tipo="sucesso">{estado.sucesso}</Aviso>}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Campo rotulo="Nome do local" id="nome" required minLength={2} maxLength={80} />
-        <div className="flex flex-col gap-1">
-          <label htmlFor="tipo" className="text-sm font-medium">
-            Tipo
-          </label>
-          <select id="tipo" name="tipo" className={classeCampo} defaultValue="PARCEIRA">
-            {Object.entries(TIPOS_LOCAL).map(([valor, rotulo]) => (
-              <option key={valor} value={valor}>
-                {rotulo}
-              </option>
-            ))}
-          </select>
-        </div>
-        <Campo rotulo="Endereço (opcional)" id="endereco" maxLength={200} />
+      <Campo
+        rotulo="Nome do local"
+        id="nome"
+        icone="local"
+        required
+        minLength={2}
+        maxLength={80}
+        placeholder="Arena Sol Nascente"
+      />
+      <OpcoesEmBlocos
+        nome="tipo"
+        legenda="Tipo"
+        padrao="PARCEIRA"
+        colunas="grid-cols-1 sm:grid-cols-2"
+        opcoes={[
+          {
+            valor: "PARCEIRA",
+            rotulo: "Quadra parceira",
+            icone: "local",
+            detalhe: "Paga por hora de aula",
+          },
+          {
+            valor: "PROPRIA",
+            rotulo: "Quadra própria",
+            icone: "inicio",
+            detalhe: "Do Só Dois Toques",
+          },
+        ]}
+      />
+      <Campo rotulo="Endereço (opcional)" id="endereco" maxLength={200} />
+      <div>
+        <BotaoEnviar enviando={enviando} icone={<Icone nome="mais" width={18} height={18} />}>
+          Cadastrar
+        </BotaoEnviar>
       </div>
-      <button type="submit" className={`${classeBotao} self-start`} disabled={enviando}>
-        Cadastrar
-      </button>
     </form>
   );
 }
