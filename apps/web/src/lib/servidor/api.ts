@@ -22,11 +22,11 @@ const MENSAGEM_FALHA = "Não foi possível falar com o servidor. Tente de novo e
 
 /** Chamada do servidor do Next.js para a API (o navegador nunca fala com a API). */
 export async function chamarApi<T>(rota: string, opcoes: Opcoes = {}): Promise<RespostaApi<T>> {
-  const { API_URL, INTERNAL_API_KEY } = envServidor();
+  const { API_URL, INTERNAL_API_KEY, IP_SALTOS_CONFIAVEIS } = envServidor();
   const comSessao = opcoes.sessao ?? true;
   const cabecalhosEntrada = await headers();
   const cabecalhos: Record<string, string> = { "X-Chave-Interna": INTERNAL_API_KEY };
-  const ip = ipDoCliente(cabecalhosEntrada);
+  const ip = ipDoCliente(cabecalhosEntrada, IP_SALTOS_CONFIAVEIS);
   if (ip) cabecalhos["X-IP-Cliente"] = ip;
   const agente = cabecalhosEntrada.get("user-agent");
   if (agente) cabecalhos["X-Agente-Cliente"] = agente.slice(0, 300);

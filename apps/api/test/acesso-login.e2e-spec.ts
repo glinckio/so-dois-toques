@@ -221,4 +221,43 @@ describe("Etapa 1: login e sessões", () => {
     expect(auditoria).not.toContain(SENHA_BOA);
     expect(auditoria).not.toContain("senha-errada-secreta");
   });
+
+  it("ACESSO-CA-03: tentativas simultâneas não passam de 5 antes do bloqueio", async () => {
+    const usuario = await criarUsuario(app, "ATENDENTE");
+    const api = cliente(app);
+    const respostas = await Promise.all(
+      Array.from({ length: 12 }, () =>
+        api.post("/auth/login", { email: usuario.email, senha: "senha-errada-em-rajada" }),
+      ),
+    );
+    const status = respostas.map((r) => r.status);
+    expect(status.filter((s) => s === 401)).toHaveLength(5);
+    expect(status.filter((s) => s === 429)).toHaveLength(7);
+    await api.post("/auth/login", { email: usuario.email, senha: SENHA_BOA }).expect(429);
+  });
+
+  it("ACESSO-CA-04: sem IP informado, as tentativas contam juntas e também bloqueiam", async () => {
+    const usuario = await criarUsuario(app, "ATENDENTE");
+    const chave = process.env["INTERNAL_API_KEY"]!;
+    const semIp = (email: string, senha: string) =>
+      request(app.getHttpServer())
+        .post("/auth/login")
+        .set("X-Chave-Interna", chave)
+        .send({ email, senha });
+    try {
+      for (let i = 0; i < 20; i++) {
+        await semIp(novoEmail("sem-ip"), "senha-errada-1").expect(401);
+      }
+      await semIp(usuario.email, SENHA_BOA).expect(429);
+      await cliente(app)
+        .post("/auth/login", { email: usuario.email, senha: SENHA_BOA })
+        .expect(200);
+    } finally {
+      // Libera o balde sem IP para os outros testes.
+      await prisma.tentativaLogin.updateMany({
+        where: { ip: null },
+        data: { criadaEm: new Date(Date.now() - 16 * 60 * 1000) },
+      });
+    }
+  });
 });

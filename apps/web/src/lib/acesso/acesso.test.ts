@@ -41,10 +41,19 @@ describe("cookie de sessão", () => {
 describe("IP do cliente", () => {
   const cabecalhos = (valores: Record<string, string>) => new Headers(valores);
 
-  it("usa o primeiro IP do X-Forwarded-For e cai para o X-Real-IP", () => {
-    expect(ipDoCliente(cabecalhos({ "x-forwarded-for": "203.0.113.7, 10.0.0.1" }))).toBe(
-      "203.0.113.7",
-    );
+  it("ACESSO-CA-04: usa o IP que o proxy da hospedagem viu, não o que o visitante inventou", () => {
+    // O visitante manda "1.2.3.4"; o proxy acrescenta o IP real no fim.
+    const forjado = cabecalhos({ "x-forwarded-for": "1.2.3.4, 203.0.113.7" });
+    expect(ipDoCliente(forjado)).toBe("203.0.113.7");
+    // Dois proxies confiáveis (CDN + balanceador): o penúltimo é o visitante.
+    expect(
+      ipDoCliente(cabecalhos({ "x-forwarded-for": "1.2.3.4, 203.0.113.7, 10.0.0.1" }), 2),
+    ).toBe("203.0.113.7");
+    // Mais saltos que IPs na lista: fica com o primeiro.
+    expect(ipDoCliente(cabecalhos({ "x-forwarded-for": "203.0.113.7" }), 3)).toBe("203.0.113.7");
+  });
+
+  it("cai para o X-Real-IP sem X-Forwarded-For", () => {
     expect(ipDoCliente(cabecalhos({ "x-real-ip": "2001:db8::1" }))).toBe("2001:db8::1");
     expect(ipDoCliente(cabecalhos({}))).toBeUndefined();
   });

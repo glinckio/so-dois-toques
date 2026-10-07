@@ -47,74 +47,87 @@ export class AuthService {
     const agora = new Date();
     const inicioJanela = new Date(agora.getTime() - BLOQUEIO_JANELA_MS);
 
-    if (ip) {
-      const falhasIp = await this.prisma.tentativaLogin.count({
-        where: { ip, sucesso: false, criadaEm: { gte: inicioJanela } },
-      });
-      if (ipBloqueado(falhasIp)) {
-        await this.auditoria.registrar({
-          acao: "LOGIN_BLOQUEADO",
-          ip,
-          detalhes: { email, motivo: "ip" },
-        });
-        throw new HttpException(MENSAGEM_MUITAS_TENTATIVAS, HttpStatus.TOO_MANY_REQUESTS);
-      }
-    }
-
-    const ultimasTentativas = () =>
-      this.prisma.tentativaLogin.findMany({
-        where: { email },
-        orderBy: { id: "desc" },
-        take: BLOQUEIO_TENTATIVAS_EMAIL,
-        select: { sucesso: true, criadaEm: true },
-      });
-
-    if (bloqueioEmailAte(await ultimasTentativas(), agora)) {
+    // Sem IP (acesso direto, sem proxy), as tentativas contam juntas num só balde,
+    // para o limite por IP nunca ser pulado (revisão de segurança da Etapa 9).
+    const falhasIp = await this.prisma.tentativaLogin.count({
+      where: { ip, sucesso: false, criadaEm: { gte: inicioJanela } },
+    });
+    if (ipBloqueado(falhasIp)) {
       await this.auditoria.registrar({
         acao: "LOGIN_BLOQUEADO",
         ip,
-        detalhes: { email, motivo: "email" },
+        detalhes: { email, motivo: "ip" },
       });
       throw new HttpException(MENSAGEM_MUITAS_TENTATIVAS, HttpStatus.TOO_MANY_REQUESTS);
     }
 
-    const usuario = await this.prisma.usuario.findUnique({ where: { email } });
-    const senhaConfere = await verificarSenha(dados.senha, usuario?.senhaHash ?? null);
-
-    if (!usuario || !usuario.ativo || !senhaConfere) {
-      await this.prisma.tentativaLogin.create({ data: { email, ip, sucesso: false } });
-      await this.auditoria.registrar({
-        acao: "LOGIN_RECUSADO",
-        atorId: usuario?.id,
-        ip,
-        detalhes: { email },
-      });
-      if (bloqueioEmailAte(await ultimasTentativas(), new Date())) {
-        await this.auditoria.registrar({
-          acao: "LOGIN_BLOQUEADO",
-          atorId: usuario?.id,
-          ip,
-          detalhes: { email, motivo: "email" },
-        });
-      }
-      throw new UnauthorizedException(MENSAGEM_LOGIN_INVALIDO);
-    }
-
+    // Uma tentativa por e-mail de cada vez: a trava do banco impede que várias
+    // tentativas simultâneas leiam a contagem antes de qualquer uma ser gravada.
     const token = gerarTokenSessao();
     const expiraEm = new Date(agora.getTime() + SESSAO_DURACAO_MAXIMA_MS);
-    await this.prisma.$transaction(async (tx) => {
-      await tx.tentativaLogin.create({ data: { email, ip, sucesso: true } });
-      await tx.sessao.create({
-        data: {
-          tokenHash: hashToken(token),
-          usuarioId: usuario.id,
-          expiraEm,
-          ip,
-          agente: contexto.agente?.slice(0, 300) ?? null,
-        },
-      });
-      await this.auditoria.registrar({ acao: "LOGIN_SUCESSO", atorId: usuario.id, ip }, tx);
-    });
+    const resultado = await this.prisma.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`login:${email}`}))`;
+        const ultimasTentativas = () =>
+          tx.tentativaLogin.findMany({
+            where: { email },
+            orderBy: { id: "desc" },
+            take: BLOQUEIO_TENTATIVAS_EMAIL,
+            select: { sucesso: true, criadaEm: true },
+          });
+
+        if (bloqueioEmailAte(await ultimasTentativas(), agora)) {
+          await this.auditoria.registrar(
+            { acao: "LOGIN_BLOQUEADO", ip, detalhes: { email, motivo: "email" } },
+            tx,
+          );
+          return { tipo: "bloqueado" as const };
+        }
+
+        const usuario = await tx.usuario.findUnique({ where: { email } });
+        const senhaConfere = await verificarSenha(dados.senha, usuario?.senhaHash ?? null);
+
+        if (!usuario || !usuario.ativo || !senhaConfere) {
+          await tx.tentativaLogin.create({ data: { email, ip, sucesso: false } });
+          await this.auditoria.registrar(
+            { acao: "LOGIN_RECUSADO", atorId: usuario?.id, ip, detalhes: { email } },
+            tx,
+          );
+          if (bloqueioEmailAte(await ultimasTentativas(), new Date())) {
+            await this.auditoria.registrar(
+              {
+                acao: "LOGIN_BLOQUEADO",
+                atorId: usuario?.id,
+                ip,
+                detalhes: { email, motivo: "email" },
+              },
+              tx,
+            );
+          }
+          return { tipo: "recusado" as const };
+        }
+
+        await tx.tentativaLogin.create({ data: { email, ip, sucesso: true } });
+        await tx.sessao.create({
+          data: {
+            tokenHash: hashToken(token),
+            usuarioId: usuario.id,
+            expiraEm,
+            ip,
+            agente: contexto.agente?.slice(0, 300) ?? null,
+          },
+        });
+        await this.auditoria.registrar({ acao: "LOGIN_SUCESSO", atorId: usuario.id, ip }, tx);
+        return { tipo: "ok" as const, usuario };
+      },
+      { timeout: 15_000 },
+    );
+
+    if (resultado.tipo === "bloqueado") {
+      throw new HttpException(MENSAGEM_MUITAS_TENTATIVAS, HttpStatus.TOO_MANY_REQUESTS);
+    }
+    if (resultado.tipo === "recusado") throw new UnauthorizedException(MENSAGEM_LOGIN_INVALIDO);
+    const { usuario } = resultado;
 
     return {
       token,
