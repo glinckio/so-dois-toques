@@ -16,12 +16,15 @@ import type { FormaPagamento } from "../mensalidades/regras.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import type { faixasSchema, reservaSchema } from "./esquemas.js";
 import {
+  CLIENTE_ANONIMIZADO,
   MENSAGENS_DATA,
+  MESES_DE_GUARDA_DO_CLIENTE,
   OCORRENCIAS_MAXIMAS,
   conflitosDeFaixa,
   datasDaSerie,
   descreverHorario,
   inicioDaHora,
+  limiteDeRetencao,
   problemaDeCancelamento,
   problemaDeData,
   valorDaReserva,
@@ -680,6 +683,56 @@ export class HorariosService {
         tx,
       );
       return { id, estornoLancamentoId };
+    });
+  }
+
+  /** Filtro das reservas e séries com cliente identificável antes do limite. */
+  private comClienteAntesDe(limite: string) {
+    const antes = paraDataDoBanco(limite);
+    const identificavel = {
+      OR: [
+        { clienteNome: { not: null, notIn: [CLIENTE_ANONIMIZADO] } },
+        { clienteTelefone: { not: null } },
+      ],
+    };
+    return {
+      reservas: { data: { lt: antes }, ...identificavel },
+      series: { dataFim: { lt: antes }, ...identificavel },
+    };
+  }
+
+  /** Prévia: quantas reservas e séries passaram do prazo de guarda (LANC-CA-07). */
+  async clientesAnonimizaveis() {
+    const limite = limiteDeRetencao(hojeEmSaoPaulo(new Date()));
+    const filtro = this.comClienteAntesDe(limite);
+    const [reservas, series] = await Promise.all([
+      this.prisma.reserva.count({ where: filtro.reservas }),
+      this.prisma.serieReserva.count({ where: filtro.series }),
+    ]);
+    return { antesDe: limite, meses: MESES_DE_GUARDA_DO_CLIENTE, reservas, series };
+  }
+
+  /**
+   * Apaga nome e telefone dos clientes de reservas e séries anteriores ao prazo de
+   * guarda. Valores, pagamentos e lançamentos não mudam; não há como desfazer.
+   */
+  async anonimizarClientes(ator: Ator) {
+    const limite = limiteDeRetencao(hojeEmSaoPaulo(new Date()));
+    const filtro = this.comClienteAntesDe(limite);
+    return this.prisma.$transaction(async (tx) => {
+      const dados = { clienteNome: CLIENTE_ANONIMIZADO, clienteTelefone: null };
+      const reservas = await tx.reserva.updateMany({ where: filtro.reservas, data: dados });
+      const series = await tx.serieReserva.updateMany({ where: filtro.series, data: dados });
+      await this.auditoria.registrar(
+        {
+          acao: "CLIENTES_ANONIMIZADOS",
+          atorId: ator.id,
+          ip: ator.ip,
+          detalhes: { antesDe: limite, reservas: reservas.count, series: series.count },
+        },
+        tx,
+      );
+      return { antesDe: limite, reservas: reservas.count, series: series.count };
     });
   }
 }

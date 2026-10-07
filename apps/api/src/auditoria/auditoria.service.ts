@@ -60,6 +60,7 @@ export const ACOES = [
   "RESERVA_PAGA",
   "PAGAMENTO_RESERVA_ESTORNADO",
   "CONTABIL_EXPORTADO",
+  "CLIENTES_ANONIMIZADOS",
 ] as const;
 export type Acao = (typeof ACOES)[number];
 

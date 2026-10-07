@@ -4,6 +4,7 @@ import {
   datasDaSerie,
   descreverHorario,
   inicioDaHora,
+  limiteDeRetencao,
   problemaDeCancelamento,
   problemaDeData,
   somarDias,
@@ -99,5 +100,18 @@ describe("HOR-CA-08: antecedência do cancelamento", () => {
     expect(problemaDeCancelamento(inicio, horas(1), true)).toBeNull();
     expect(problemaDeCancelamento(inicio, horas(0), true)).toBe("JA_COMECOU");
     expect(problemaDeCancelamento(inicio, horas(-1), false)).toBe("JA_COMECOU");
+  });
+});
+
+describe("limiteDeRetencao", () => {
+  it("LANC-CA-07: o prazo de guarda do cliente é de 12 meses", () => {
+    expect(limiteDeRetencao("2026-10-07")).toBe("2025-10-07");
+    expect(limiteDeRetencao("2026-01-15")).toBe("2025-01-15");
+    expect(limiteDeRetencao("2026-03-10", 3)).toBe("2025-12-10");
+  });
+
+  it("LANC-CA-07: dia inexistente no mês de destino vira o último dia do mês", () => {
+    expect(limiteDeRetencao("2028-02-29")).toBe("2027-02-28");
+    expect(limiteDeRetencao("2026-07-31", 3)).toBe("2026-04-30");
   });
 });

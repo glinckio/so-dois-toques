@@ -183,3 +183,17 @@ export async function renomearQuadra(
   refresh();
   return { sucesso: "Nome da quadra salvo." };
 }
+
+/** LANC-CA-07: anonimiza os clientes das reservas além do prazo de guarda. */
+export async function anonimizarClientes(): Promise<EstadoFormulario> {
+  const resposta = await chamarApi<{ reservas: number; series: number }>(
+    "/horarios/clientes/anonimizar",
+    { metodo: "POST", corpo: { confirmar: true } },
+  );
+  if (!resposta.ok) return erroDe(resposta);
+  refresh();
+  const { reservas, series } = resposta.dados;
+  return {
+    sucesso: `Clientes anonimizados: ${reservas} ${reservas === 1 ? "reserva" : "reservas"} e ${series} ${series === 1 ? "reserva fixa" : "reservas fixas"}.`,
+  };
+}

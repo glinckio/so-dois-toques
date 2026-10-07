@@ -74,3 +74,7 @@ export const pagamentoReservaSchema = z.object({
 });
 
 export const consultaGradeSchema = z.object({ data: data.optional() });
+
+export const anonimizarClientesSchema = z.object({
+  confirmar: z.literal(true, "Confirme a anonimização."),
+});
