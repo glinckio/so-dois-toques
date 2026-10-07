@@ -26,6 +26,7 @@ docker compose up -d                    # PostgreSQL local
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 pnpm db:deploy && pnpm admin:criar      # banco e primeiro administrador
+pnpm db:backup                          # cópia do banco (restauração: pnpm db:restaurar <arquivo> <banco>)
 pnpm dev                                # web em :3000, API em :3001
 
 pnpm lint && pnpm format:check && pnpm typecheck
