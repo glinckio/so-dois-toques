@@ -4,6 +4,7 @@ import { createInterface } from "node:readline/promises";
 import { Writable } from "node:stream";
 import { z } from "zod";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
+import { ehExecucaoDireta } from "../comum/execucao.js";
 import { parseEnv } from "../env.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { criarAdminInicial, SenhaInvalidaError } from "../usuarios/usuarios.service.js";
@@ -77,6 +78,6 @@ export async function executar(ambiente: NodeJS.ProcessEnv): Promise<number> {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (ehExecucaoDireta(import.meta.url, process.argv[1])) {
   process.exitCode = await executar(process.env);
 }
