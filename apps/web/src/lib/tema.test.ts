@@ -49,4 +49,9 @@ describe("tema", () => {
       expect(css).toContain(`--color-${nome}: ${valor};`);
     }
   });
+
+  it("a lista liberada de classes fica numa linha só (quebrada, o Tailwind descarta o resto do CSS)", () => {
+    const css = readFileSync(join(__dirname, "../app/globals.css"), "utf8");
+    expect(css).toMatch(/^\/\* prettier-ignore \*\/\n@source inline\("[^"\n]+"\);$/m);
+  });
 });
