@@ -42,8 +42,14 @@ export function Saudacao({
   const convite = CONVITE[perfil];
   return (
     <header className="superficie-destaque relative grid gap-8 overflow-hidden rounded-[2rem] p-6 sm:p-8 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] xl:items-center">
-      <span className="bg-roxo/25 absolute -top-28 -right-20 size-80 rounded-full blur-3xl" aria-hidden="true" />
-      <span className="bg-ouro/10 absolute -bottom-32 left-1/3 size-72 rounded-full blur-3xl" aria-hidden="true" />
+      <span
+        className="bg-roxo/25 absolute -top-28 -right-20 size-80 rounded-full blur-3xl"
+        aria-hidden="true"
+      />
+      <span
+        className="bg-ouro/10 absolute -bottom-32 left-1/3 size-72 rounded-full blur-3xl"
+        aria-hidden="true"
+      />
       <BolaBrilhante tamanho={64} className="absolute top-6 right-6 max-sm:hidden xl:hidden" />
 
       <div className="relative flex min-w-0 flex-col gap-5">
@@ -60,9 +66,7 @@ export function Saudacao({
               {convite.depois}
             </span>
           </h1>
-          <p className="text-apagado text-sm">
-            {rotuloPerfil} · Só Dois Toques, São Leopoldo
-          </p>
+          <p className="text-apagado text-sm">{rotuloPerfil} · Só Dois Toques, São Leopoldo</p>
         </div>
         {acoes.length > 0 && (
           <nav aria-label="Ações rápidas">
@@ -77,7 +81,7 @@ export function Saudacao({
                     <span
                       className={`grid size-14 place-items-center rounded-[1.1rem] ${
                         i === 0
-                          ? "bg-linear-to-b from-[#f5bd1f] to-ouro text-fundo shadow-[0_12px_30px_-14px_rgb(233_171_2_/_0.9)]"
+                          ? "to-ouro text-fundo bg-linear-to-b from-[#f5bd1f] shadow-[0_12px_30px_-14px_rgb(233_171_2_/_0.9)]"
                           : "vidro text-roxo-claro"
                       }`}
                     >
@@ -95,12 +99,12 @@ export function Saudacao({
                     href={acao.href}
                     className={`group inline-flex min-h-12 items-center gap-2.5 rounded-full py-1.5 pr-4 pl-1.5 text-sm font-semibold transition duration-200 active:scale-[0.97] ${
                       i === 0
-                        ? "bg-linear-to-b from-[#f5bd1f] to-ouro text-fundo shadow-[0_12px_30px_-14px_rgb(233_171_2_/_0.9)] hover:brightness-105"
+                        ? "to-ouro text-fundo bg-linear-to-b from-[#f5bd1f] shadow-[0_12px_30px_-14px_rgb(233_171_2_/_0.9)] hover:brightness-105"
                         : "vidro text-texto hover:border-roxo/50"
                     }`}
                   >
                     <span
-                      className={`grid size-9 place-items-center rounded-full transition-transform duration-300 ease-mola group-hover:rotate-[-8deg] ${
+                      className={`ease-mola grid size-9 place-items-center rounded-full transition-transform duration-300 group-hover:rotate-[-8deg] ${
                         i === 0 ? "bg-fundo/15" : "bg-roxo/20 text-roxo-claro"
                       }`}
                     >

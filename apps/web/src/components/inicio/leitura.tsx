@@ -10,7 +10,10 @@ export function LeituraDoMes({ frases }: { frases: readonly string[] }) {
       aria-labelledby="titulo-leitura"
       className="superficie relative flex flex-col gap-5 overflow-hidden rounded-[1.75rem] p-5 sm:flex-row sm:items-center sm:p-6"
     >
-      <span className="bg-roxo/15 absolute -top-20 -left-16 size-56 rounded-full blur-3xl" aria-hidden="true" />
+      <span
+        className="bg-roxo/15 absolute -top-20 -left-16 size-56 rounded-full blur-3xl"
+        aria-hidden="true"
+      />
       <div className="relative flex shrink-0 items-center gap-4 sm:w-56">
         <BolaBrilhante tamanho={52} />
         <div>

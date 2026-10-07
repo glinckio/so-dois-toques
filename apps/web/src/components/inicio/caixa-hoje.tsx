@@ -16,7 +16,11 @@ const HORA = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
 });
 
-const FORMAS_DO_CARTAO: { rotulo: string; icone: NomeIcone; chaves: (keyof CaixaDoDia["resumo"]["porForma"])[] }[] = [
+const FORMAS_DO_CARTAO: {
+  rotulo: string;
+  icone: NomeIcone;
+  chaves: (keyof CaixaDoDia["resumo"]["porForma"])[];
+}[] = [
   { rotulo: "Pix", icone: "pix", chaves: ["PIX"] },
   { rotulo: "Dinheiro", icone: "dinheiro", chaves: ["DINHEIRO"] },
   { rotulo: "Cartão", icone: "cartao", chaves: ["CARTAO_DEBITO", "CARTAO_CREDITO"] },
@@ -39,7 +43,8 @@ export function CaixaDeHoje({
 }) {
   const resumo = caixa.ok ? caixa.dados.resumo : null;
   const movimento = resumo ? resumo.entradas + resumo.saidas : 0;
-  const parteEntradas = movimento > 0 && resumo ? Math.round((resumo.entradas / movimento) * 100) : 0;
+  const parteEntradas =
+    movimento > 0 && resumo ? Math.round((resumo.entradas / movimento) * 100) : 0;
   return (
     <Cartao aria-labelledby="titulo-caixa-hoje" className="flex flex-col gap-5">
       <CabecalhoCartao

@@ -30,7 +30,11 @@ export function FormLogin() {
         required
         maxLength={1024}
       />
-      <BotaoEnviar enviando={enviando} textoEnviando="Entrando..." className={`${classeBotao} mt-2 w-full`}>
+      <BotaoEnviar
+        enviando={enviando}
+        textoEnviando="Entrando..."
+        className={`${classeBotao} mt-2 w-full`}
+      >
         Entrar
         <SetaDoBotao />
       </BotaoEnviar>

@@ -134,7 +134,10 @@ function MapaDasQuadras({ mapa, minutoAtual }: { mapa: MapaDoDia; minutoAtual: n
           q.blocos.length === 0
             ? "livre o dia todo"
             : q.blocos
-                .map((b) => `${faixaDeHoras(b.inicio, b.fim)} ${b.tipo === "RESERVA" ? b.rotulo : "bloqueado"}`)
+                .map(
+                  (b) =>
+                    `${faixaDeHoras(b.inicio, b.fim)} ${b.tipo === "RESERVA" ? b.rotulo : "bloqueado"}`,
+                )
                 .join(", ")
         }`,
     )
@@ -152,18 +155,18 @@ function MapaDasQuadras({ mapa, minutoAtual }: { mapa: MapaDoDia; minutoAtual: n
               <span
                 key={b.id}
                 title={`${faixaDeHoras(b.inicio, b.fim)} · ${b.rotulo}`}
-                className={`col-start-${b.inicio - mapa.inicio + 1} col-span-${b.fim - b.inicio} row-start-1 m-0.5 origin-left animate-crescer-x rounded-full atraso-${Math.min(24, linha * 3 + i + 2)} ${
+                className={`col-start-${b.inicio - mapa.inicio + 1} col-span-${b.fim - b.inicio} animate-crescer-x row-start-1 m-0.5 origin-left rounded-full atraso-${Math.min(24, linha * 3 + i + 2)} ${
                   b.tipo === "BLOQUEIO"
-                    ? "bg-[repeating-linear-gradient(135deg,rgb(157_150_187_/_0.35)_0_3px,transparent_3px_7px)] ring-1 ring-apagado/30"
+                    ? "ring-apagado/30 bg-[repeating-linear-gradient(135deg,rgb(157_150_187_/_0.35)_0_3px,transparent_3px_7px)] ring-1"
                     : b.pago
                       ? "bg-linear-to-r from-[#8448f0] to-[#6d28d9] shadow-[0_0_14px_-4px_rgb(124_58_237_/_0.9)]"
-                      : "bg-ouro/30 ring-1 ring-ouro/60"
+                      : "bg-ouro/30 ring-ouro/60 ring-1"
                 }`}
               />
             ))}
             {agoraNoMapa && (
               <span
-                className={`col-start-${Math.floor(horaAgora) - mapa.inicio + 1} row-start-1 relative`}
+                className={`col-start-${Math.floor(horaAgora) - mapa.inicio + 1} relative row-start-1`}
                 aria-hidden="true"
               >
                 <span

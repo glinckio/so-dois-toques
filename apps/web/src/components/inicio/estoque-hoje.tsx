@@ -14,7 +14,9 @@ export function EstoqueDeHoje({ resposta }: { resposta: RespostaApi<Produto[]> }
   const ativos = resposta.ok ? resposta.dados.filter((p) => p.ativo) : [];
   const baixos = ativos
     .filter((p) => p.abaixoDoMinimo)
-    .sort((a, b) => a.saldo / Math.max(1, a.estoqueMinimo) - b.saldo / Math.max(1, b.estoqueMinimo));
+    .sort(
+      (a, b) => a.saldo / Math.max(1, a.estoqueMinimo) - b.saldo / Math.max(1, b.estoqueMinimo),
+    );
   return (
     <Cartao aria-labelledby="titulo-estoque-hoje" className="flex flex-col gap-5">
       <CabecalhoCartao
@@ -51,7 +53,10 @@ export function EstoqueDeHoje({ resposta }: { resposta: RespostaApi<Produto[]> }
         </div>
       ) : (
         <>
-          <p className="flex items-center gap-2.5 text-sm font-semibold" data-testid="estoque-baixo">
+          <p
+            className="flex items-center gap-2.5 text-sm font-semibold"
+            data-testid="estoque-baixo"
+          >
             <PontoVivo tom="perigo" />
             {baixos.length} {baixos.length === 1 ? "produto abaixo" : "produtos abaixo"} do mínimo
           </p>
@@ -65,7 +70,9 @@ export function EstoqueDeHoje({ resposta }: { resposta: RespostaApi<Produto[]> }
                   <span className="flex items-baseline justify-between gap-3 text-sm">
                     <span className="truncate font-semibold">{p.nome}</span>
                     <span className="text-apagado shrink-0 text-xs tabular-nums">
-                      <strong className={p.saldo === 0 ? "text-perigo" : "text-ouro"}>{p.saldo}</strong>{" "}
+                      <strong className={p.saldo === 0 ? "text-perigo" : "text-ouro"}>
+                        {p.saldo}
+                      </strong>{" "}
                       de {p.estoqueMinimo} no mínimo
                     </span>
                   </span>

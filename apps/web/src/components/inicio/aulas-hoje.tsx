@@ -70,7 +70,9 @@ export function AulasDeHoje({
                           : "border-roxo bg-cartao border-2"
                     }`}
                   >
-                    {momento === "passou" && <Icone nome="check" width={10} height={10} strokeWidth={3} />}
+                    {momento === "passou" && (
+                      <Icone nome="check" width={10} height={10} strokeWidth={3} />
+                    )}
                   </span>
                 </span>
                 <Link

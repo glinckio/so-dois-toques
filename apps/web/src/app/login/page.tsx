@@ -21,7 +21,13 @@ function Logo({ className }: { className: string }) {
     <>
       {/* next/image põe estilo embutido (color: transparent), barrado pela CSP. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={logo.src} alt="Logo do Só Dois Toques" width={256} height={256} className={className} />
+      <img
+        src={logo.src}
+        alt="Logo do Só Dois Toques"
+        width={256}
+        height={256}
+        className={className}
+      />
     </>
   );
 }
@@ -36,8 +42,14 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
         aria-label="Só Dois Toques"
         className="superficie-destaque animate-entrar relative hidden min-h-[36rem] flex-col justify-between overflow-hidden rounded-[2.25rem] p-10 lg:flex"
       >
-        <span className="bg-roxo/30 absolute -top-24 -right-24 size-80 rounded-full blur-3xl" aria-hidden="true" />
-        <span className="bg-ouro/15 absolute -bottom-28 -left-20 size-72 rounded-full blur-3xl" aria-hidden="true" />
+        <span
+          className="bg-roxo/30 absolute -top-24 -right-24 size-80 rounded-full blur-3xl"
+          aria-hidden="true"
+        />
+        <span
+          className="bg-ouro/15 absolute -bottom-28 -left-20 size-72 rounded-full blur-3xl"
+          aria-hidden="true"
+        />
         <div className="relative flex items-center gap-4">
           <span className="relative">
             <span className="bg-roxo/50 absolute inset-0 rounded-full blur-xl" aria-hidden="true" />
@@ -77,7 +89,10 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
       <div className="animate-entrar mx-auto flex w-full max-w-md flex-col gap-6 [animation-delay:80ms]">
         <header className="flex flex-col items-center gap-4 text-center lg:items-start lg:text-left">
           <span className="relative lg:hidden">
-            <span className="bg-roxo/45 absolute inset-2 rounded-full blur-2xl" aria-hidden="true" />
+            <span
+              className="bg-roxo/45 absolute inset-2 rounded-full blur-2xl"
+              aria-hidden="true"
+            />
             <Logo className="ring-roxo/40 relative size-28 rounded-full ring-2" />
           </span>
           <div>
