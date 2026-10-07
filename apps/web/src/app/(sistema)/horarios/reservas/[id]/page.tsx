@@ -41,7 +41,7 @@ export default async function PaginaReserva({
         <h1 className="text-2xl font-semibold">
           {bloqueio ? "Horário bloqueado" : `Reserva de ${r.clienteNome}`}
         </h1>
-        <p className="opacity-80">
+        <p className="text-suave">
           {r.quadra} · {DIAS_SEMANA[new Date(`${r.data}T12:00:00Z`).getUTCDay()]},{" "}
           {formatarData(r.data)} · {faixaDeHoras(r.horaInicio, r.horaFim)}
         </p>
@@ -101,13 +101,13 @@ export default async function PaginaReserva({
           <h2 className="text-lg font-semibold">Pagamentos</h2>
           <ul className="flex flex-col gap-2" aria-label="Pagamentos">
             {r.pagamentos.map((p) => (
-              <li key={p.id} className="rounded-lg border border-current/15 p-3">
-                <p className={p.estornadoEm ? "line-through opacity-70" : ""}>
+              <li key={p.id} className="border-borda bg-cartao rounded-2xl border p-3">
+                <p className={p.estornadoEm ? "text-apagado line-through" : ""}>
                   {formatarReais(p.valorCentavos)} · {FORMAS[p.forma]} · {p.recebidoPor} ·{" "}
                   {formatarDataHora(p.recebidoEm)}
                 </p>
                 {p.estornadoEm && (
-                  <p className="text-sm opacity-80">
+                  <p className="text-suave text-sm">
                     Estornado em {formatarDataHora(p.estornadoEm)} por {p.estornadoPor}. Motivo:{" "}
                     {p.motivoEstorno}
                   </p>
@@ -160,7 +160,7 @@ export default async function PaginaReserva({
         !r.canceladaEm &&
         falta > 0 &&
         !bloqueio && (
-          <p className="text-sm opacity-80">
+          <p className="text-suave text-sm">
             Faltam menos de 24 horas: só o administrador pode cancelar.
           </p>
         )

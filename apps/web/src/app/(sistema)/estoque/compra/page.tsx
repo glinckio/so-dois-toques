@@ -16,13 +16,13 @@ export default async function PaginaCompra() {
   return (
     <>
       <h1 className="text-2xl font-semibold">Registrar compra</h1>
-      <p className="opacity-80">
+      <p className="text-suave">
         O valor pago sai do Caixa na hora e o custo médio do produto é recalculado.
       </p>
       {!produtos.ok ? (
         <Aviso tipo="erro">{produtos.mensagem}</Aviso>
       ) : ativos.length === 0 ? (
-        <p className="opacity-80">Nenhum produto ativo. Cadastre em Produtos.</p>
+        <p className="text-suave">Nenhum produto ativo. Cadastre em Produtos.</p>
       ) : (
         <FormCompra
           produtos={ativos.map((p) => ({ id: p.id, nome: p.nome, saldo: p.saldo }))}

@@ -1,5 +1,9 @@
 # Changelog
 
+## Próxima versão
+
+- Etapa 10: identidade visual. Tema escuro com as cores do logo (roxo e dourado), menu lateral com ícones, logo no login, no menu e no ícone do site, Início com painel por perfil (resumo do mês, gráfico de 12 meses, caixa, quadras, aulas e estoque) e gráficos no Contábil.
+
 ## 1.0.0 (lançamento)
 
 Todas as telas do sistema: Aulas, Horários, Estoque, Caixa e Contábil.

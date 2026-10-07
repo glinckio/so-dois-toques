@@ -29,7 +29,7 @@ export default async function PaginaVendas({ searchParams }: PageProps<"/estoque
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Vendas do dia</h1>
-          <p className="opacity-80">{data === hoje ? "Hoje" : formatarData(data)}</p>
+          <p className="text-suave">{data === hoje ? "Hoje" : formatarData(data)}</p>
         </div>
         <form className="flex items-end gap-2" action="/estoque/vendas">
           <div className="flex flex-col gap-1">
@@ -58,19 +58,19 @@ export default async function PaginaVendas({ searchParams }: PageProps<"/estoque
             Total vendido: {formatarReais(resposta.dados.totalCentavos)}
           </p>
           {resposta.dados.vendas.length === 0 ? (
-            <p className="opacity-80">Nenhuma venda neste dia.</p>
+            <p className="text-suave">Nenhuma venda neste dia.</p>
           ) : (
             <ul className="flex flex-col gap-3" aria-label="Vendas">
               {resposta.dados.vendas.map((v) => (
                 <li
                   key={v.id}
-                  className="flex flex-col gap-2 rounded-lg border border-current/15 p-3"
+                  className="border-borda bg-cartao flex flex-col gap-2 rounded-2xl border p-3"
                 >
-                  <p className={v.estornadaEm ? "line-through opacity-70" : ""}>
+                  <p className={v.estornadaEm ? "text-apagado line-through" : ""}>
                     <span className="font-medium">{formatarReais(v.totalCentavos)}</span> ·{" "}
                     {FORMAS[v.forma]} · {v.feitaPor} · {formatarDataHora(v.feitaEm)}
                   </p>
-                  <p className="text-sm opacity-80">
+                  <p className="text-suave text-sm">
                     {v.itens.map((i) => `${i.quantidade} × ${i.produto}`).join(", ")}
                   </p>
                   {v.estornadaEm ? (

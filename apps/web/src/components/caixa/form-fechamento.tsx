@@ -20,10 +20,10 @@ export function FormFechamento({
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
       aria-label="Fechar caixa"
-      className="flex flex-col gap-3 rounded-lg border border-current/15 p-4"
+      className="border-borda bg-cartao flex flex-col gap-3 rounded-2xl border p-4"
     >
       <h3 className="font-medium">Fechar caixa</h3>
-      <p className="text-sm opacity-80">
+      <p className="text-suave text-sm">
         Conte o dinheiro da gaveta. O esperado agora é {formatarReais(esperadoCentavos)}.
       </p>
       <input type="hidden" name="turnoId" value={turnoId} />

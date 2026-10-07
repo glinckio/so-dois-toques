@@ -52,7 +52,7 @@ export default async function PaginaTurno({
       <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]" aria-label="Resumo do turno">
         {linhas.map(([rotulo, valor]) => (
           <div key={rotulo} className="contents">
-            <dt className="text-sm opacity-80">{rotulo}</dt>
+            <dt className="text-suave text-sm">{rotulo}</dt>
             <dd className="font-medium">{valor}</dd>
           </div>
         ))}
@@ -72,7 +72,7 @@ export default async function PaginaTurno({
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Por categoria</h2>
         {t.porCategoria.length === 0 ? (
-          <p className="opacity-80">Nenhum lançamento no turno.</p>
+          <p className="text-suave">Nenhum lançamento no turno.</p>
         ) : (
           <Tabela
             colunas={["Categoria", "Entradas", "Saídas"]}
@@ -87,19 +87,16 @@ export default async function PaginaTurno({
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Lançamentos</h2>
         {t.lancamentos.length === 0 ? (
-          <p className="opacity-80">Nenhum lançamento no turno.</p>
+          <p className="text-suave">Nenhum lançamento no turno.</p>
         ) : (
-          <ul
-            className="flex flex-col divide-y divide-current/10"
-            aria-label="Lançamentos do turno"
-          >
+          <ul className="divide-borda flex flex-col divide-y" aria-label="Lançamentos do turno">
             {t.lancamentos.map((l) => (
               <li key={l.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span>
-                  <span className={l.estornado ? "line-through opacity-70" : ""}>
+                  <span className={l.estornado ? "text-apagado line-through" : ""}>
                     {l.descricao}
                   </span>
-                  <span className="block text-sm opacity-80">
+                  <span className="text-suave block text-sm">
                     {nomeDaCategoria(l.categoria)} · {FORMAS[l.forma]} · {l.criadoPor} ·{" "}
                     {formatarDataHora(l.criadoEm)}
                   </span>
@@ -121,7 +118,7 @@ function Tabela({ colunas, linhas }: { colunas: string[]; linhas: string[][] }) 
   return (
     <table className="w-full text-left text-sm">
       <thead>
-        <tr className="border-b border-current/15">
+        <tr className="border-borda border-b">
           {colunas.map((c, i) => (
             <th key={c} className={`py-2 font-medium ${i > 0 ? "text-right" : ""}`}>
               {c}
@@ -131,7 +128,7 @@ function Tabela({ colunas, linhas }: { colunas: string[]; linhas: string[][] }) 
       </thead>
       <tbody>
         {linhas.map((linha) => (
-          <tr key={linha[0]} className="border-b border-current/10">
+          <tr key={linha[0]} className="border-borda border-b">
             {linha.map((celula, i) => (
               <td key={i} className={`py-2 ${i > 0 ? "text-right" : ""}`}>
                 {celula}

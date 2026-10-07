@@ -30,7 +30,7 @@ export function FormAssinatura({
       // valor inicial de um <select> depois de montado.
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
-      className="flex flex-col gap-4 rounded-lg border border-current/15 p-4"
+      className="border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4"
     >
       <h3 className="font-medium">{vigente ? "Trocar o plano" : "Definir o plano"}</h3>
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}

@@ -35,13 +35,13 @@ export default async function PaginaUsuarios() {
           {resposta.dados.map((u) => (
             <li
               key={u.id}
-              className={`flex flex-col gap-3 rounded-lg border border-current/15 p-4 ${u.ativo ? "" : "opacity-60"}`}
+              className={`border-borda bg-cartao flex flex-col gap-3 rounded-2xl border p-4 ${u.ativo ? "" : "opacity-60"}`}
             >
               <div>
                 <p className="font-medium">
-                  {u.nome} {u.id === eu.id && <span className="text-sm opacity-70">(você)</span>}
+                  {u.nome} {u.id === eu.id && <span className="text-apagado text-sm">(você)</span>}
                 </p>
-                <p className="text-sm opacity-80">
+                <p className="text-suave text-sm">
                   {u.email} · {PERFIS[u.perfil]} ·{" "}
                   {u.ativo ? (u.trocarSenha ? "aguardando primeira senha" : "ativo") : "desativado"}
                 </p>

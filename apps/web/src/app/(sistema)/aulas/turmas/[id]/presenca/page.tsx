@@ -42,7 +42,7 @@ export default async function PaginaPresenca({
           Voltar para a turma
         </Link>
         <h1 className="text-2xl font-semibold">Presença: {turma.dados.nome}</h1>
-        <p className="opacity-80">
+        <p className="text-suave">
           {DIAS_SEMANA[diaDaSemana(data)]}, {formatarData(data)}
         </p>
       </header>
@@ -64,7 +64,7 @@ export default async function PaginaPresenca({
       {!lista.ok ? (
         <Aviso tipo="erro">{lista.mensagem}</Aviso>
       ) : lista.dados.alunos.length === 0 ? (
-        <p className="opacity-80">Nenhum aluno matriculado nessa data.</p>
+        <p className="text-suave">Nenhum aluno matriculado nessa data.</p>
       ) : (
         <ListaPresenca key={data} lista={lista.dados} />
       )}

@@ -30,7 +30,7 @@ export default async function PaginaResultado({ searchParams }: PageProps<"/aula
     <>
       <header className="flex flex-col gap-3">
         <h1 className="text-2xl font-semibold">Resultado de {nomeDoMes(competencia)}</h1>
-        <p className="opacity-80">
+        <p className="text-suave">
           Pelo que entrou e saiu do Caixa no mês. A mensalidade de quem está em mais de uma turma é
           dividida em partes iguais; o custo de cada quadra, pelas horas de cada turma.
         </p>
@@ -96,12 +96,12 @@ function Tabela({ titulo, linhas }: { titulo: string; linhas: Linha[] }) {
     <section className="flex flex-col gap-2">
       <h2 className="text-lg font-medium">{titulo}</h2>
       {linhas.length === 0 ? (
-        <p className="opacity-80">Nada neste mês.</p>
+        <p className="text-suave">Nada neste mês.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[32rem] text-left text-sm" aria-label={titulo}>
             <thead>
-              <tr className="border-b border-current/15">
+              <tr className="border-borda border-b">
                 <th className="py-2 font-medium">Nome</th>
                 <th className="py-2 text-right font-medium">Receita</th>
                 <th className="py-2 text-right font-medium">Custo</th>
@@ -110,15 +110,15 @@ function Tabela({ titulo, linhas }: { titulo: string; linhas: Linha[] }) {
             </thead>
             <tbody>
               {linhas.map((l) => (
-                <tr key={l.chave} className="border-b border-current/10">
+                <tr key={l.chave} className="border-borda border-b">
                   <td className="py-2">
                     <span className="font-medium">{l.nome}</span>
-                    <span className="block text-xs opacity-80">{l.detalhe}</span>
+                    <span className="text-suave block text-xs">{l.detalhe}</span>
                   </td>
                   <td className="py-2 text-right">{formatarReais(l.valores.receitaCentavos)}</td>
                   <td className="py-2 text-right">{formatarReais(l.valores.custoCentavos)}</td>
                   <td
-                    className={`py-2 text-right font-medium ${l.valores.resultadoCentavos < 0 ? "text-red-700 dark:text-red-400" : ""}`}
+                    className={`py-2 text-right font-medium ${l.valores.resultadoCentavos < 0 ? "text-perigo dark:text-perigo" : ""}`}
                   >
                     {formatarReais(l.valores.resultadoCentavos)}
                   </td>
@@ -135,9 +135,9 @@ function Tabela({ titulo, linhas }: { titulo: string; linhas: Linha[] }) {
 function Total({ rotulo, valor, destaque }: { rotulo: string; valor: number; destaque?: boolean }) {
   return (
     <div
-      className={`rounded-lg border p-4 ${destaque ? "border-amber-600/50 bg-amber-600/10" : "border-current/15"}`}
+      className={`rounded-2xl border p-4 ${destaque ? "border-roxo/50 bg-roxo-forte/15" : "border-borda bg-cartao"}`}
     >
-      <p className="text-sm opacity-80">{rotulo}</p>
+      <p className="text-suave text-sm">{rotulo}</p>
       <p className="text-xl font-semibold">{formatarReais(valor)}</p>
     </div>
   );

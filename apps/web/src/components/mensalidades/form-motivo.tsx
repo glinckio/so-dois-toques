@@ -27,10 +27,10 @@ export function FormMotivo({
     <form
       action={executar}
       aria-label={titulo}
-      className="flex flex-col gap-3 rounded-lg border border-red-600/40 p-4"
+      className="border-perigo/40 bg-perigo/5 flex flex-col gap-3 rounded-2xl border p-4"
     >
       <h3 className="font-medium">{titulo}</h3>
-      <p className="text-sm opacity-80">{explicacao}</p>
+      <p className="text-suave text-sm">{explicacao}</p>
       {Object.entries(campos).map(([nome, valor]) => (
         <input key={nome} type="hidden" name={nome} value={valor} />
       ))}

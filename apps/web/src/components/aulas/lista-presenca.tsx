@@ -25,7 +25,7 @@ export function ListaPresenca({ lista }: { lista: Lista }) {
       <input type="hidden" name="data" value={lista.data} />
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {estado.sucesso && <Aviso tipo="sucesso">{estado.sucesso}</Aviso>}
-      <p className="text-sm opacity-80">
+      <p className="text-suave text-sm">
         {presentes} de {lista.alunos.length} presentes
       </p>
       <ul className="flex flex-col gap-2" aria-label="Lista de presença">
@@ -34,7 +34,7 @@ export function ListaPresenca({ lista }: { lista: Lista }) {
           return (
             <li
               key={a.alunoId}
-              className="flex flex-col gap-2 rounded-lg border border-current/15 p-3"
+              className="border-borda bg-cartao flex flex-col gap-2 rounded-2xl border p-3"
             >
               <span className="font-medium">{a.nome}</span>
               {marca && <input type="hidden" name={`presenca:${a.alunoId}`} value={marca} />}
@@ -53,9 +53,9 @@ export function ListaPresenca({ lista }: { lista: Lista }) {
                     className={`min-h-12 rounded-md border font-medium ${
                       marca === valor
                         ? valor === "presente"
-                          ? "border-green-700 bg-green-700 text-white"
-                          : "border-red-700 bg-red-700 text-white"
-                        : "border-current/25"
+                          ? "border-sucesso bg-sucesso text-fundo"
+                          : "border-perigo bg-perigo text-fundo"
+                        : "border-borda"
                     }`}
                   >
                     {valor === "presente" ? "Presente" : "Ausente"}
@@ -63,7 +63,7 @@ export function ListaPresenca({ lista }: { lista: Lista }) {
                 ))}
               </div>
               {a.registradaPor && (
-                <span className="text-xs opacity-70">Marcado por {a.registradaPor}</span>
+                <span className="text-apagado text-xs">Marcado por {a.registradaPor}</span>
               )}
             </li>
           );

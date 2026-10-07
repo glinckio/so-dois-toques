@@ -21,7 +21,7 @@ export function FormCompra({
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
       aria-label="Registrar compra"
-      className="flex flex-col gap-4 rounded-lg border border-current/15 p-4"
+      className="border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4"
     >
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {estado.sucesso && <Aviso tipo="sucesso">{estado.sucesso}</Aviso>}

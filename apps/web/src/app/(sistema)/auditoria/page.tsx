@@ -52,7 +52,7 @@ export default async function PaginaAuditoria({ searchParams }: PageProps<"/audi
       <h1 className="text-2xl font-semibold">Auditoria</h1>
       <form
         method="get"
-        className="grid gap-3 rounded-lg border border-current/15 p-4 sm:grid-cols-5 sm:items-end"
+        className="border-borda bg-cartao grid gap-3 rounded-2xl border p-4 sm:grid-cols-5 sm:items-end"
       >
         <div className="flex flex-col gap-1">
           <label htmlFor="inicio" className="text-sm font-medium">
@@ -118,26 +118,23 @@ export default async function PaginaAuditoria({ searchParams }: PageProps<"/audi
       {!registros.ok ? (
         <Aviso tipo="erro">{registros.mensagem}</Aviso>
       ) : registros.dados.itens.length === 0 ? (
-        <p className="opacity-80">Nenhum registro encontrado.</p>
+        <p className="text-suave">Nenhum registro encontrado.</p>
       ) : (
         <>
-          <p className="text-sm opacity-80">{registros.dados.total} registro(s)</p>
-          <ul
-            className="flex flex-col divide-y divide-current/10"
-            aria-label="Registros de auditoria"
-          >
+          <p className="text-suave text-sm">{registros.dados.total} registro(s)</p>
+          <ul className="divide-borda flex flex-col divide-y" aria-label="Registros de auditoria">
             {registros.dados.itens.map((r) => (
               <li key={r.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:gap-4">
-                <span className="text-sm whitespace-nowrap tabular-nums opacity-80">
+                <span className="text-suave text-sm whitespace-nowrap tabular-nums">
                   {formatarDataHora(r.criadaEm)}
                 </span>
                 <span className="flex-1">
                   <strong className="font-medium">{ROTULOS_ACOES[r.acao] ?? r.acao}</strong>
                   {" · "}
                   {r.atorNome ?? "Sistema ou visitante"}
-                  {r.ip && <span className="opacity-70"> · IP {r.ip}</span>}
+                  {r.ip && <span className="text-apagado"> · IP {r.ip}</span>}
                   {r.detalhes !== null && (
-                    <span className="block text-xs break-all opacity-70">
+                    <span className="text-apagado block text-xs break-all">
                       {JSON.stringify(r.detalhes)}
                     </span>
                   )}

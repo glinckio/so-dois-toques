@@ -16,7 +16,7 @@ export function FormProduto({ produto }: { produto?: Produto }) {
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
       aria-label={produto ? `Editar ${produto.nome}` : "Cadastrar produto"}
-      className="flex flex-col gap-4 rounded-lg border border-current/15 p-4"
+      className="border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4"
     >
       <h2 className="text-lg font-medium">{produto ? "Editar produto" : "Cadastrar produto"}</h2>
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}

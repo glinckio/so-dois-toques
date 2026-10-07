@@ -33,7 +33,7 @@ export default async function PaginaProduto({ params }: PageProps<"/estoque/prod
     <>
       <header>
         <h1 className="text-2xl font-semibold">{produto.nome}</h1>
-        <p className="opacity-80" data-testid="resumo-produto">
+        <p className="text-suave" data-testid="resumo-produto">
           {produto.saldo} em estoque · {formatarReais(produto.precoCentavos)} · custo médio{" "}
           {formatarReais(produto.custoMedioCentavos)} · mínimo {produto.estoqueMinimo}
           {produto.abaixoDoMinimo && " · abaixo do mínimo"}
@@ -45,12 +45,12 @@ export default async function PaginaProduto({ params }: PageProps<"/estoque/prod
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Movimentações</h2>
         {movimentos.length === 0 ? (
-          <p className="opacity-80">Nenhuma movimentação ainda.</p>
+          <p className="text-suave">Nenhuma movimentação ainda.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[28rem] text-left text-sm" aria-label="Movimentações">
               <thead>
-                <tr className="border-b border-current/15">
+                <tr className="border-borda border-b">
                   <th className="py-2 font-medium">Quando</th>
                   <th className="py-2 font-medium">Tipo</th>
                   <th className="py-2 text-right font-medium">Quantidade</th>
@@ -59,14 +59,14 @@ export default async function PaginaProduto({ params }: PageProps<"/estoque/prod
               </thead>
               <tbody>
                 {movimentos.map((m) => (
-                  <tr key={m.id} className="border-b border-current/10">
+                  <tr key={m.id} className="border-borda border-b">
                     <td className="py-2">
                       {formatarDataHora(m.criadoEm)}
-                      <span className="block text-xs opacity-80">{m.criadoPor}</span>
+                      <span className="text-suave block text-xs">{m.criadoPor}</span>
                     </td>
                     <td className="py-2">
                       {TIPOS_MOVIMENTO[m.tipo]}
-                      {m.motivo && <span className="block text-xs opacity-80">{m.motivo}</span>}
+                      {m.motivo && <span className="text-suave block text-xs">{m.motivo}</span>}
                     </td>
                     <td className="py-2 text-right">
                       {m.quantidade > 0 ? `+${m.quantidade}` : m.quantidade}
@@ -86,9 +86,9 @@ export default async function PaginaProduto({ params }: PageProps<"/estoque/prod
             {compras.dados.map((c) => (
               <li
                 key={c.id}
-                className="flex flex-col gap-2 rounded-md border border-current/10 p-3"
+                className="border-borda bg-elevado/50 flex flex-col gap-2 rounded-xl border p-3"
               >
-                <p className={c.estornadaEm ? "line-through opacity-70" : ""}>
+                <p className={c.estornadaEm ? "text-apagado line-through" : ""}>
                   {c.quantidade} por {formatarReais(c.totalCentavos)} · {FORMAS[c.forma]} ·{" "}
                   {formatarData(c.data)} · {c.feitaPor}
                 </p>

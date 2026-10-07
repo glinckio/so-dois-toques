@@ -13,10 +13,10 @@ export function FormAjuste({ produtoId }: { produtoId: string }) {
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
       aria-label="Ajustar estoque"
-      className="flex flex-col gap-3 rounded-lg border border-current/15 p-4"
+      className="border-borda bg-cartao flex flex-col gap-3 rounded-2xl border p-4"
     >
       <h2 className="text-lg font-medium">Ajustar estoque</h2>
-      <p className="text-sm opacity-80">
+      <p className="text-suave text-sm">
         Use para perda, consumo interno ou inventário. Positivo soma, negativo tira. Não mexe no
         Caixa.
       </p>

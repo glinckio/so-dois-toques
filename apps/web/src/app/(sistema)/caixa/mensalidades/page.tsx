@@ -21,10 +21,10 @@ import { exigirArea } from "@/lib/servidor/sessao";
 export const metadata: Metadata = { title: "Mensalidades | Só Dois Toques" };
 
 const CORES: Record<Situacao, string> = {
-  EM_ABERTO: "border-current/25",
-  ATRASADA: "border-red-600/50 bg-red-600/10",
-  PAGA: "border-green-600/50 bg-green-600/10",
-  CANCELADA: "border-current/15 opacity-70",
+  EM_ABERTO: "border-borda",
+  ATRASADA: "border-perigo/50 bg-perigo/10",
+  PAGA: "border-sucesso/50 bg-sucesso/10",
+  CANCELADA: "border-borda text-apagado",
 };
 
 /** MENS-CA-15: mensalidades do mês, com filtros e totais. */
@@ -119,7 +119,7 @@ export default async function PaginaMensalidades({
             <Total rotulo="Em aberto" valor={resposta.dados.totais.emAberto} />
           </section>
           {resposta.dados.itens.length === 0 ? (
-            <p className="opacity-80">
+            <p className="text-suave">
               Nenhuma mensalidade
               {situacao || busca ? " com esse filtro" : " gerada neste mês"}.
             </p>
@@ -129,11 +129,11 @@ export default async function PaginaMensalidades({
                 <li key={m.id}>
                   <Link
                     href={`/caixa/mensalidades/${m.id}`}
-                    className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 hover:bg-current/5 ${CORES[m.situacao]}`}
+                    className={`hover:bg-elevado flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 ${CORES[m.situacao]}`}
                   >
                     <span>
                       <span className="font-medium">{m.aluno.nome}</span>
-                      <span className="block text-sm opacity-80">
+                      <span className="text-suave block text-sm">
                         Vence em {formatarData(m.vencimento)}
                         {m.pagamento ? ` · pago em ${formatarData(m.pagamento.data)}` : ""}
                       </span>
@@ -155,8 +155,8 @@ export default async function PaginaMensalidades({
 
 function Total({ rotulo, valor }: { rotulo: string; valor: number }) {
   return (
-    <div className="rounded-lg border border-current/15 p-4">
-      <p className="text-sm opacity-80">{rotulo}</p>
+    <div className="border-borda bg-cartao rounded-2xl border p-4">
+      <p className="text-suave text-sm">{rotulo}</p>
       <p className="text-xl font-semibold">{formatarReais(valor)}</p>
     </div>
   );

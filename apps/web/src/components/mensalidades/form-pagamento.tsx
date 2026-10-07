@@ -18,7 +18,10 @@ export function FormPagamento({
 }) {
   const [estado, acao, enviando] = useActionState(registrarPagamento, ESTADO_INICIAL);
   return (
-    <form action={acao} className="flex flex-col gap-4 rounded-lg border border-current/15 p-4">
+    <form
+      action={acao}
+      className="border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4"
+    >
       <h2 className="text-lg font-medium">Registrar pagamento de {formatarReais(valorCentavos)}</h2>
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       <input type="hidden" name="mensalidadeId" value={mensalidadeId} />
@@ -28,7 +31,7 @@ export function FormPagamento({
           {Object.entries(FORMAS).map(([valor, rotulo], i) => (
             <label
               key={valor}
-              className="flex min-h-11 items-center gap-2 rounded-md border border-current/25 px-3 has-checked:border-amber-600 has-checked:bg-amber-600/10"
+              className="border-borda has-checked:border-roxo has-checked:bg-roxo/15 flex min-h-11 items-center gap-2 rounded-md border px-3"
             >
               <input type="radio" name="forma" value={valor} required defaultChecked={i === 0} />
               {rotulo}

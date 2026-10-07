@@ -22,7 +22,7 @@ export function FormPlano({ plano }: { plano?: Plano }) {
       className={
         plano
           ? "flex flex-col gap-3"
-          : "flex flex-col gap-4 rounded-lg border border-current/15 p-4"
+          : "border-borda bg-cartao flex flex-col gap-4 rounded-2xl border p-4"
       }
       aria-label={plano ? `Editar plano ${plano.nome}` : "Cadastrar plano"}
     >
