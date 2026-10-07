@@ -42,7 +42,7 @@ test("CAIXA-CA-01, CAIXA-CA-02, CAIXA-CA-04, CAIXA-CA-05, CAIXA-CA-06 e CAIXA-CA
     await avulso.getByLabel("Valor (R$)").fill("10,00");
     await avulso.getByLabel("Descrição").fill("Levar ao cofre");
     await avulso.getByRole("button", { name: "Registrar lançamento" }).click();
-    await expect(avulso.getByText("Suprimento e sangria são só em dinheiro.")).toBeVisible();
+    await expect(avulso.getByRole("alert")).toHaveText("Suprimento e sangria são só em dinheiro.");
     // O que foi digitado continua no formulário depois do erro.
     await expect(avulso.getByLabel("Descrição")).toHaveValue("Levar ao cofre");
 

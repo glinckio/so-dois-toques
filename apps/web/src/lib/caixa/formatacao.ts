@@ -8,6 +8,7 @@ export const CATEGORIAS = {
   RECEITA_AVULSA: "Receita avulsa",
   VENDA: "Venda",
   COMPRA_ESTOQUE: "Compra de estoque",
+  ALUGUEL_QUADRA: "Aluguel de quadra",
 } as const;
 export type Categoria = keyof typeof CATEGORIAS;
 

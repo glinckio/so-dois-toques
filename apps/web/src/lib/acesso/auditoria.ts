@@ -46,6 +46,15 @@ export const ROTULOS_ACOES = {
   ESTOQUE_AJUSTADO: "Estoque ajustado",
   VENDA_ESTORNADA: "Venda estornada",
   COMPRA_ESTORNADA: "Compra estornada",
+  FAIXAS_CRIADAS: "Faixas de preço criadas",
+  FAIXA_REMOVIDA: "Faixa de preço removida",
+  QUADRA_RENOMEADA: "Quadra renomeada",
+  RESERVA_CRIADA: "Reserva criada",
+  SERIE_CRIADA: "Reserva fixa criada",
+  SERIE_ENCERRADA: "Reserva fixa encerrada",
+  RESERVA_CANCELADA: "Reserva cancelada",
+  RESERVA_PAGA: "Reserva paga",
+  PAGAMENTO_RESERVA_ESTORNADO: "Pagamento de reserva estornado",
 } as const;
 
 export const TAMANHO_PAGINA = 50;
