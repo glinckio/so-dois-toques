@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { itensDoMenu, linkAtivo } from "./areas";
+import { GRUPOS_DO_MENU, itensDoMenu, linkAtivo, separarMenuDoCelular } from "./areas";
 import { filtroAuditoria, formatarDataHora, linkPagina } from "./auditoria";
 import { COOKIE_SESSAO, opcoesCookieSessao, rotaPublica } from "./cookie";
 import { ipDoCliente } from "./ip";
@@ -125,5 +125,36 @@ describe("linkAtivo", () => {
     expect(linkAtivo("/aulas/alunos/9/editar", abas)).toBe("/aulas/alunos");
     expect(linkAtivo("/aulas/turmas/nova", abas)).toBe("/aulas");
     expect(linkAtivo("/aulas", abas)).toBe("/aulas");
+  });
+});
+
+describe("VIVO-CA-02: menu agrupado e barra do celular", () => {
+  it("cada área está em um grupo só", () => {
+    const todas = GRUPOS_DO_MENU.flatMap((g) => g.areas);
+    expect(new Set(todas).size).toBe(todas.length);
+    expect(GRUPOS_DO_MENU.map((g) => g.rotulo)).toEqual(["Visão geral", "Operação", "Gestão"]);
+  });
+
+  it("perfis com até cinco áreas veem tudo na barra", () => {
+    const atendente = itensDoMenu(["inicio", "horarios", "estoque", "caixa"]);
+    expect(separarMenuDoCelular(atendente)).toEqual({ barra: atendente, mais: [] });
+    const professor = itensDoMenu(["inicio", "aulas"]);
+    expect(separarMenuDoCelular(professor).barra.map((i) => i.rotulo)).toEqual(["Início", "Aulas"]);
+  });
+
+  it("o administrador vê quatro áreas na barra e o resto em Mais", () => {
+    const admin = itensDoMenu([
+      "inicio",
+      "aulas",
+      "horarios",
+      "estoque",
+      "caixa",
+      "contabil",
+      "usuarios",
+      "auditoria",
+    ]);
+    const { barra, mais } = separarMenuDoCelular(admin);
+    expect(barra.map((i) => i.rotulo)).toEqual(["Início", "Aulas", "Horários", "Caixa"]);
+    expect(mais.map((i) => i.rotulo)).toEqual(["Estoque", "Contábil", "Usuários", "Auditoria"]);
   });
 });
