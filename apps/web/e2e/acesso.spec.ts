@@ -15,7 +15,7 @@ test("ACESSO-CA-01 e ACESSO-CA-07: entrar leva ao início e sair encerra a sess�
   context,
 }) => {
   await entrarComoAdmin(page);
-  await expect(page.getByText(`Olá, ${ADMIN_E2E.nome}.`)).toBeVisible();
+  await expect(page.getByRole("heading", { name: `Olá, ${ADMIN_E2E.nome}.` })).toBeVisible();
 
   const cookie = (await context.cookies()).find((c) => c.name === "sdt_sessao");
   expect(cookie).toMatchObject({ httpOnly: true, sameSite: "Lax" });

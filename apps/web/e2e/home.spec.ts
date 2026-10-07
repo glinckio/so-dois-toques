@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { entrarComoAdmin } from "./apoio";
+import { ADMIN_E2E } from "./dados";
 
 test("FUND-CA-01: a página inicial abre em português com os módulos", async ({ page }) => {
   const errors: string[] = [];
@@ -11,8 +12,16 @@ test("FUND-CA-01: a página inicial abre em português com os módulos", async (
 
   await expect(page).toHaveTitle("Só Dois Toques");
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
-  await expect(page.getByRole("heading", { level: 1, name: "Só Dois Toques" })).toBeVisible();
-  for (const modulo of ["Aulas", "Horários", "Estoque", "Contábil"]) {
+  await expect(
+    page.getByRole("heading", { level: 1, name: `Olá, ${ADMIN_E2E.nome}.` }),
+  ).toBeVisible();
+  for (const modulo of [
+    "Receitas e despesas",
+    "Caixa de hoje",
+    "Quadras hoje",
+    "Aulas de hoje",
+    "Estoque",
+  ]) {
     await expect(page.getByRole("heading", { level: 2, name: modulo })).toBeVisible();
   }
   // Nenhum script ou estilo bloqueado pela CSP.
