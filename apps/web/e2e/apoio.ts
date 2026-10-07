@@ -43,7 +43,7 @@ export async function cadastrarUsuario(
   });
   await form.getByLabel("Nome").fill(dados.nome);
   await form.getByLabel("E-mail").fill(dados.email);
-  await form.getByLabel("Perfil").selectOption({ label: dados.perfil });
+  await form.getByText(dados.perfil, { exact: true }).click();
   await form.getByRole("button", { name: "Cadastrar" }).click();
   const senha = form.getByTestId("senha-temporaria");
   await expect(senha).toBeVisible();
