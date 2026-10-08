@@ -276,7 +276,7 @@ test("VIVO-CA-12: anéis, roscas e barras têm texto para leitor de tela", async
       );
 
   await expect(page.getByRole("table", { name: "Receitas por origem" })).toBeAttached();
-  expect(await page.locator('main [role="img"]').count()).toBeGreaterThan(0);
+  await expect(page.locator('main [role="img"]').first()).toBeVisible();
   expect(await semRotulo()).toEqual([]);
 
   await page.goto("/contabil");

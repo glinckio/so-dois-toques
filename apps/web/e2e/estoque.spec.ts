@@ -9,6 +9,9 @@ const hojeSP = () =>
 async function abrirCaixaSeFechado(page: Page) {
   await page.goto("/caixa");
   const fechado = page.getByRole("region", { name: "Caixa fechado" });
+  // Espera a tela sair do esqueleto de carregamento antes de decidir: o React pode
+  // segurar a troca por alguns instantes depois do carregamento da página.
+  await expect(fechado.or(page.getByTestId("turno-aberto"))).toBeVisible();
   if (await fechado.isVisible()) {
     await fechado.getByRole("button", { name: "Abrir caixa" }).click();
     await expect(page.getByTestId("turno-aberto")).toBeVisible();
