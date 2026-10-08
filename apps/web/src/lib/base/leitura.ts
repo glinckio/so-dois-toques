@@ -38,8 +38,9 @@ export function leituraDoMes(d: DadosDaLeitura): string[] {
       frases.push(`O resultado do mês está em ${formatarReais(d.resultado)}.`);
     }
   }
-  if (d.totalReceitas > 0) {
-    const [chave, valor] = Object.entries(d.receitas).sort((a, b) => b[1] - a[1])[0]!;
+  const maior = Object.entries(d.receitas).sort((a, b) => b[1] - a[1])[0];
+  if (d.totalReceitas > 0 && maior) {
+    const [chave, valor] = maior;
     const pct = Math.round((valor / d.totalReceitas) * 100);
     const nome = d.nomesDasOrigens[chave] ?? chave;
     frases.push(`${nome} responde${pct === 100 ? " por toda" : ` por ${pct}% da`} receita.`);
