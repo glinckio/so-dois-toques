@@ -24,12 +24,12 @@ import {
   eventoDaAuditoria,
   filtroAuditoria,
   formatarDataHora,
-  horaDoRegistro,
   linkPagina,
   periodosRapidos,
   ROTULOS_ACOES,
   TAMANHO_PAGINA,
 } from "@/lib/acesso/auditoria";
+import { horaEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
 
@@ -258,7 +258,7 @@ function Evento({
             title={formatarDataHora(r.criadaEm)}
             className="text-apagado text-sm tabular-nums"
           >
-            {horaDoRegistro(r.criadaEm)}
+            {horaEmSaoPaulo(r.criadaEm)}
           </time>
         </div>
         <p className="text-suave flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">

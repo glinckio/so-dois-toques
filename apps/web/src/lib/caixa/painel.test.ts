@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { horaEmSaoPaulo } from "../aulas/formatacao";
 import {
   categoriasDoTurno,
   desdeQuando,
   diferencaDoFechamento,
   formasDePagamento,
-  horaEmSaoPaulo,
   percentual,
   previaDoAvulso,
   resultadoDoTurno,

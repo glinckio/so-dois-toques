@@ -284,6 +284,7 @@ function Local({
                             explicacao="Lança uma entrada de mesmo valor no Caixa. O pagamento continua no histórico."
                             rotulo="Estornar pagamento"
                             idCampo={`motivo-estorno-${p.id}`}
+                            confirmar="Uma entrada de mesmo valor entra no Caixa agora. O pagamento à quadra continua no histórico, marcado como estornado."
                           />
                         </div>
                       </details>

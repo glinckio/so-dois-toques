@@ -6,9 +6,9 @@ import { SeloIcone } from "@/components/base/selo";
 import { Vazio } from "@/components/base/vazio";
 import { FormVenda } from "@/components/estoque/form-venda";
 import { Aviso, classeBotaoSecundario } from "@/components/ui";
-import type { Turno } from "@/lib/caixa/tipos";
 import type { Produto } from "@/lib/estoque/tipos";
 import { chamarApi } from "@/lib/servidor/api";
+import { sessaoDoCaixa } from "@/lib/servidor/caixa";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 
 export const metadata: Metadata = { title: "Vender | Só Dois Toques" };
@@ -17,10 +17,7 @@ export const metadata: Metadata = { title: "Vender | Só Dois Toques" };
 export default async function PaginaVenda() {
   await connection();
   const usuario = await exigirUsuario();
-  const [produtos, caixa] = await Promise.all([
-    chamarApi<Produto[]>("/produtos"),
-    chamarApi<{ turno: Turno | null }>("/caixa/sessao"),
-  ]);
+  const [produtos, caixa] = await Promise.all([chamarApi<Produto[]>("/produtos"), sessaoDoCaixa()]);
   const ativos = produtos.ok ? produtos.dados.filter((p) => p.ativo) : [];
   return (
     <>

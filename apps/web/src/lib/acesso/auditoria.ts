@@ -216,17 +216,7 @@ const NOME_DO_DIA = new Intl.DateTimeFormat("pt-BR", {
   day: "numeric",
   month: "long",
 });
-const SO_A_HORA = new Intl.DateTimeFormat("pt-BR", {
-  timeZone: "America/Sao_Paulo",
-  hour: "2-digit",
-  minute: "2-digit",
-});
 const DIA_EM_SP = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" });
-
-/** "14:05" no horário de Brasília. */
-export function horaDoRegistro(iso: string): string {
-  return SO_A_HORA.format(new Date(iso));
-}
 
 /**
  * VIVO-CA-14: separa os registros (já em ordem, do mais novo ao mais antigo) por dia

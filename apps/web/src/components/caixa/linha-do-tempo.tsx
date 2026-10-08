@@ -5,9 +5,8 @@ import { Selo, SeloIcone } from "@/components/base/selo";
 import { Valor } from "@/components/base/valor";
 import { Icone } from "@/components/icones";
 import { FormMotivo } from "@/components/mensalidades/form-motivo";
-import { hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
+import { hojeEmSaoPaulo, horaEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { ehAvulso, nomeDaCategoria } from "@/lib/caixa/formatacao";
-import { horaEmSaoPaulo } from "@/lib/caixa/painel";
 import { FORMAS, type Forma } from "@/lib/mensalidades/formatacao";
 import { visualDaCategoria } from "./categorias";
 

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
+import { cadastrarUsuario, confirmar, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
 
 const diaEmSP = (dias: number) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(
@@ -101,6 +101,7 @@ test("HOR-CA-01, HOR-CA-02, HOR-CA-03, HOR-CA-07, HOR-CA-08 e HOR-CA-09: da faix
     const cancelar = atendente.getByRole("form", { name: "Cancelar reserva" });
     await cancelar.getByLabel("Motivo").fill("Vai chover");
     await cancelar.getByRole("button", { name: "Cancelar reserva" }).click();
+    await confirmar(atendente);
     await expect(atendente.getByText(/Cancelada em .* Motivo: Vai chover/)).toBeVisible();
     await expect(
       atendente.getByText(/Estornado em .* Motivo: Cancelamento: Vai chover/),

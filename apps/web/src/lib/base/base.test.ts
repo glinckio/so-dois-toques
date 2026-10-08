@@ -52,9 +52,10 @@ describe("VIVO-CA-06: faixa de dias", () => {
 });
 
 describe("VIVO-CA-10: força da senha", () => {
-  it("chama de curta a senha com menos de 10 caracteres", () => {
+  it("chama de curta a senha com menos de 10 caracteres e de longa a que passa de 128", () => {
     expect(forcaDaSenha("")).toEqual({ nivel: 0, rotulo: "Curta demais" });
     expect(forcaDaSenha("Ab1!xyz")).toEqual({ nivel: 0, rotulo: "Curta demais" });
+    expect(forcaDaSenha("Ab1!".repeat(33))).toEqual({ nivel: 0, rotulo: "Longa demais" });
   });
 
   it("chama de fraca a senha repetida", () => {

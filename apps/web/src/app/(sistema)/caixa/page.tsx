@@ -12,9 +12,9 @@ import { CaixaAberto, CaixaFechado } from "@/components/caixa/turno";
 import { Icone } from "@/components/icones";
 import { Aviso, classeBotaoIcone, classeCampo } from "@/components/ui";
 import { hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
-import type { Turno } from "@/lib/caixa/tipos";
 import type { CaixaDoDia } from "@/lib/mensalidades/tipos";
 import { chamarApi } from "@/lib/servidor/api";
+import { sessaoDoCaixa } from "@/lib/servidor/caixa";
 import { exigirArea } from "@/lib/servidor/sessao";
 
 export const metadata: Metadata = { title: "Caixa | Só Dois Toques" };
@@ -43,7 +43,7 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
   const admin = usuario.perfil === "ADMINISTRADOR";
   const [resposta, atual] = await Promise.all([
     chamarApi<CaixaDoDia>(`/caixa/lancamentos?data=${data}`),
-    chamarApi<{ turno: Turno | null }>("/caixa/sessao"),
+    sessaoDoCaixa(),
   ]);
   const turno = atual.ok ? atual.dados.turno : null;
   const dataLonga = DATA_LONGA.format(new Date(`${data}T12:00:00Z`));

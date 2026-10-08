@@ -7,9 +7,9 @@ import { Valor } from "@/components/base/valor";
 import { Vazio } from "@/components/base/vazio";
 import { Icone } from "@/components/icones";
 import { Aviso } from "@/components/ui";
-import { hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
+import { hojeEmSaoPaulo, horaEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { tempoDecorrido } from "@/lib/base/tempo";
-import { horaEmSaoPaulo, resultadoDoTurno, resumoDosTurnos } from "@/lib/caixa/painel";
+import { resultadoDoTurno, resumoDosTurnos } from "@/lib/caixa/painel";
 import type { TurnoResumo } from "@/lib/caixa/tipos";
 import { chamarApi } from "@/lib/servidor/api";
 

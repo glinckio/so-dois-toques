@@ -24,7 +24,7 @@ import {
 } from "@/components/ui";
 import { formatarData, formatarTelefone, hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
 import type { AlunoDetalhe } from "@/lib/aulas/tipos";
-import { idadeEm, linkDoWhatsApp } from "@/lib/aulas/visual";
+import { idadeEm } from "@/lib/aulas/visual";
 import { formatarDataHora } from "@/lib/acesso/auditoria";
 import {
   competenciaAtual,
@@ -32,6 +32,7 @@ import {
   formatarReais,
   nomeDoMes,
 } from "@/lib/mensalidades/formatacao";
+import { linkDoWhatsapp } from "@/lib/mensalidades/painel";
 import type { Assinaturas, Plano } from "@/lib/mensalidades/tipos";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
@@ -73,7 +74,7 @@ export default async function PaginaAluno({
   if (!resposta.ok) return <Aviso tipo="erro">{resposta.mensagem}</Aviso>;
   const aluno = resposta.dados;
   const admin = usuario.perfil === "ADMINISTRADOR";
-  const whatsapp = aluno.anonimizado ? null : linkDoWhatsApp(aluno.telefone);
+  const whatsapp = aluno.anonimizado ? null : linkDoWhatsapp(aluno.telefone);
   const idade = idadeEm(aluno.nascimento, hojeEmSaoPaulo());
   const abertas = aluno.matriculas.filter((m) => !m.fim).length;
 
