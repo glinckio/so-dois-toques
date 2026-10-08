@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { linkDoWhatsapp } from "../mensalidades/painel";
 import type { TurmaResumo } from "./tipos";
 import {
   aulaDoDia,
   DEGRAUS_DO_NIVEL,
   idadeEm,
   inicialDe,
-  linkDoWhatsApp,
   porInicial,
   resumoDasTurmas,
   valorPorAula,
@@ -69,11 +69,11 @@ describe("cartões das turmas", () => {
 
 describe("perfil do aluno", () => {
   it("AULAS-CA-04: monta o link do WhatsApp só com telefone válido", () => {
-    expect(linkDoWhatsApp("21998765432")).toBe("https://wa.me/5521998765432");
-    expect(linkDoWhatsApp("(21) 3456-7890")).toBe("https://wa.me/552134567890");
-    expect(linkDoWhatsApp("123")).toBeNull();
-    expect(linkDoWhatsApp("")).toBeNull();
-    expect(linkDoWhatsApp(null)).toBeNull();
+    expect(linkDoWhatsapp("21998765432")).toBe("https://wa.me/5521998765432");
+    expect(linkDoWhatsapp("(21) 3456-7890")).toBe("https://wa.me/552134567890");
+    expect(linkDoWhatsapp("123")).toBeNull();
+    expect(linkDoWhatsapp("")).toBeNull();
+    expect(linkDoWhatsapp(null)).toBeNull();
   });
 
   it("calcula a idade completa na data", () => {

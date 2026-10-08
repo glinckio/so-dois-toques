@@ -1,3 +1,4 @@
+import { horaEmSaoPaulo } from "@/lib/aulas/formatacao";
 import type { Forma } from "@/lib/mensalidades/formatacao";
 import type { Produto, VendasDoDia } from "./tipos";
 
@@ -131,14 +132,9 @@ const DIA = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
   timeZone: "America/Sao_Paulo",
 });
-const HORA = new Intl.DateTimeFormat("pt-BR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
 
 /** Instante da API em dia e hora de São Paulo: { dia: "07/10/2026", hora: "14:32" }. */
 export function quando(iso: string): { dia: string; hora: string } {
   const instante = new Date(iso);
-  return { dia: DIA.format(instante), hora: HORA.format(instante) };
+  return { dia: DIA.format(instante), hora: horaEmSaoPaulo(instante) };
 }

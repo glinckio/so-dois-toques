@@ -1,13 +1,8 @@
 import Link from "next/link";
 import { PontoVivo } from "@/components/base/selo";
 import { Icone } from "@/components/icones";
+import { horaEmSaoPaulo } from "@/lib/aulas/formatacao";
 import type { Turno } from "@/lib/caixa/tipos";
-
-const HORA = new Intl.DateTimeFormat("pt-BR", {
-  timeZone: "America/Sao_Paulo",
-  hour: "2-digit",
-  minute: "2-digit",
-});
 
 /**
  * Situação do caixa no rodapé do menu lateral, para quem usa o Caixa: aberto (ponto
@@ -49,7 +44,7 @@ export function StatusDoCaixa({ turno }: { turno: Turno | null }) {
         </span>
         <span className="text-apagado block truncate text-xs">
           {aberto
-            ? `desde ${HORA.format(new Date(turno.abertaEm))} · ${turno.abertaPor.split(" ")[0]}`
+            ? `desde ${horaEmSaoPaulo(turno.abertaEm)} · ${turno.abertaPor.split(" ")[0]}`
             : "Abra o turno para vender"}
         </span>
       </span>

@@ -1,19 +1,8 @@
-import { hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
+import { hojeEmSaoPaulo, horaEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { centavosDe, FORMAS, formatarReais, type Forma } from "@/lib/mensalidades/formatacao";
 import { CATEGORIAS_AVULSAS, ehAvulso, nomeDaCategoria } from "./formatacao";
 
 type LinhaResumo = { entradas: number; saidas: number; saldo: number };
-
-const HORA = new Intl.DateTimeFormat("pt-BR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
-
-/** Hora de um instante em São Paulo: "14:02". */
-export function horaEmSaoPaulo(iso: string | Date): string {
-  return HORA.format(new Date(iso));
-}
 
 /** "2026-10-06" vira "06/10". */
 function diaEMes(data: string): string {

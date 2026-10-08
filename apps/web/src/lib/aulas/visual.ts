@@ -57,12 +57,6 @@ export function resumoDasTurmas(
   };
 }
 
-/** Conversa no WhatsApp com um telefone brasileiro com DDD (10 ou 11 dígitos); senão, null. */
-export function linkDoWhatsApp(telefone: string | null | undefined): string | null {
-  const digitos = (telefone ?? "").replace(/\D/g, "");
-  return /^\d{10,11}$/.test(digitos) ? `https://wa.me/55${digitos}` : null;
-}
-
 /** Idade completa em anos numa data (as duas em "AAAA-MM-DD"); null se não der para calcular. */
 export function idadeEm(nascimento: string | null | undefined, hoje: string): number | null {
   const n = /^(\d{4})-(\d{2})-(\d{2})$/.exec(nascimento ?? "");

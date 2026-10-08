@@ -4,17 +4,12 @@ import { NumeroAnimado } from "@/components/base/numero-animado";
 import { Selo } from "@/components/base/selo";
 import { Icone, type NomeIcone } from "@/components/icones";
 import { Aviso } from "@/components/ui";
+import { horaEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { tempoDecorrido } from "@/lib/base/tempo";
 import type { Turno } from "@/lib/caixa/tipos";
 import { formatarReais } from "@/lib/mensalidades/formatacao";
 import type { CaixaDoDia, Inadimplentes } from "@/lib/mensalidades/tipos";
 import type { RespostaApi } from "@/lib/servidor/api";
-
-const HORA = new Intl.DateTimeFormat("pt-BR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
 
 const FORMAS_DO_CARTAO: {
   rotulo: string;
@@ -65,7 +60,7 @@ export function CaixaDeHoje({
             </Selo>
             <span className="text-suave">
               há <strong className="text-texto">{tempoDecorrido(turno.abertaEm, agora)}</strong>,
-              desde {HORA.format(new Date(turno.abertaEm))} por {turno.abertaPor}
+              desde {horaEmSaoPaulo(turno.abertaEm)} por {turno.abertaPor}
             </span>
           </>
         ) : (

@@ -73,6 +73,17 @@ export function hojeEmSaoPaulo(agora = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(agora);
 }
 
+const HORA_EM_SP = new Intl.DateTimeFormat("pt-BR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "America/Sao_Paulo",
+});
+
+/** Hora de um instante em São Paulo: "14:02". */
+export function horaEmSaoPaulo(instante: string | Date): string {
+  return HORA_EM_SP.format(new Date(instante));
+}
+
 /** Dia da semana de uma data "AAAA-MM-DD" (0 = domingo). */
 export function diaDaSemana(data: string): number {
   return new Date(`${data}T12:00:00Z`).getUTCDay();

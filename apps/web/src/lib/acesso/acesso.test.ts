@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { horaEmSaoPaulo } from "../aulas/formatacao";
 import { GRUPOS_DO_MENU, itensDoMenu, linkAtivo, separarMenuDoCelular } from "./areas";
 import {
   agruparPorDia,
@@ -6,7 +7,6 @@ import {
   eventoDaAuditoria,
   filtroAuditoria,
   formatarDataHora,
-  horaDoRegistro,
   linkPagina,
   periodosRapidos,
   ROTULOS_ACOES,
@@ -187,7 +187,7 @@ describe("VIVO-CA-14: linha do tempo da auditoria", () => {
       ["Ontem", ["c"]],
       ["Domingo, 4 de outubro", ["d"]],
     ]);
-    expect(horaDoRegistro("2026-10-07T02:59:00.000Z")).toBe("23:59");
+    expect(horaEmSaoPaulo("2026-10-07T02:59:00.000Z")).toBe("23:59");
   });
 
   it("VIVO-CA-14: dá ícone e tom pelo tipo de evento, com alertas em vermelho", () => {
