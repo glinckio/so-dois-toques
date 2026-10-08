@@ -1,0 +1,16 @@
+# Contexto do build das imagens (apps/api/Dockerfile e apps/web/Dockerfile).
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+!**/.env.example
+apps/api/src/generated
+.git
+.github
+backups
+docs
+specs
+*.pdf

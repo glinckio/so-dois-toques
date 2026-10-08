@@ -79,6 +79,25 @@ O arquivo de backup tem todos os dados pessoais: guarde-o criptografado, com ace
 
 Para voltar o sistema a partir de um backup: restaure num banco novo, confira, e troque a `DATABASE_URL` da API para ele.
 
+## Alternativa: servidor próprio com Easypanel
+
+Tudo no mesmo servidor, num projeto do Easypanel (ex.: `sdt`). A API fica só na rede interna: não precisa de domínio, porque o navegador nunca fala com ela.
+
+1. **Banco:** _+ Service → Postgres_, nome `db`, imagem `postgres:16`. Copie a **Internal Connection URL** (algo como `postgres://postgres:<senha>@sdt_db:5432/sdt`). Configure o backup diário do Postgres pelo próprio Easypanel.
+2. **API:** _+ Service → App_, nome `api`.
+   - Source: GitHub `glinckio/so-dois-toques`, branch `main`, Build Path `/`.
+   - Build: **Dockerfile**, arquivo `apps/api/Dockerfile`.
+   - Environment: `DATABASE_URL` (a URL interna do passo 1), `WEB_ORIGIN` (o endereço https do site), `INTERNAL_API_KEY` (chave nova), `GERACAO_AUTOMATICA=true`.
+   - Sem domínio. As migrations rodam sozinhas a cada deploy, antes de a API subir.
+3. **Site:** _+ Service → App_, nome `web`.
+   - Mesmo repositório e branch, Build Path `/`, Dockerfile `apps/web/Dockerfile`.
+   - Environment: `API_URL=http://sdt_api:3001` (`<projeto>_<serviço>`), a mesma `INTERNAL_API_KEY`, `IP_SALTOS_CONFIAVEIS=1` (`2` se houver Cloudflare com proxy ligado na frente).
+   - Domains: o domínio do site, com HTTPS, porta `3000`. No DNS, registro A apontando para o IP do servidor.
+4. **Primeiro administrador:** no serviço `api`, abra o **Console** e rode `node dist/cli/criar-admin.js` (pede nome, e-mail e senha).
+5. **Atualizações:** ligue o _Auto Deploy_ nos dois apps ou clique em _Deploy_. Faça backup do banco antes de publicar versão com migration.
+
+O `pnpm db:backup` e o `pnpm db:restaurar` continuam valendo da sua máquina; para isso, exponha a porta do Postgres só enquanto precisar (ou rode-os por um túnel SSH).
+
 ## 7. Antes de abrir para a equipe
 
 - [ ] Proteção da branch `main` ligada no GitHub (merge só com CI verde e aprovação).
