@@ -10,4 +10,4 @@
 - [x] Caixa (VIVO-CA-08)
 - [x] Estoque e venda (VIVO-CA-07)
 - [x] Contábil, Usuários e Auditoria (VIVO-CA-14)
-- [ ] Todas as telas sem erro de CSP (VIVO-CA-11)
+- [x] Todas as telas sem erro de CSP e sem rolagem para o lado (VIVO-CA-11)
