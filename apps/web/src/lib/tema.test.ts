@@ -54,4 +54,10 @@ describe("tema", () => {
     const css = readFileSync(join(__dirname, "../app/globals.css"), "utf8");
     expect(css).toMatch(/^\/\* prettier-ignore \*\/\n@source inline\("[^"\n]+"\);$/m);
   });
+
+  it("o desfoque do vidro não leva prefixo à mão (com os dois, o build descartava o padrão e o Chrome ficava sem desfoque)", () => {
+    const css = readFileSync(join(__dirname, "../app/globals.css"), "utf8");
+    expect(css).not.toContain("-webkit-backdrop-filter");
+    expect(css).toContain("backdrop-filter: blur(18px)");
+  });
 });
