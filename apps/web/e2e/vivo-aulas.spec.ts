@@ -1,6 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { entrarComoAdmin } from "./apoio";
-import { ADMIN_E2E } from "./dados";
+import { cadastrarUsuario, emailUnico, entrarComoAdmin } from "./apoio";
 
 const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const hojeSP = () =>
@@ -30,7 +29,16 @@ test("VIVO-CA-09: na presença, o contador e o anel acompanham cada marcação",
   const diaDeHoje = new Date(`${hojeSP()}T12:00:00Z`).getUTCDay();
   await entrarComoAdmin(page);
 
-  // Local e turma com aula hoje, dada pelo próprio administrador.
+  // Professor novo: o celular e o computador rodam juntos, e o mesmo professor
+  // no mesmo dia e hora daria choque de horário entre as duas turmas.
+  const nomeProfessor = `Professor Vivo ${marca}`;
+  await cadastrarUsuario(page, {
+    nome: nomeProfessor,
+    email: emailUnico("prof-vivo"),
+    perfil: "Professor",
+  });
+
+  // Local e turma com aula hoje; a presença é marcada pelo administrador.
   await page.goto("/aulas/locais");
   const nomeLocal = `Arena Viva ${marca}`;
   await page.getByLabel("Nome do local").fill(nomeLocal);
@@ -41,7 +49,7 @@ test("VIVO-CA-09: na presença, o contador e o anel acompanham cada marcação",
   const nomeTurma = `Presença Viva ${marca}`;
   await page.getByLabel("Nome da turma").fill(nomeTurma);
   await page.getByLabel("Local").selectOption({ label: nomeLocal });
-  await page.getByLabel("Professor").selectOption({ label: ADMIN_E2E.nome });
+  await page.getByLabel("Professor").selectOption({ label: nomeProfessor });
   await page.getByLabel("Vagas").fill("4");
   await page.getByLabel("Dia 1").selectOption({ label: DIAS[diaDeHoje]! });
   await page.getByLabel("Dia 2").selectOption({ label: DIAS[(diaDeHoje + 3) % 7]! });

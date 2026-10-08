@@ -155,7 +155,7 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
 - **VIVO-CA-08**: Com o caixa aberto, o painel mostra há quanto tempo ele está aberto.
 - **VIVO-CA-09**: Na presença, o contador e o anel acompanham as marcações.
 - **VIVO-CA-10**: O login tem "Mostrar senha", e a troca de senha mostra a força da senha nova e se a confirmação bate.
-- **VIVO-CA-11**: Nenhuma tela das áreas tem erro de CSP no navegador, no celular e no computador.
+- **VIVO-CA-11**: Nenhuma tela das áreas tem erro de CSP no navegador nem passa da largura da tela (sem rolagem para o lado), no celular e no computador.
 - **VIVO-CA-12**: Anéis, barras e números animados têm texto equivalente para leitor de tela (rótulo ou tabela).
 - **VIVO-CA-13** [manual]: O visual segue as referências enviadas, com um destaque por tela, no celular e no computador.
 - **VIVO-CA-14**: Na auditoria, os registros ficam agrupados por dia ("Hoje", "Ontem" ou a data), cada um com ícone e cor pelo tipo de evento, e os detalhes aparecem como campos legíveis (valores em reais).
@@ -164,5 +164,6 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
 
 - 07/10/2026: o dono enviou mais duas referências claras ("DoDo" e "AI-BL") e disse que gostou das cores. Ficam as cores da etapa 10 e o tema escuro; das referências claras vêm a moldura, os anéis, as barras arredondadas e a faixa de dias.
 - Animações só em CSS, e ajustes de posição pelo JavaScript no navegador (CSSOM), porque a CSP não deixa estilo embutido no HTML. Por isso não há biblioteca de animação.
+- Uma exceção na CSP, justificada aqui como pede a fundação: `style-src-attr 'unsafe-hashes'` com o hash de `display:none`, e só ele. O React escreve `<svg aria-hidden="true" style="display:none">` quando a transmissão da página parte o conteúdo de um SVG (anéis e barras), e o navegador recusava o atributo. O risco é mínimo: esse atributo só esconde um elemento, e nenhum outro estilo embutido passa.
 - Sem notificações (sino): o sistema não tem uma fonte de avisos; os alertas (estoque baixo, atrasos) ficam no Início e nas áreas.
 - Nenhuma rota nova na API: a busca rápida usa a lista de alunos que já existe.

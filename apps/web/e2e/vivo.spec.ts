@@ -44,17 +44,26 @@ function vigiarErros(page: Page) {
   return erros;
 }
 
-test("VIVO-CA-11: nenhuma tela das áreas tem erro de CSP ou de script", async ({ page }) => {
+test("VIVO-CA-11: nenhuma tela das áreas tem erro de CSP ou de script nem rola para o lado", async ({
+  page,
+}) => {
   test.setTimeout(120_000);
   const erros = vigiarErros(page);
   await entrarComoAdmin(page);
+  const largas: string[] = [];
   for (const tela of TELAS) {
     await page.goto(tela);
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
     // Dá tempo para as animações e os ajustes feitos no navegador rodarem.
     await page.waitForTimeout(150);
+    const { largura, conteudo } = await page.evaluate(() => ({
+      largura: document.documentElement.clientWidth,
+      conteudo: document.documentElement.scrollWidth,
+    }));
+    if (conteudo > largura) largas.push(`${tela}: ${conteudo}px numa tela de ${largura}px`);
   }
   expect(erros).toEqual([]);
+  expect(largas).toEqual([]);
 });
 
 test("VIVO-CA-01: com reduzir movimento, as animações e transições ficam desligadas", async ({
@@ -221,6 +230,8 @@ test("VIVO-CA-05: o menu da pessoa mostra nome e perfil e leva a Trocar senha e 
   await menu.getByRole("link", { name: "Trocar senha" }).click();
   await expect(page).toHaveURL("/trocar-senha");
 
+  // A troca de senha é uma tela à parte, sem o menu; o Sair é testado a partir do Início.
+  await page.goto("/");
   await abrir.click();
   await menu.getByRole("button", { name: "Sair" }).click();
   await expect(page).toHaveURL(/\/login/);
@@ -285,7 +296,7 @@ test("VIVO-CA-14: a auditoria agrupa por dia e marca o tipo de evento", async ({
   await page.getByLabel("Ação").selectOption({ label: "Entrou no sistema" });
   await page.getByRole("button", { name: "Filtrar" }).click();
   await expect(page).toHaveURL(/acao=LOGIN_SUCESSO/);
-  await expect(page.getByText("Mostrando só:")).toContainText("Entrou no sistema");
+  await expect(page.getByTestId("filtros-ativos")).toContainText("Entrou no sistema");
   await expect(registros.getByText("Entrou no sistema").first()).toBeVisible();
   await expect(registros.getByText(ADMIN_E2E.nome).first()).toBeVisible();
   await page.getByRole("link", { name: "Limpar filtros" }).click();
