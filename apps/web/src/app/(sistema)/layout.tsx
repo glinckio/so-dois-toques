@@ -8,8 +8,7 @@ import { Icone } from "@/components/icones";
 import { PERFIS, itensDoMenu } from "@/lib/acesso/areas";
 import { hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { itensDaBusca } from "@/lib/base/busca";
-import type { Turno } from "@/lib/caixa/tipos";
-import { chamarApi } from "@/lib/servidor/api";
+import { sessaoDoCaixa } from "@/lib/servidor/caixa";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 
 const DATA_CURTA = new Intl.DateTimeFormat("pt-BR", {
@@ -29,9 +28,7 @@ export default async function LayoutSistema({ children }: LayoutProps<"/">) {
   const perfil = PERFIS[usuario.perfil];
   const admin = usuario.perfil === "ADMINISTRADOR";
   // Quem usa o Caixa vê no rodapé do menu se ele está aberto; os outros, o atalho da busca.
-  const caixa = usuario.areas.includes("caixa")
-    ? await chamarApi<{ turno: Turno | null }>("/caixa/sessao")
-    : null;
+  const caixa = usuario.areas.includes("caixa") ? await sessaoDoCaixa() : null;
   const hoje = DATA_CURTA.format(new Date(`${hojeEmSaoPaulo()}T12:00:00Z`)).replace(/\./g, "");
 
   return (

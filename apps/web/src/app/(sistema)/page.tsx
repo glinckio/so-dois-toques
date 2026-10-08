@@ -17,7 +17,6 @@ import { diaDaSemana, hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
 import type { TurmaResumo } from "@/lib/aulas/tipos";
 import { itensDaBusca } from "@/lib/base/busca";
 import { leituraDoMes } from "@/lib/base/leitura";
-import type { Turno } from "@/lib/caixa/tipos";
 import { formatarPorcentagem, ORIGENS_RECEITA } from "@/lib/contabil/formatacao";
 import type { Painel } from "@/lib/contabil/tipos";
 import type { Produto } from "@/lib/estoque/tipos";
@@ -33,6 +32,7 @@ import {
   type TurmaDeHoje,
 } from "@/lib/painel/inicio";
 import { chamarApi, type RespostaApi } from "@/lib/servidor/api";
+import { sessaoDoCaixa } from "@/lib/servidor/caixa";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 
 const DATA_LONGA = new Intl.DateTimeFormat("pt-BR", {
@@ -77,7 +77,7 @@ export default async function Inicio({ searchParams }: PageProps<"/">) {
   const [painel, caixa, sessao, inadimplentes, grade, produtos, turmas] = await Promise.all([
     talvez(pode("contabil"), () => chamarApi<Painel>("/contabil/painel")),
     talvez(pode("caixa"), () => chamarApi<CaixaDoDia>(`/caixa/lancamentos?data=${hoje}`)),
-    talvez(pode("caixa"), () => chamarApi<{ turno: Turno | null }>("/caixa/sessao")),
+    talvez(pode("caixa"), sessaoDoCaixa),
     talvez(pode("caixa"), () => chamarApi<Inadimplentes>("/mensalidades/inadimplentes")),
     talvez(pode("horarios"), () => chamarApi<Grade>(`/horarios/grade?data=${hoje}`)),
     talvez(pode("estoque"), () => chamarApi<Produto[]>("/produtos")),
