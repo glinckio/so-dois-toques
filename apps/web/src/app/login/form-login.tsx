@@ -3,7 +3,9 @@
 import { useActionState } from "react";
 import { entrar } from "@/app/acoes/sessao";
 import { ESTADO_INICIAL } from "@/app/acoes/estado";
-import { Aviso, Campo, classeBotao } from "@/components/ui";
+import { CampoSenha } from "@/components/base/campo-senha";
+import { BotaoEnviar } from "@/components/base/enviar";
+import { Aviso, Campo, SetaDoBotao, classeBotao } from "@/components/ui";
 
 export function FormLogin() {
   const [estado, acao, enviando] = useActionState(entrar, ESTADO_INICIAL);
@@ -14,22 +16,28 @@ export function FormLogin() {
         rotulo="E-mail"
         id="email"
         type="email"
+        icone="email"
         autoComplete="username"
         required
         maxLength={254}
+        placeholder="voce@sodoistoques.com.br"
         defaultValue={estado.email}
       />
-      <Campo
+      <CampoSenha
         rotulo="Senha"
         id="senha"
-        type="password"
         autoComplete="current-password"
         required
         maxLength={1024}
       />
-      <button type="submit" className={classeBotao} disabled={enviando}>
-        {enviando ? "Entrando..." : "Entrar"}
-      </button>
+      <BotaoEnviar
+        enviando={enviando}
+        textoEnviando="Entrando..."
+        className={`${classeBotao} mt-2 w-full`}
+      >
+        Entrar
+        <SetaDoBotao />
+      </BotaoEnviar>
     </form>
   );
 }

@@ -8,6 +8,19 @@ export async function entrar(page: Page, email: string, senha: string) {
   await page.getByRole("button", { name: "Entrar" }).click();
 }
 
+/** Sai do sistema pelo menu da pessoa (aberto pelo avatar). */
+export async function sair(page: Page) {
+  await page.getByRole("button", { name: /Abrir o menu da pessoa/ }).click();
+  await page.getByRole("button", { name: "Sair" }).click();
+}
+
+/** Confirma a ação no diálogo de confirmação do sistema. */
+export async function confirmar(page: Page) {
+  const dialogo = page.getByRole("dialog");
+  await expect(dialogo).toBeVisible();
+  await dialogo.getByRole("button", { name: "Confirmar" }).click();
+}
+
 export async function entrarComoAdmin(page: Page) {
   await entrar(page, ADMIN_E2E.email, ADMIN_E2E.senha);
   await expect(page).toHaveURL("/");
@@ -30,7 +43,7 @@ export async function cadastrarUsuario(
   });
   await form.getByLabel("Nome").fill(dados.nome);
   await form.getByLabel("E-mail").fill(dados.email);
-  await form.getByLabel("Perfil").selectOption({ label: dados.perfil });
+  await form.getByText(dados.perfil, { exact: true }).click();
   await form.getByRole("button", { name: "Cadastrar" }).click();
   const senha = form.getByTestId("senha-temporaria");
   await expect(senha).toBeVisible();

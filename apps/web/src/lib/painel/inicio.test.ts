@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { TurmaResumo } from "@/lib/aulas/tipos";
 import type { Grade } from "@/lib/horarios/tipos";
-import { ocupacaoDoDia, reservasDoDia, turmasDoDia, variacao } from "./inicio";
+import {
+  mapaDoDia,
+  minutoEmSaoPaulo,
+  momentoDe,
+  ocupacaoDoDia,
+  proximasReservas,
+  reservasDoDia,
+  turmasDoDia,
+  variacao,
+} from "./inicio";
 
 const turma = (nome: string, horarios: TurmaResumo["horarios"], ativa = true): TurmaResumo => ({
   id: nome,
@@ -73,5 +82,48 @@ describe("Início", () => {
       ["Quadra 1", 19],
     ]);
     expect(ocupacaoDoDia(grade)).toEqual({ reservadas: 3, abertas: 28 });
+  });
+
+  it("VIVO-CA-06: minuto atual em São Paulo e o momento de cada aula", () => {
+    // 17:35 em UTC são 14:35 em São Paulo.
+    expect(minutoEmSaoPaulo(new Date("2026-10-07T17:35:00Z"))).toBe(14 * 60 + 35);
+    expect(minutoEmSaoPaulo(new Date("2026-10-08T02:59:00Z"))).toBe(23 * 60 + 59);
+    expect(momentoDe(600, 660, 590)).toBe("depois");
+    expect(momentoDe(600, 660, 600)).toBe("agora");
+    expect(momentoDe(600, 660, 660)).toBe("passou");
+  });
+
+  it("VIVO-CA-06: mapa do dia com uma faixa por quadra e os blocos no lugar", () => {
+    const grade: Grade = {
+      data: "2026-10-07",
+      diaSemana: 3,
+      faixas: [
+        { horaInicio: 8, horaFim: 12, valorHoraCentavos: 6000 },
+        { horaInicio: 17, horaFim: 22, valorHoraCentavos: 8000 },
+      ],
+      quadras: [
+        { id: "1", nome: "Quadra 1", reservas: [reserva(19, 21), reserva(8, 10, "BLOQUEIO")] },
+        { id: "2", nome: "Quadra 2", reservas: [] },
+      ],
+    };
+    const mapa = mapaDoDia(grade)!;
+    expect([mapa.inicio, mapa.fim]).toEqual([8, 22]);
+    expect(mapa.quadras[0]!.blocos.map((b) => [b.tipo, b.inicio, b.fim, b.rotulo])).toEqual([
+      ["BLOQUEIO", 8, 10, "Bloqueado"],
+      ["RESERVA", 19, 21, "Cliente"],
+    ]);
+    expect(mapa.quadras[1]!.blocos).toEqual([]);
+    expect(mapaDoDia({ ...grade, faixas: [] })).toBeNull();
+  });
+
+  it("VIVO-CA-06: próximas reservas são as que ainda não terminaram", () => {
+    const grade: Grade = {
+      data: "2026-10-07",
+      diaSemana: 3,
+      faixas: [{ horaInicio: 8, horaFim: 22, valorHoraCentavos: 8000 }],
+      quadras: [{ id: "1", nome: "Quadra 1", reservas: [reserva(9, 10), reserva(18, 20)] }],
+    };
+    const proximas = proximasReservas(reservasDoDia(grade), 18 * 60 + 30);
+    expect(proximas.map((r) => r.horaInicio)).toEqual([18]);
   });
 });

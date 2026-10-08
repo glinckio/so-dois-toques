@@ -68,7 +68,8 @@ test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma
   // Matrícula pela busca na turma.
   await page.goto(urlTurma);
   await page.getByLabel("Buscar aluno por nome ou telefone").fill(`ana areia ${marca}`);
-  await page.getByRole("button", { name: "Buscar" }).click();
+  // "Buscar" exato: a barra do topo tem o botão "Buscar ou ir para…" da busca rápida.
+  await page.getByRole("button", { name: "Buscar", exact: true }).click();
   await page
     .getByRole("list", { name: "Alunos encontrados" })
     .getByRole("button", { name: "Matricular" })

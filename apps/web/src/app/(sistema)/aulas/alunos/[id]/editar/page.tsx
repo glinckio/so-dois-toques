@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { LinkVoltar } from "@/components/aulas/link-voltar";
 import { FormAluno } from "@/components/aulas/form-aluno";
+import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { AcessoNegado, Aviso } from "@/components/ui";
 import type { AlunoDetalhe } from "@/lib/aulas/tipos";
 import { chamarApi } from "@/lib/servidor/api";
@@ -21,7 +23,17 @@ export default async function PaginaEditarAluno({
     return <Aviso tipo="info">Este aluno foi anonimizado e não pode ser alterado.</Aviso>;
   return (
     <>
-      <h1 className="text-2xl font-semibold">Editar aluno</h1>
+      <LinkVoltar href={`/aulas/alunos/${aluno.dados.id}`}>Voltar para o aluno</LinkVoltar>
+      <Cabecalho
+        etiqueta={aluno.dados.nome}
+        icone="pessoa"
+        titulo={
+          <>
+            Editar <Destaque>aluno</Destaque>
+          </>
+        }
+        descricao="Contato, emergência e responsável. O consentimento registrado no cadastro continua o mesmo."
+      />
       <FormAluno aluno={aluno.dados} />
     </>
   );

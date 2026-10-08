@@ -52,7 +52,9 @@ test("HOR-CA-01, HOR-CA-02, HOR-CA-03, HOR-CA-07, HOR-CA-08 e HOR-CA-09: da faix
     const form = atendente.getByRole("form", { name: "Nova reserva" });
     await expect(form.getByLabel("Início")).toHaveValue("19");
     await expect(form.getByText("Bloqueio (aula, manutenção)")).toHaveCount(0);
-    await form.getByLabel("Duração").selectOption({ label: "2 horas" });
+    // Duração em blocos: toca no bloco "2 horas".
+    await form.getByText("2 horas", { exact: true }).click();
+    await expect(form.getByLabel("2 horas")).toBeChecked();
     await form.getByLabel("Nome do cliente").fill(`Cliente ${marca}`);
     await form.getByLabel("Telefone (opcional)").fill("(21) 99876-5432");
     await form.getByRole("button", { name: "Reservar" }).click();
@@ -68,7 +70,9 @@ test("HOR-CA-01, HOR-CA-02, HOR-CA-03, HOR-CA-07, HOR-CA-08 e HOR-CA-09: da faix
 
     // Pagamento no Caixa.
     const pagamento = atendente.getByRole("form", { name: "Receber pagamento" });
-    await pagamento.getByLabel("Forma de pagamento").selectOption({ label: "Pix" });
+    // Forma de pagamento em blocos: toca no bloco "Pix".
+    await pagamento.getByText("Pix", { exact: true }).click();
+    await expect(pagamento.getByLabel("Pix")).toBeChecked();
     await pagamento.getByRole("button", { name: "Registrar pagamento" }).click();
     await expect(atendente.getByTestId("situacao-pagamento")).toHaveText("Pago");
 

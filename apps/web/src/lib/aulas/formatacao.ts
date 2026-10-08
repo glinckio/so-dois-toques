@@ -38,20 +38,27 @@ export function minutosDe(hora: string): number | null {
   return m ? Number(m[1]) * 60 + Number(m[2]) : null;
 }
 
-/** "Seg e Qua, 07:00–08:00 · Sex, 18:00–19:00": agrupa dias com o mesmo horário. */
-export function descreverHorarios(horarios: readonly Horario[]): string {
+export type GrupoDeHorario = { dias: string; faixa: string; diasSemana: number[] };
+
+/** Dias com o mesmo horário juntos ("Seg e Qua" + "07:00–08:00"), um grupo por pílula. */
+export function gruposDeHorarios(horarios: readonly Horario[]): GrupoDeHorario[] {
   const grupos = new Map<string, number[]>();
   for (const h of [...horarios].sort((a, b) => a.diaSemana - b.diaSemana || a.inicio - b.inicio)) {
     const chave = `${horaDe(h.inicio)}–${horaDe(h.fim)}`;
     grupos.set(chave, [...(grupos.get(chave) ?? []), h.diaSemana]);
   }
-  return [...grupos.entries()]
-    .map(([faixa, dias]) => {
-      const nomes = dias.map((d) => DIAS_CURTOS[d]);
-      const lista =
-        nomes.length > 1 ? `${nomes.slice(0, -1).join(", ")} e ${nomes.at(-1)}` : nomes[0];
-      return `${lista}, ${faixa}`;
-    })
+  return [...grupos.entries()].map(([faixa, dias]) => {
+    const nomes = dias.map((d) => DIAS_CURTOS[d]);
+    const lista =
+      nomes.length > 1 ? `${nomes.slice(0, -1).join(", ")} e ${nomes.at(-1)}` : nomes[0]!;
+    return { dias: lista, faixa, diasSemana: dias };
+  });
+}
+
+/** "Seg e Qua, 07:00–08:00 · Sex, 18:00–19:00": agrupa dias com o mesmo horário. */
+export function descreverHorarios(horarios: readonly Horario[]): string {
+  return gruposDeHorarios(horarios)
+    .map((g) => `${g.dias}, ${g.faixa}`)
     .join(" · ");
 }
 

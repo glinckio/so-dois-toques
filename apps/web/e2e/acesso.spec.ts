@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrar, entrarComoAdmin } from "./apoio";
+import { cadastrarUsuario, confirmar, emailUnico, entrar, entrarComoAdmin, sair } from "./apoio";
 import { ADMIN_E2E } from "./dados";
 
 test("ACESSO-CA-05: sem sessão, qualquer página leva ao login", async ({ page }) => {
@@ -20,7 +20,7 @@ test("ACESSO-CA-01 e ACESSO-CA-07: entrar leva ao início e sair encerra a sess�
   const cookie = (await context.cookies()).find((c) => c.name === "sdt_sessao");
   expect(cookie).toMatchObject({ httpOnly: true, sameSite: "Lax" });
 
-  await page.getByRole("button", { name: "Sair" }).click();
+  await sair(page);
   await expect(page).toHaveURL("/login");
 
   // Reaproveitar o cookie antigo não dá acesso.
@@ -130,8 +130,8 @@ test("ACESSO-CA-14: desativar pela tela tira o usuário do sistema na hora", asy
     await expect(outro).toHaveURL("/trocar-senha");
 
     const item = page.getByRole("listitem").filter({ hasText: email });
-    page.once("dialog", (dialogo) => dialogo.accept());
     await item.getByRole("button", { name: "Desativar" }).click();
+    await confirmar(page);
     await expect(item).toContainText("desativado");
 
     await outro.reload();

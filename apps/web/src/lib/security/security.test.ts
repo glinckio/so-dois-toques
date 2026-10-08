@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildCsp, generateNonce } from "./csp";
+import { createHash } from "node:crypto";
+import { buildCsp, generateNonce, HASH_ESTILO_OCULTO } from "./csp";
 import { securityHeaders } from "./headers";
 
 describe("generateNonce", () => {
@@ -20,6 +21,14 @@ describe("buildCsp", () => {
     expect(csp).toContain("style-src 'self' 'nonce-abc123'");
     expect(csp).not.toContain("unsafe-eval");
     expect(csp).not.toContain("unsafe-inline");
+  });
+
+  it("VIVO-CA-11: em produção só libera o atributo display:none que o React usa ao transmitir SVG", () => {
+    const csp = buildCsp("abc123", { isDev: false });
+    const hash = `sha256-${createHash("sha256").update("display:none").digest("base64")}`;
+    expect(HASH_ESTILO_OCULTO).toBe(hash);
+    expect(csp).toContain(`style-src-attr 'unsafe-hashes' '${hash}'`);
+    expect(csp.match(/sha256-/g)).toHaveLength(1);
   });
 
   it("FUND-CA-02: bloqueia iframes de terceiros e plugins", () => {

@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { itensDoMenu, linkAtivo } from "./areas";
-import { filtroAuditoria, formatarDataHora, linkPagina } from "./auditoria";
+import { GRUPOS_DO_MENU, itensDoMenu, linkAtivo, separarMenuDoCelular } from "./areas";
+import {
+  agruparPorDia,
+  detalhesLegiveis,
+  eventoDaAuditoria,
+  filtroAuditoria,
+  formatarDataHora,
+  horaDoRegistro,
+  linkPagina,
+  periodosRapidos,
+  ROTULOS_ACOES,
+} from "./auditoria";
 import { COOKIE_SESSAO, opcoesCookieSessao, rotaPublica } from "./cookie";
 import { ipDoCliente } from "./ip";
 
@@ -125,5 +135,118 @@ describe("linkAtivo", () => {
     expect(linkAtivo("/aulas/alunos/9/editar", abas)).toBe("/aulas/alunos");
     expect(linkAtivo("/aulas/turmas/nova", abas)).toBe("/aulas");
     expect(linkAtivo("/aulas", abas)).toBe("/aulas");
+  });
+});
+
+describe("VIVO-CA-02: menu agrupado e barra do celular", () => {
+  it("cada área está em um grupo só", () => {
+    const todas = GRUPOS_DO_MENU.flatMap((g) => g.areas);
+    expect(new Set(todas).size).toBe(todas.length);
+    expect(GRUPOS_DO_MENU.map((g) => g.rotulo)).toEqual(["Visão geral", "Operação", "Gestão"]);
+  });
+
+  it("perfis com até cinco áreas veem tudo na barra", () => {
+    const atendente = itensDoMenu(["inicio", "horarios", "estoque", "caixa"]);
+    expect(separarMenuDoCelular(atendente)).toEqual({ barra: atendente, mais: [] });
+    const professor = itensDoMenu(["inicio", "aulas"]);
+    expect(separarMenuDoCelular(professor).barra.map((i) => i.rotulo)).toEqual(["Início", "Aulas"]);
+  });
+
+  it("o administrador vê quatro áreas na barra e o resto em Mais", () => {
+    const admin = itensDoMenu([
+      "inicio",
+      "aulas",
+      "horarios",
+      "estoque",
+      "caixa",
+      "contabil",
+      "usuarios",
+      "auditoria",
+    ]);
+    const { barra, mais } = separarMenuDoCelular(admin);
+    expect(barra.map((i) => i.rotulo)).toEqual(["Início", "Aulas", "Horários", "Caixa"]);
+    expect(mais.map((i) => i.rotulo)).toEqual(["Estoque", "Contábil", "Usuários", "Auditoria"]);
+  });
+});
+
+describe("VIVO-CA-14: linha do tempo da auditoria", () => {
+  const agora = new Date("2026-10-07T15:00:00.000Z"); // 12:00 em São Paulo
+
+  it("VIVO-CA-14: agrupa por dia no fuso de São Paulo, com Hoje e Ontem", () => {
+    const grupos = agruparPorDia(
+      [
+        { id: "a", criadaEm: "2026-10-07T13:00:00.000Z" },
+        { id: "b", criadaEm: "2026-10-07T03:30:00.000Z" }, // 00:30 do dia 7
+        { id: "c", criadaEm: "2026-10-07T02:59:00.000Z" }, // 23:59 do dia 6
+        { id: "d", criadaEm: "2026-10-04T18:00:00.000Z" },
+      ],
+      agora,
+    );
+    expect(grupos.map((g) => [g.rotulo, g.itens.map((i) => i.id)])).toEqual([
+      ["Hoje", ["a", "b"]],
+      ["Ontem", ["c"]],
+      ["Domingo, 4 de outubro", ["d"]],
+    ]);
+    expect(horaDoRegistro("2026-10-07T02:59:00.000Z")).toBe("23:59");
+  });
+
+  it("VIVO-CA-14: dá ícone e tom pelo tipo de evento, com alertas em vermelho", () => {
+    expect(eventoDaAuditoria("LOGIN_SUCESSO")).toEqual({
+      assunto: "Acesso",
+      icone: "entrada",
+      tom: "sucesso",
+    });
+    expect(eventoDaAuditoria("LOGIN_BLOQUEADO").tom).toBe("perigo");
+    expect(eventoDaAuditoria("ACESSO_NEGADO").tom).toBe("perigo");
+    expect(eventoDaAuditoria("PAGAMENTO_ESTORNADO")).toMatchObject({
+      assunto: "Dinheiro",
+      icone: "estorno",
+      tom: "areia",
+    });
+    expect(eventoDaAuditoria("CAIXA_ABERTO")).toMatchObject({ icone: "caixa", tom: "ouro" });
+    expect(eventoDaAuditoria("RESERVA_CRIADA")).toMatchObject({ assunto: "Horários" });
+    expect(eventoDaAuditoria("PRODUTO_CRIADO")).toMatchObject({ assunto: "Estoque" });
+    expect(eventoDaAuditoria("PRESENCA_REGISTRADA")).toMatchObject({ assunto: "Aulas" });
+  });
+
+  it("todo tipo de evento conhecido cai num assunto que não é o genérico por engano", () => {
+    for (const acao of Object.keys(ROTULOS_ACOES)) {
+      const { assunto } = eventoDaAuditoria(acao);
+      if (assunto === "Dados") expect(acao).toMatch(/^(CONTABIL_|CLIENTES_)/);
+    }
+  });
+
+  it("VIVO-CA-14: mostra os detalhes como campos legíveis, com centavos em reais", () => {
+    expect(
+      detalhesLegiveis({
+        trocoInicialCentavos: 15000,
+        de: "PROFESSOR",
+        campos: ["nome", "telefone"],
+        automatica: false,
+        valorAnterior: 8000,
+        pagamentoId: "0b6f3c2a-1d4e-4f5a-9b8c-7d6e5f4a3b2c",
+      }),
+    ).toEqual([
+      { campo: "Troco inicial", valor: "R$ 150,00" },
+      { campo: "De", valor: "PROFESSOR" },
+      { campo: "Campos", valor: "nome, telefone" },
+      { campo: "Automática", valor: "não" },
+      { campo: "Valor anterior", valor: "R$ 80,00" },
+      { campo: "Pagamento", valor: "0b6f3c2a…" },
+    ]);
+    expect(detalhesLegiveis(null)).toEqual([]);
+    expect(detalhesLegiveis([1, 2])).toEqual([]);
+  });
+
+  it("atalhos de período mantêm usuário e ação e marcam o que está aberto", () => {
+    const { filtro } = filtroAuditoria({ inicio: "2026-10-01", fim: "2026-10-07", acao: "LOGOUT" });
+    const atalhos = periodosRapidos(filtro, agora);
+    expect(atalhos.map((a) => a.rotulo)).toEqual(["Tudo", "Hoje", "7 dias", "30 dias"]);
+    expect(atalhos[0]!.href).toBe("/auditoria?acao=LOGOUT");
+    expect(atalhos[1]!.href).toBe("/auditoria?inicio=2026-10-07&fim=2026-10-07&acao=LOGOUT");
+    expect(atalhos[2]!.href).toContain("inicio=2026-10-01");
+    expect(atalhos.map((a) => a.atual)).toEqual([false, false, true, false]);
+    const semFiltro = periodosRapidos(filtroAuditoria({}).filtro, agora);
+    expect(semFiltro[0]).toEqual({ rotulo: "Tudo", href: "/auditoria", atual: true });
   });
 });

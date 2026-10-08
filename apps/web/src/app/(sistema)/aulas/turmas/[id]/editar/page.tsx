@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { LinkVoltar } from "@/components/aulas/link-voltar";
 import { FormTurma } from "@/components/aulas/form-turma";
+import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { AcessoNegado, Aviso } from "@/components/ui";
 import type { Local, Professor, TurmaDetalhe } from "@/lib/aulas/tipos";
 import { chamarApi } from "@/lib/servidor/api";
@@ -25,7 +27,17 @@ export default async function PaginaEditarTurma({
     return <Aviso tipo="erro">Não foi possível carregar locais e professores.</Aviso>;
   return (
     <>
-      <h1 className="text-2xl font-semibold">Editar turma</h1>
+      <LinkVoltar href={`/aulas/turmas/${turma.dados.id}`}>Voltar para a turma</LinkVoltar>
+      <Cabecalho
+        etiqueta={turma.dados.nome}
+        icone="aulas"
+        titulo={
+          <>
+            Editar <Destaque>turma</Destaque>
+          </>
+        }
+        descricao="Nome, nível, local, professor, vagas e os dias e horários da turma."
+      />
       <FormTurma turma={turma.dados} locais={locais.dados} professores={professores.dados} />
     </>
   );

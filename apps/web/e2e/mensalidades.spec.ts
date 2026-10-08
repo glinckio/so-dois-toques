@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
+import { cadastrarUsuario, confirmar, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
 
 const MESES = [
   "janeiro",
@@ -92,7 +92,10 @@ test("MENS-CA-01, MENS-CA-02, MENS-CA-05, MENS-CA-09, MENS-CA-11, MENS-CA-12, ME
     await primeiroAcesso(atendente, emailAtendente, senhaTemporaria, "caixa-balcao-2026-z");
     await atendente.goto(urlMensalidade);
     await expect(atendente.getByRole("heading", { level: 1, name: nomeAluno })).toBeVisible();
-    await atendente.getByLabel("Pix").check();
+    // A forma de pagamento é escolhida em blocos.
+    const pagamento = atendente.getByRole("form", { name: "Registrar pagamento" });
+    await pagamento.getByText("Pix", { exact: true }).click();
+    await expect(pagamento.getByRole("radio", { name: "Pix" })).toBeChecked();
     await atendente.getByRole("button", { name: "Registrar pagamento" }).click();
     await expect(atendente.getByText("Pagamento registrado.")).toBeVisible();
     const recibo = atendente.getByRole("article");
@@ -126,6 +129,7 @@ test("MENS-CA-01, MENS-CA-02, MENS-CA-05, MENS-CA-09, MENS-CA-11, MENS-CA-12, ME
   const estorno = page.getByRole("form", { name: "Estornar pagamento" });
   await estorno.getByLabel("Motivo").fill("Pagamento registrado em dobro");
   await estorno.getByRole("button", { name: "Estornar pagamento" }).click();
+  await confirmar(page);
   await expect(
     page.getByText(/Estornado em .* Motivo: Pagamento registrado em dobro/),
   ).toBeVisible();

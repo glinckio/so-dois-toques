@@ -3,7 +3,8 @@
 import { useActionState } from "react";
 import { abrirCaixa } from "@/app/acoes/caixa";
 import { ESTADO_INICIAL } from "@/app/acoes/estado";
-import { Aviso, Campo, classeBotao } from "@/components/ui";
+import { BotaoEnviar } from "@/components/base/enviar";
+import { Aviso, Campo, classeBotaoOuro, SetaDoBotao } from "@/components/ui";
 
 /** CAIXA-CA-01: abre o turno com o troco que está na gaveta. */
 export function FormAbertura() {
@@ -13,21 +14,23 @@ export function FormAbertura() {
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
       aria-label="Abrir caixa"
-      className="flex flex-col gap-3"
+      className="vidro flex flex-col gap-4 rounded-[1.5rem] p-4 sm:p-5"
     >
-      <div className="sm:w-60">
-        <Campo
-          rotulo="Troco na gaveta (R$)"
-          id="troco"
-          inputMode="decimal"
-          placeholder="0,00"
-          defaultValue={estado.valores?.troco ?? ""}
-        />
-      </div>
+      <Campo
+        rotulo="Troco na gaveta (R$)"
+        id="troco"
+        prefixo="R$"
+        inputMode="decimal"
+        autoComplete="off"
+        placeholder="0,00"
+        defaultValue={estado.valores?.troco ?? ""}
+        ajuda="Deixe em branco se a gaveta começar vazia."
+      />
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
-      <button type="submit" className={`${classeBotao} self-start`} disabled={enviando}>
+      <BotaoEnviar enviando={enviando} className={`${classeBotaoOuro} w-full`}>
         Abrir caixa
-      </button>
+        <SetaDoBotao />
+      </BotaoEnviar>
     </form>
   );
 }

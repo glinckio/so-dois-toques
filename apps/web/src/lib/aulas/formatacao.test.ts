@@ -4,6 +4,7 @@ import {
   diaDaSemana,
   formatarData,
   formatarTelefone,
+  gruposDeHorarios,
   hojeEmSaoPaulo,
   horaDe,
   minutosDe,
@@ -37,6 +38,16 @@ describe("formatação de Aulas", () => {
         { diaSemana: 4, inicio: 420, fim: 480 },
       ]),
     ).toBe("Seg, Ter e Qui, 07:00–08:00");
+    expect(
+      gruposDeHorarios([
+        { diaSemana: 3, inicio: 420, fim: 480 },
+        { diaSemana: 1, inicio: 420, fim: 480 },
+        { diaSemana: 5, inicio: 1080, fim: 1140 },
+      ]),
+    ).toEqual([
+      { dias: "Seg e Qua", faixa: "07:00–08:00", diasSemana: [1, 3] },
+      { dias: "Sex", faixa: "18:00–19:00", diasSemana: [5] },
+    ]);
   });
 
   it("formata datas e calcula o dia no fuso de São Paulo", () => {

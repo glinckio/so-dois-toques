@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
+/* Classes montadas a partir de números (linhas da grade das quadras, atrasos das cascatas).
+   Precisa ficar numa linha só: quebrada pelo Prettier, o Tailwind ignora o resto do arquivo. */
+/* prettier-ignore */
+@source inline("row-start-{1..25} row-span-{1..8} col-start-{1..25} col-span-{1..24} grid-cols-{1..24} atraso-{0..24}");
+
 /* Cores do Só Dois Toques, tiradas do logo (VIS-CA-01). Os mesmos valores estão em src/lib/tema.ts. */
 @theme {
+  --color-noite: #04020e;
   --color-fundo: #07041a;
   --color-cartao: #120c2b;
   --color-elevado: #1b1440;
@@ -10,14 +16,200 @@
   --color-suave: #c4bddf;
   --color-apagado: #9d96bb;
   --color-roxo: #a667fc;
+  --color-roxo-claro: #cdb2ff;
   --color-roxo-forte: #7c3aed;
   --color-ouro: #e9ab02;
+  --color-areia: #e8c99a;
   --color-sucesso: #34d399;
   --color-perigo: #f87171;
   --color-serie-1: #a667fc;
   --color-serie-2: #c98500;
+  --color-serie-3: #2b9fd6;
+  --color-serie-4: #d9589a;
 
   --font-sans: var(--fonte-marca), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --ease-mola: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* VIVO: movimentos do sistema. Todos somem com "reduzir movimento" (VIVO-CA-01). */
+  --animate-entrar: entrar 0.55s var(--ease-mola) both;
+  --animate-surgir: surgir 0.28s var(--ease-mola) both;
+  --animate-subir-folha: subir-folha 0.35s var(--ease-mola) both;
+  --animate-balancar: balancar 0.45s ease-in-out;
+  --animate-recusar: surgir 0.28s var(--ease-mola) both, balancar 0.45s ease-in-out 0.1s;
+  --animate-pulsar: pulsar 2.2s ease-out infinite;
+  --animate-flutuar: flutuar 7s ease-in-out infinite;
+  --animate-girar: girar 0.9s linear infinite;
+  --animate-girar-lento: girar 40s linear infinite;
+  --animate-brilho: brilho 1.6s linear infinite;
+  --animate-crescer-y: crescer-y 0.9s var(--ease-mola) both;
+  --animate-crescer-x: crescer-x 0.9s var(--ease-mola) both;
+  --animate-desenhar: desenhar 1.1s var(--ease-mola) both;
+  --animate-marcar: marcar 0.4s var(--ease-mola) both;
+
+  @keyframes entrar {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  @keyframes surgir {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.97);
+    }
+  }
+
+  @keyframes subir-folha {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes balancar {
+    20%,
+    60% {
+      transform: translateX(-8px);
+    }
+    40%,
+    80% {
+      transform: translateX(8px);
+    }
+  }
+
+  @keyframes pulsar {
+    0% {
+      box-shadow: 0 0 0 0 currentColor;
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 10px transparent;
+    }
+  }
+
+  @keyframes flutuar {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-14px) rotate(8deg);
+    }
+  }
+
+  @keyframes girar {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes brilho {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes crescer-y {
+    from {
+      transform: scaleY(0);
+    }
+  }
+
+  @keyframes crescer-x {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  /* Com pathLength="100" e stroke-dasharray="N 200", a linha se desenha do zero até N. */
+  @keyframes desenhar {
+    from {
+      stroke-dashoffset: 100;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes marcar {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+  }
+}
+
+/* Superfície dos cartões: cor do cartão com um brilho leve no alto. */
+@utility superficie {
+  background-color: var(--color-cartao);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.035), transparent 45%);
+  border: 1px solid var(--color-borda);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.04),
+    0 24px 48px -32px rgb(0 0 0 / 0.8);
+}
+
+/* Cartão de destaque: borda em degradê do roxo ao dourado. */
+@utility superficie-destaque {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(160deg, #2a1663, #140b33 55%, #120c2b) padding-box,
+    linear-gradient(140deg, #a667fc, rgb(124 58 237 / 0.25) 40%, rgb(233 171 2 / 0.6)) border-box;
+  box-shadow: 0 30px 60px -30px rgb(124 58 237 / 0.55);
+}
+
+/* Vidro: para o que flutua sobre o conteúdo (barra de abas, menus). */
+@utility vidro {
+  background-color: rgb(18 12 43 / 0.8);
+  border: 1px solid rgb(205 178 255 / 0.12);
+  backdrop-filter: blur(18px) saturate(1.4);
+}
+
+/* Texto com degradê da marca (palavra em destaque nos títulos). */
+@utility texto-marca {
+  background-image: linear-gradient(100deg, #cdb2ff 0%, #a667fc 45%, #e9ab02 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Esqueleto de carregamento. */
+@utility esqueleto {
+  border-radius: 1rem;
+  background-color: var(--color-elevado);
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgb(205 178 255 / 0.08) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-brilho);
+}
+
+/* Atraso em cascata para listas e barras: atraso-3 começa 135 ms depois. */
+@utility atraso-* {
+  animation-delay: calc(--value(integer) * 45ms);
+}
+
+/* Elementos SVG que crescem a partir da base ou da esquerda. */
+@utility origem-base {
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+
+@utility origem-esquerda {
+  transform-box: fill-box;
+  transform-origin: left;
+}
+
+@utility origem-centro {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 @layer base {
@@ -26,14 +218,15 @@
   }
 
   html {
-    background-color: var(--color-fundo);
+    background-color: var(--color-noite);
   }
 
   body {
-    background-color: var(--color-fundo);
+    background-color: var(--color-noite);
     background-image:
-      radial-gradient(60rem 30rem at 85% -10%, rgb(124 58 237 / 0.18), transparent 70%),
-      radial-gradient(40rem 24rem at -10% 110%, rgb(166 103 252 / 0.1), transparent 70%);
+      radial-gradient(50rem 28rem at 90% -8%, rgb(124 58 237 / 0.22), transparent 70%),
+      radial-gradient(36rem 22rem at -6% 105%, rgb(166 103 252 / 0.12), transparent 70%),
+      radial-gradient(24rem 16rem at 40% 120%, rgb(233 171 2 / 0.06), transparent 70%);
     background-attachment: fixed;
     color: var(--color-texto);
     font-family: var(--font-sans);
@@ -51,7 +244,7 @@
   h1,
   h2,
   h3 {
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
 
   a {
@@ -61,9 +254,9 @@
   /* Tabelas das telas: cabeçalho discreto, linhas separadas por fio. */
   table thead th {
     color: var(--color-apagado);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
@@ -76,6 +269,16 @@
   select,
   textarea {
     color-scheme: dark;
+  }
+
+  /* Seletor com a seta da marca no lugar da seta do navegador. */
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c4bddf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.85rem center;
+    background-repeat: no-repeat;
+    background-size: 1.1rem;
+    padding-right: 2.5rem;
   }
 
   input[type="checkbox"],
@@ -92,11 +295,73 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+
+  dialog::backdrop {
+    background: rgb(4 2 14 / 0.7);
+    backdrop-filter: blur(6px);
+  }
+
+  [popover] {
+    color: inherit;
+  }
+}
+
+@layer components {
+  /* Conteúdo de cada tela entra em cascata, um bloco depois do outro. */
+  .cascata > * {
+    animation: var(--animate-entrar);
+  }
+
+  .cascata > :nth-child(2) {
+    animation-delay: 50ms;
+  }
+
+  .cascata > :nth-child(3) {
+    animation-delay: 100ms;
+  }
+
+  .cascata > :nth-child(4) {
+    animation-delay: 150ms;
+  }
+
+  .cascata > :nth-child(5) {
+    animation-delay: 200ms;
+  }
+
+  .cascata > :nth-child(6) {
+    animation-delay: 250ms;
+  }
+
+  .cascata > :nth-child(n + 7) {
+    animation-delay: 300ms;
+  }
+
+  /* Pílula das abas e menus: desliza até o item escolhido (posição medida no navegador). */
+  .pilula-deslizante {
+    transition:
+      transform 0.45s var(--ease-mola),
+      width 0.45s var(--ease-mola),
+      opacity 0.2s;
+  }
+}
+
+/* VIVO-CA-01: quem pede menos movimento no sistema vê tudo parado. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Impressão (recibos, fechamento do caixa): papel branco e tinta preta. */
 @media print {
   :root {
+    --color-noite: #ffffff;
     --color-fundo: #ffffff;
     --color-cartao: #ffffff;
     --color-elevado: #f2f2f2;
@@ -109,6 +374,18 @@
 
   body {
     background: #ffffff;
+    color: #000000;
+  }
+
+  .superficie,
+  .superficie-destaque {
+    background: #ffffff;
+    box-shadow: none;
+  }
+
+  /* O degradê do título some no papel: imprime em preto. */
+  .texto-marca {
+    background: none;
     color: #000000;
   }
 }

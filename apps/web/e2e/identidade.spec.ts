@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
+import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso, sair } from "./apoio";
 
 function errosDoConsole(page: Page) {
   const erros: string[] = [];
@@ -95,7 +95,7 @@ test("VIS-CA-05: atendente e professor veem só o resumo das suas áreas", async
     await expect(pessoa.getByTestId("kpi-Receitas")).toHaveCount(0);
     await expect(pessoa.getByTestId("grafico-mensal")).toHaveCount(0);
 
-    await pessoa.getByRole("button", { name: "Sair" }).click();
+    await sair(pessoa);
     await expect(pessoa).toHaveURL("/login");
     await primeiroAcesso(pessoa, emailProfessor, senhaProfessor, "manchete-baixa-2026-p");
     await expect(pessoa.getByRole("region", { name: "Aulas de hoje" })).toBeVisible();
@@ -119,7 +119,7 @@ test("VIS-CA-06: o Contábil mostra gráficos com legenda e tabela, sem erros de
   await expect(grafico.getByText("Receitas", { exact: true })).toBeVisible();
   await expect(page.getByRole("table", { name: "Comparativo mensal" })).toBeVisible();
   for (const barras of ["Receitas por origem", "Despesas por tipo"]) {
-    await expect(page.getByTestId(`barras-${barras}`)).toBeVisible();
+    await expect(page.getByTestId(`grafico-${barras}`)).toBeVisible();
     await expect(page.getByRole("table", { name: barras })).toBeVisible();
   }
   expect(erros).toEqual([]);

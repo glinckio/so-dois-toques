@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
+import { cadastrarUsuario, confirmar, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
 
 // Roda num projeto à parte, depois dos testes do caixa: a venda precisa do caixa aberto.
 
@@ -9,6 +9,9 @@ const hojeSP = () =>
 async function abrirCaixaSeFechado(page: Page) {
   await page.goto("/caixa");
   const fechado = page.getByRole("region", { name: "Caixa fechado" });
+  // Espera a tela sair do esqueleto de carregamento antes de decidir: o React pode
+  // segurar a troca por alguns instantes depois do carregamento da página.
+  await expect(fechado.or(page.getByTestId("turno-aberto"))).toBeVisible();
   if (await fechado.isVisible()) {
     await fechado.getByRole("button", { name: "Abrir caixa" }).click();
     await expect(page.getByTestId("turno-aberto")).toBeVisible();
@@ -50,7 +53,8 @@ test("ESTQ-CA-01, ESTQ-CA-02, ESTQ-CA-03, ESTQ-CA-05, ESTQ-CA-06, ESTQ-CA-07 e E
     await compra.getByLabel("Produto").selectOption({ label: `${nome} (tem 0)` });
     await compra.getByLabel("Quantidade").fill("6");
     await compra.getByLabel("Valor total pago (R$)").fill("12,00");
-    await compra.getByLabel("Forma de pagamento").selectOption({ label: "Dinheiro" });
+    // A forma de pagamento é escolhida em blocos.
+    await compra.getByText("Dinheiro").click();
     await compra.getByRole("button", { name: "Registrar compra" }).click();
     await expect(compra.getByText("Compra registrada e lançada no Caixa.")).toBeVisible();
 
@@ -91,6 +95,7 @@ test("ESTQ-CA-01, ESTQ-CA-02, ESTQ-CA-03, ESTQ-CA-05, ESTQ-CA-06, ESTQ-CA-07 e E
   await vendaDoDia.getByText("Estornar", { exact: true }).click();
   await vendaDoDia.getByLabel("Motivo").fill("Cliente desistiu");
   await vendaDoDia.getByRole("button", { name: "Estornar venda" }).click();
+  await confirmar(page);
   await expect(vendaDoDia.getByText(/Estornada em .* Motivo: Cliente desistiu/)).toBeVisible();
 
   await page.goto("/estoque");
@@ -102,7 +107,8 @@ test("ESTQ-CA-01, ESTQ-CA-02, ESTQ-CA-03, ESTQ-CA-05, ESTQ-CA-06, ESTQ-CA-07 e E
   await ajuste.getByRole("button", { name: "Ajustar" }).click();
   await expect(ajuste.getByText("Estoque ajustado.")).toBeVisible();
   await expect(page.getByTestId("resumo-produto")).toContainText("5 em estoque");
-  const movimentos = page.getByRole("table", { name: "Movimentações" });
+  // As movimentações são uma linha do tempo.
+  const movimentos = page.getByRole("list", { name: "Movimentações" });
   await expect(movimentos).toContainText("Garrafa furada");
   await expect(movimentos).toContainText("Estorno de venda");
   await expect(movimentos).toContainText("Compra");
@@ -125,4 +131,63 @@ test("ESTQ-CA-01, ESTQ-CA-02, ESTQ-CA-03, ESTQ-CA-05, ESTQ-CA-06, ESTQ-CA-07 e E
   } finally {
     await contextoProfessor.close();
   }
+});
+
+test("VIVO-CA-07: na venda, + e − mudam a quantidade sem passar do saldo, e o total acompanha", async ({
+  page,
+}) => {
+  const marca = Math.random().toString(36).slice(2, 8);
+  await entrarComoAdmin(page);
+
+  // Produto com saldo pequeno, dado por ajuste (não passa pelo Caixa).
+  await page.goto("/estoque");
+  const nome = `Picolé ${marca}`;
+  const cadastro = page.getByRole("form", { name: "Cadastrar produto" });
+  await cadastro.getByLabel("Nome do produto").fill(nome);
+  await cadastro.getByLabel("Preço de venda (R$)").fill("4,50");
+  await cadastro.getByRole("button", { name: "Cadastrar produto" }).click();
+  await expect(page.getByText(`Produto ${nome} cadastrado.`)).toBeVisible();
+  await page.getByRole("link", { name: nome }).click();
+  const ajuste = page.getByRole("form", { name: "Ajustar estoque" });
+  await ajuste.getByLabel("Quantidade").fill("2");
+  await ajuste.getByLabel("Motivo").fill("Inventário inicial");
+  await ajuste.getByRole("button", { name: "Ajustar" }).click();
+  await expect(page.getByTestId("resumo-produto")).toContainText("2 em estoque");
+
+  await page.goto("/estoque/venda");
+  const venda = page.getByRole("form", { name: "Registrar venda" });
+  const campo = venda.getByLabel(nome);
+  const mais = venda.getByRole("button", { name: `Mais um ${nome}` });
+  const menos = venda.getByRole("button", { name: `Menos um ${nome}` });
+  const total = venda.getByTestId("total-venda");
+  await expect(total).toHaveText("Total: R$ 0,00");
+  await expect(menos).toBeDisabled();
+
+  await mais.click();
+  await expect(campo).toHaveValue("1");
+  await expect(total).toHaveText("Total: R$ 4,50");
+  await mais.click();
+  await expect(campo).toHaveValue("2");
+  await expect(total).toHaveText("Total: R$ 9,00");
+
+  // No saldo, o + para: nem um clique disparado direto no botão passa de 2.
+  await expect(mais).toBeDisabled();
+  await mais.dispatchEvent("click");
+  await expect(campo).toHaveValue("2");
+  await expect(total).toHaveText("Total: R$ 9,00");
+
+  await menos.click();
+  await expect(campo).toHaveValue("1");
+  await expect(total).toHaveText("Total: R$ 4,50");
+  await expect(mais).toBeEnabled();
+  await menos.click();
+  await expect(campo).toHaveValue("");
+  await expect(total).toHaveText("Total: R$ 0,00");
+  await expect(menos).toBeDisabled();
+
+  // O campo continua digitável, e o total acompanha também.
+  await campo.fill("2");
+  await expect(total).toHaveText("Total: R$ 9,00");
+  await expect(mais).toBeDisabled();
+  await expect(menos).toBeEnabled();
 });
