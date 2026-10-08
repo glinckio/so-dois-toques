@@ -32,7 +32,7 @@ export function PilulasDeLinks({
             <Link
               href={item.href}
               aria-current={item.atual ? "page" : undefined}
-              className={`relative z-10 flex min-h-10 items-center rounded-full px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${
+              className={`relative z-10 flex min-h-11 items-center rounded-full px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${
                 item.atual
                   ? "bg-roxo-forte text-white group-data-pronto/pilulas:bg-transparent"
                   : "text-suave hover:text-texto"

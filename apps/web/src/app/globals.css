@@ -383,4 +383,10 @@
     background: #ffffff;
     box-shadow: none;
   }
+
+  /* O degradê do título some no papel: imprime em preto. */
+  .texto-marca {
+    background: none;
+    color: #000000;
+  }
 }

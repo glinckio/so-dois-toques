@@ -85,7 +85,7 @@ export function Abas({
               <Link
                 href={l.href}
                 aria-current={atual ? "page" : undefined}
-                className={`relative z-10 flex min-h-10 items-center rounded-full px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${
+                className={`relative z-10 flex min-h-11 items-center rounded-full px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${
                   atual
                     ? "text-fundo bg-ouro group-data-pronto/abas:bg-transparent"
                     : "text-suave hover:text-texto"
