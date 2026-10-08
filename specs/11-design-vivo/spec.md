@@ -37,23 +37,23 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
 
 ### Componentes de base
 
-| Componente | Para quê |
-| --- | --- |
-| Cabeçalho da tela | Etiqueta da área com ícone, título grande com palavra em destaque, descrição, ações e as abas internas |
-| Abas em pílula | Menu interno das áreas e filtros; a pílula ativa desliza até a aba clicada |
-| Cartão | Variações: padrão, destaque roxo, contraste dourado e vidro, com cabeçalho de ícone, título e ação |
-| Botões | Principal roxo com brilho, ouro (ação de dinheiro), secundário, fantasma e redondo de ícone; todos afundam ao toque e mostram uma bola girando enquanto enviam |
-| Valor | Dinheiro com os centavos menores; número que sobe até o valor ao aparecer |
-| Anel | Progresso circular com o percentual no meio, que se desenha ao aparecer: vagas da turma, presença, ocupação das quadras |
-| Barra de nível | Barra arredondada que cresce, com marca do mínimo: estoque, ocupação, atraso |
-| Linha de lista | Ícone em selo colorido ou avatar, título, detalhe e valor à direita: lançamentos, vendas, alunos, auditoria |
-| Avatar | Iniciais com cor fixa por pessoa; grupo de avatares empilhados nas turmas |
-| Selo de situação | Pago, A pagar, Atrasado, Aberto, Fechado: com ponto colorido e texto, nunca só cor |
-| Escolha em blocos | Forma de pagamento (Pix, Dinheiro, Débito, Crédito) e quadra, em blocos com ícone |
-| Faixa de dias | Sete dias para escolher a data, com hoje marcado e setas para avançar |
-| Vazio | Ilustração da bola, frase curta e a ação que resolve |
-| Confirmação | Janela própria do sistema no lugar da janela do navegador, com o risco escrito e os botões Confirmar e Cancelar |
-| Aviso | Sucesso e erro entram com animação e ícone; o sucesso desenha um "check" |
+| Componente        | Para quê                                                                                                                                                       |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cabeçalho da tela | Etiqueta da área com ícone, título grande com palavra em destaque, descrição, ações e as abas internas                                                         |
+| Abas em pílula    | Menu interno das áreas e filtros; a pílula ativa desliza até a aba clicada                                                                                     |
+| Cartão            | Variações: padrão, destaque roxo, contraste dourado e vidro, com cabeçalho de ícone, título e ação                                                             |
+| Botões            | Principal roxo com brilho, ouro (ação de dinheiro), secundário, fantasma e redondo de ícone; todos afundam ao toque e mostram uma bola girando enquanto enviam |
+| Valor             | Dinheiro com os centavos menores; número que sobe até o valor ao aparecer                                                                                      |
+| Anel              | Progresso circular com o percentual no meio, que se desenha ao aparecer: vagas da turma, presença, ocupação das quadras                                        |
+| Barra de nível    | Barra arredondada que cresce, com marca do mínimo: estoque, ocupação, atraso                                                                                   |
+| Linha de lista    | Ícone em selo colorido ou avatar, título, detalhe e valor à direita: lançamentos, vendas, alunos, auditoria                                                    |
+| Avatar            | Iniciais com cor fixa por pessoa; grupo de avatares empilhados nas turmas                                                                                      |
+| Selo de situação  | Pago, A pagar, Atrasado, Aberto, Fechado: com ponto colorido e texto, nunca só cor                                                                             |
+| Escolha em blocos | Forma de pagamento (Pix, Dinheiro, Débito, Crédito) e quadra, em blocos com ícone                                                                              |
+| Faixa de dias     | Sete dias para escolher a data, com hoje marcado e setas para avançar                                                                                          |
+| Vazio             | Ilustração da bola, frase curta e a ação que resolve                                                                                                           |
+| Confirmação       | Janela própria do sistema no lugar da janela do navegador, com o risco escrito e os botões Confirmar e Cancelar                                                |
+| Aviso             | Sucesso e erro entram com animação e ícone; o sucesso desenha um "check"                                                                                       |
 
 ### Login e senha
 

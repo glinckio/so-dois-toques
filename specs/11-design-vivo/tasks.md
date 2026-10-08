@@ -5,9 +5,9 @@
 - [x] Confirmação própria (VIVO-CA-04)
 - [x] Login e troca de senha (VIVO-CA-10)
 - [x] Início
-- [ ] Aulas e presença (VIVO-CA-09)
-- [ ] Horários (VIVO-CA-06)
-- [ ] Caixa (VIVO-CA-08)
-- [ ] Estoque e venda (VIVO-CA-07)
+- [x] Aulas e presença (VIVO-CA-09)
+- [x] Horários (VIVO-CA-06)
+- [x] Caixa (VIVO-CA-08)
+- [x] Estoque e venda (VIVO-CA-07)
 - [x] Contábil, Usuários e Auditoria (VIVO-CA-14)
 - [ ] Todas as telas sem erro de CSP (VIVO-CA-11)
