@@ -148,6 +148,7 @@ export default async function PaginaReserva({
                   explicacao="O valor sai do caixa e a reserva volta a ficar a pagar."
                   rotulo="Estornar pagamento"
                   idCampo="motivo-estorno"
+                  confirmar="Uma saída de mesmo valor entra no Caixa agora e a reserva volta a ficar a pagar. O pagamento continua no histórico, marcado como estornado."
                 />
               </Acao>
             )}
@@ -167,6 +168,13 @@ export default async function PaginaReserva({
                   }
                   rotulo={bloqueio ? "Liberar horário" : "Cancelar reserva"}
                   idCampo="motivo-cancelamento"
+                  confirmar={
+                    bloqueio
+                      ? undefined
+                      : r.pago
+                        ? "A reserva é cancelada, o horário fica livre e o valor pago sai do Caixa como estorno."
+                        : "A reserva é cancelada e o horário fica livre para outra pessoa."
+                  }
                 />
               </Acao>
             )}

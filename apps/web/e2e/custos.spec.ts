@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
+import { cadastrarUsuario, confirmar, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
 
 const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const MESES = [
@@ -87,6 +87,7 @@ test("CUSTO-CA-01, CUSTO-CA-02, CUSTO-CA-03, CUSTO-CA-04, CUSTO-CA-05 e CUSTO-CA
   await local.getByText("Estornar", { exact: true }).click();
   await local.getByLabel("Motivo").fill("Valor errado");
   await local.getByRole("button", { name: "Estornar pagamento" }).click();
+  await confirmar(page);
   await expect(local.getByText(/Estornado em .* Motivo: Valor errado/)).toBeVisible();
   await expect(local.getByTestId("resumo-local")).toContainText("pago R$ 0,00");
   await page.goto("/aulas/resultado");
