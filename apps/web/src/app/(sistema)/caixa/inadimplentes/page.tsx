@@ -71,7 +71,7 @@ export default async function PaginaInadimplentes() {
         <>
           <section
             aria-label="Total em atraso"
-            className="border-ouro/30 relative isolate grid gap-5 overflow-hidden rounded-[2rem] border bg-linear-to-br from-[#2b2008] via-[#140d26] to-[#120c2b] p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:p-7"
+            className="border-ouro/30 relative isolate grid grid-cols-1 gap-5 overflow-hidden rounded-[2rem] border bg-linear-to-br from-[#2b2008] via-[#140d26] to-[#120c2b] p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:p-7"
           >
             <span
               aria-hidden="true"

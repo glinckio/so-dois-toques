@@ -214,7 +214,7 @@ function Totais({ totais }: { totais: ListaMensalidades["totais"] }) {
   return (
     <section
       aria-label="Totais do mês"
-      className="superficie-destaque relative grid gap-6 overflow-hidden rounded-[2rem] p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:p-7"
+      className="superficie-destaque relative grid grid-cols-1 gap-6 overflow-hidden rounded-[2rem] p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:p-7"
     >
       <span
         aria-hidden="true"

@@ -58,7 +58,7 @@ export default async function PaginaFixas() {
           Na nova reserva, escolha &quot;Toda semana (fixa)&quot; para o mensalista.
         </Vazio>
       ) : (
-        <ul className="grid gap-3 xl:grid-cols-2" aria-label="Reservas fixas">
+        <ul className="grid grid-cols-1 gap-3 xl:grid-cols-2" aria-label="Reservas fixas">
           {series.map((s, i) => {
             const bloqueio = s.tipo === "BLOQUEIO";
             const fracao = s.proximas > 0 ? s.proximasPagas / s.proximas : 0;

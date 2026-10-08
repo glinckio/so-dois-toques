@@ -65,7 +65,7 @@ export function FormVenda({ produtos }: { produtos: ProdutoVenda[] }) {
       key={JSON.stringify(estado.valores ?? null)}
       action={acao}
       aria-label="Registrar venda"
-      className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_25rem] xl:gap-6"
+      className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_25rem] xl:gap-6"
     >
       <section
         aria-labelledby="titulo-balcao"
@@ -80,7 +80,7 @@ export function FormVenda({ produtos }: { produtos: ProdutoVenda[] }) {
           </span>
         </div>
         <ul
-          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3"
           aria-label="Produtos à venda"
         >
           {resumo.linhas.map((linha) => (

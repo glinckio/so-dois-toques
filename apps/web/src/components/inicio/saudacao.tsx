@@ -41,7 +41,7 @@ export function Saudacao({
 }) {
   const convite = CONVITE[perfil];
   return (
-    <header className="superficie-destaque relative grid gap-8 overflow-hidden rounded-[2rem] p-6 sm:p-8 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] xl:items-center">
+    <header className="superficie-destaque relative grid grid-cols-1 gap-8 overflow-hidden rounded-[2rem] p-6 sm:p-8 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] xl:items-center">
       <span
         className="bg-roxo/25 absolute -top-28 -right-20 size-80 rounded-full blur-3xl"
         aria-hidden="true"

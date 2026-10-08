@@ -174,7 +174,10 @@ export default async function PaginaTurno({
             titulo="Por categoria"
             descricao="Da que mais movimentou para a que menos"
           />
-          <ul className="grid gap-x-8 gap-y-4 lg:grid-cols-2" aria-label="Totais por categoria">
+          <ul
+            className="grid grid-cols-1 gap-x-8 gap-y-4 lg:grid-cols-2"
+            aria-label="Totais por categoria"
+          >
             {categorias.map((c) => {
               const visual = visualDaCategoria(c.categoria);
               return (

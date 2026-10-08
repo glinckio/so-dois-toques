@@ -52,7 +52,7 @@ export default async function PaginaProduto({ params }: PageProps<"/estoque/prod
     <>
       <Resumo produto={produto} />
       {admin && (
-        <div className="grid items-start gap-4 xl:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
           <FormAjuste produtoId={produto.id} saldo={produto.saldo} />
           <FormProduto produto={produto} />
         </div>
@@ -94,7 +94,7 @@ function Resumo({ produto }: { produto: Produto }) {
   const nivel = nivelDoEstoque(produto);
   const margem = margemSobrePreco(produto.precoCentavos, produto.custoMedioCentavos);
   return (
-    <header className="superficie-destaque relative grid gap-6 overflow-hidden rounded-[2rem] p-6 sm:p-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] xl:items-center">
+    <header className="superficie-destaque relative grid grid-cols-1 gap-6 overflow-hidden rounded-[2rem] p-6 sm:p-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] xl:items-center">
       <span
         aria-hidden="true"
         className="bg-roxo/25 pointer-events-none absolute -top-28 -right-20 size-80 rounded-full blur-3xl"

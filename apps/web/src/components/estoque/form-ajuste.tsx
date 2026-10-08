@@ -35,7 +35,7 @@ export function FormAjuste({ produtoId, saldo }: { produtoId: string; saldo: num
         className="flex flex-col gap-4"
       >
         <input type="hidden" name="produtoId" value={produtoId} />
-        <div className="grid gap-3 sm:grid-cols-[9rem_1fr]">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[9rem_1fr]">
           <Campo
             rotulo="Quantidade"
             id="quantidade"

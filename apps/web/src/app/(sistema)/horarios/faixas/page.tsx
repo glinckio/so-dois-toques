@@ -59,7 +59,7 @@ export default async function PaginaFaixas() {
             titulo="Semana das quadras"
             descricao={`${horasNaSemana} horas abertas por quadra na semana`}
           />
-          <div className="grid gap-x-4 sm:grid-cols-[6.5rem_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-[6.5rem_minmax(0,1fr)]">
             <div className="sm:col-start-2">
               <ReguaDoDia />
             </div>
@@ -71,7 +71,7 @@ export default async function PaginaFaixas() {
               return (
                 <li
                   key={dia}
-                  className="border-borda/60 grid gap-x-4 gap-y-2 border-t py-3.5 first:border-t-0 sm:grid-cols-[6.5rem_minmax(0,1fr)]"
+                  className="border-borda/60 grid grid-cols-1 gap-x-4 gap-y-2 border-t py-3.5 first:border-t-0 sm:grid-cols-[6.5rem_minmax(0,1fr)]"
                 >
                   <div className="flex items-baseline justify-between gap-2 sm:flex-col sm:justify-start sm:gap-0.5">
                     <h2 className="font-bold">{dia}</h2>

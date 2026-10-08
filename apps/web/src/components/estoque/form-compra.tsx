@@ -92,7 +92,7 @@ export function FormCompra({
         });
       }}
       aria-label="Registrar compra"
-      className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem] xl:gap-6"
+      className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem] xl:gap-6"
     >
       <div className="superficie flex flex-col gap-5 rounded-[1.75rem] p-5 sm:p-6">
         <CabecalhoCartao
@@ -120,7 +120,7 @@ export function FormCompra({
             ))}
           </select>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Campo
             rotulo="Quantidade"
             id="quantidade"

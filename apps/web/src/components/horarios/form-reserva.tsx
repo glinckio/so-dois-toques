@@ -87,7 +87,7 @@ export function FormReserva({
       action={acao}
       onChange={(evento) => setEscolha(lerEscolha(evento.currentTarget))}
       aria-label="Nova reserva"
-      className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,21rem)]"
+      className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,21rem)]"
     >
       <div className="superficie flex flex-col gap-7 rounded-[1.75rem] p-5 sm:p-6">
         {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
@@ -116,7 +116,7 @@ export function FormReserva({
         />
         <fieldset className="flex flex-col gap-3">
           <legend className="text-suave mb-1.5 text-sm font-medium">Quando</legend>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo
               rotulo={semanal ? "Primeiro dia" : "Dia"}
               id="data"
@@ -204,7 +204,7 @@ export function FormReserva({
             defaultValue={valor("motivo")}
           />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo
               rotulo="Nome do cliente"
               id="clienteNome"

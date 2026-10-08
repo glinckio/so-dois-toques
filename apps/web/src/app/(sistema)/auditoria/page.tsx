@@ -121,7 +121,10 @@ export default async function PaginaAuditoria({ searchParams }: PageProps<"/audi
           </button>
         </form>
         {filtrando && (
-          <p className="text-suave flex flex-wrap items-center gap-2 text-sm">
+          <p
+            data-testid="filtros-ativos"
+            className="text-suave flex flex-wrap items-center gap-2 text-sm"
+          >
             <span className="text-apagado">Mostrando só:</span>
             {(filtro.inicio || filtro.fim) && (
               <Selo tom="roxo" semPonto>

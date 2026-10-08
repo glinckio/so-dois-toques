@@ -131,7 +131,7 @@ function Totais({ totais }: { totais: Valores }) {
   return (
     <section
       aria-label="Totais do mês"
-      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.4fr]"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.4fr]"
     >
       <Total
         rotulo="Receita de mensalidades"

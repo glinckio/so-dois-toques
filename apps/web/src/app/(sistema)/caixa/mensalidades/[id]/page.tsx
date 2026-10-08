@@ -104,7 +104,7 @@ export default async function PaginaMensalidade({ params }: PageProps<"/caixa/me
   return (
     <>
       <header
-        className={`relative grid gap-5 overflow-hidden rounded-[2rem] p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-7 ${
+        className={`relative grid grid-cols-1 gap-5 overflow-hidden rounded-[2rem] p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-7 ${
           devida ? "superficie-destaque" : "superficie"
         }`}
       >
@@ -147,7 +147,7 @@ export default async function PaginaMensalidade({ params }: PageProps<"/caixa/me
       )}
 
       {devida ? (
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
           <FormPagamento
             mensalidadeId={m.id}
             valorCentavos={m.valorCentavos}

@@ -7,7 +7,7 @@ export default function CarregandoGrade() {
         <span className="esqueleto h-9 w-72 max-w-full" />
         <span className="esqueleto h-4 w-48 max-w-full" />
       </div>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <div className="superficie flex flex-col gap-3 rounded-[1.75rem] p-3 sm:p-4">
           <span className="esqueleto h-5 w-32" />
           <div className="grid grid-cols-7 gap-1 sm:gap-2">

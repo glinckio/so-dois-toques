@@ -37,7 +37,7 @@ export function CaixaAberto({ turno, agora }: { turno: Turno; agora: Date }) {
         <LinkDoCartao href={`/caixa/turnos/${turno.id}`}>Ver o turno</LinkDoCartao>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-center">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-center">
         <div className="flex flex-col gap-2">
           <p data-testid="tempo-aberto" className="flex flex-col gap-1">
             <span className="text-suave text-sm font-semibold">Aberto há</span>{" "}
@@ -94,7 +94,7 @@ export function CaixaFechado() {
   return (
     <section
       aria-label="Caixa fechado"
-      className="border-ouro/30 relative isolate grid gap-6 overflow-hidden rounded-[2rem] border bg-linear-to-br from-[#2b2008] via-[#140d26] to-[#120c2b] p-6 sm:p-7 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:items-center"
+      className="border-ouro/30 relative isolate grid grid-cols-1 gap-6 overflow-hidden rounded-[2rem] border bg-linear-to-br from-[#2b2008] via-[#140d26] to-[#120c2b] p-6 sm:p-7 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:items-center"
     >
       <span
         aria-hidden="true"

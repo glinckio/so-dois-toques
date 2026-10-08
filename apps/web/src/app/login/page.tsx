@@ -37,7 +37,7 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
   await connection();
   const { expirada } = await searchParams;
   return (
-    <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-8 px-4 py-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12 lg:px-8">
+    <main className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 items-center gap-8 px-4 py-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12 lg:px-8">
       <section
         aria-label="Só Dois Toques"
         className="superficie-destaque animate-entrar relative hidden min-h-[36rem] flex-col justify-between overflow-hidden rounded-[2.25rem] p-10 lg:flex"

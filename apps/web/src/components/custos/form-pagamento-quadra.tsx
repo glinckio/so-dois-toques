@@ -37,7 +37,7 @@ export function FormPagamentoQuadra({
       </h3>
       <input type="hidden" name="localId" value={localId} />
       <input type="hidden" name="competencia" value={competencia} />
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Campo
           rotulo="Valor pago (R$)"
           id={`valor-${localId}`}

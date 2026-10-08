@@ -7,7 +7,7 @@ export function EsqueletoTela({ cartoes = 3, linhas = 5 }: { cartoes?: number; l
         <span className="esqueleto h-9 w-72 max-w-full" />
         <span className="esqueleto h-4 w-96 max-w-full" />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: cartoes }, (_, i) => (
           <span key={i} className="esqueleto h-32 rounded-[1.75rem]" />
         ))}

@@ -44,7 +44,7 @@ export default async function PaginaPlanos() {
         }
         descricao="Mudar o valor de um plano vale para as mensalidades geradas depois; as já geradas não mudam."
       />
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_24rem]">
         {!resposta.ok ? (
           <Aviso tipo="erro">{resposta.mensagem}</Aviso>
         ) : planos.length === 0 ? (
@@ -52,7 +52,7 @@ export default async function PaginaPlanos() {
             Cadastre os planos (por exemplo 1x ou 2x por semana) para gerar as mensalidades.
           </Vazio>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2" aria-label="Planos">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Planos">
             {planos.map((p, i) => {
               const porAula = valorPorAula(p.valorCentavos, p.aulasPorSemana);
               const destaque = maisProcurado?.id === p.id;

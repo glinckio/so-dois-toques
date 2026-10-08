@@ -248,7 +248,7 @@ function Financeiro({ resposta }: { resposta: RespostaApi<Painel> }) {
         </div>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.85fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.85fr)_minmax(0,1fr)]">
         <Cartao aria-labelledby="titulo-12-meses" className="flex flex-col gap-5">
           <CabecalhoCartao
             id="titulo-12-meses"

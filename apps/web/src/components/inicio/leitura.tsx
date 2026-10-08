@@ -23,7 +23,7 @@ export function LeituraDoMes({ frases }: { frases: readonly string[] }) {
           <p className="text-apagado text-sm">O que os números dizem</p>
         </div>
       </div>
-      <ul className="relative grid flex-1 gap-3 md:grid-cols-3">
+      <ul className="relative grid flex-1 grid-cols-1 gap-3 md:grid-cols-3">
         {frases.map((frase, i) => (
           <li
             key={frase}

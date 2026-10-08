@@ -88,7 +88,7 @@ function Totais({ totais, competencia }: { totais: CustosDoMes["totais"]; compet
   return (
     <section
       aria-label="Totais do mês"
-      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.6fr]"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.6fr]"
     >
       <div className="superficie flex flex-col gap-3 rounded-[1.6rem] p-5">
         <span className="flex items-center gap-2.5">
@@ -200,7 +200,7 @@ function Local({
         )}
       </header>
 
-      <div className="grid items-start gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
         <div className="flex flex-col gap-5">
           <FormValorHora localId={local.id} valorHoraCentavos={local.valorHoraCentavos} />
           {local.turmas.length > 0 && (

@@ -40,7 +40,7 @@ export default async function PaginaLocais() {
             : undefined
         }
       />
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_24rem]">
         {!resposta.ok ? (
           <Aviso tipo="erro">{resposta.mensagem}</Aviso>
         ) : resposta.dados.length === 0 ? (
@@ -48,7 +48,7 @@ export default async function PaginaLocais() {
             Cadastre a quadra própria e as parceiras para montar as turmas.
           </Vazio>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2" aria-label="Locais">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Locais">
             {resposta.dados.map((l, i) => {
               const parceira = l.tipo === "PARCEIRA";
               return (

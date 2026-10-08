@@ -73,7 +73,7 @@ export default async function PaginaGrade({ searchParams }: PageProps<"/horarios
         }
       />
 
-      <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <FaixaDeDias data={data} hoje={hoje} caminho="/horarios" />
         {resposta.ok && agenda && agenda.horas.length > 0 && (
           <ResumoDoDia agenda={agenda} grade={resposta.dados} />

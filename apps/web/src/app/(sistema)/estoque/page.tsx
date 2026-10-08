@@ -87,7 +87,7 @@ export default async function PaginaEstoque() {
               </Vazio>
             ) : (
               <ul
-                className={`grid gap-3 sm:grid-cols-2 ${admin ? "2xl:grid-cols-3" : "xl:grid-cols-3"}`}
+                className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${admin ? "2xl:grid-cols-3" : "xl:grid-cols-3"}`}
                 aria-label="Produtos"
               >
                 {produtos.map((p, i) => (
@@ -127,7 +127,7 @@ function Prateleira({
   return (
     <section
       aria-labelledby="titulo-prateleira"
-      className="superficie-destaque relative grid gap-6 overflow-hidden rounded-[2rem] p-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-7 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.1fr)]"
+      className="superficie-destaque relative grid grid-cols-1 gap-6 overflow-hidden rounded-[2rem] p-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-7 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.1fr)]"
     >
       <span
         aria-hidden="true"

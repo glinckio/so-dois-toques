@@ -82,7 +82,7 @@ export default async function PaginaAluno({
       {salvo && <Aviso tipo="sucesso">Aluno salvo.</Aviso>}
       <LinkVoltar href="/aulas/alunos">Voltar para os alunos</LinkVoltar>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         <div className="flex flex-col gap-4">
           <header className="superficie-destaque relative flex flex-col items-center gap-4 overflow-hidden rounded-[2rem] p-6 text-center sm:p-8">
             <span
@@ -240,7 +240,7 @@ export default async function PaginaAluno({
       {admin && !aluno.anonimizado && (
         <section
           aria-labelledby="titulo-cadastro"
-          className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]"
+          className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]"
         >
           <Cartao className="flex flex-col gap-4">
             <CabecalhoCartao

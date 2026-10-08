@@ -237,7 +237,7 @@ function Conteudo({ painel: p }: { painel: Painel }) {
 
       <Conferencia painel={p} />
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Cartao aria-labelledby="titulo-receitas-origem" className="flex flex-col gap-5">
           <CabecalhoCartao
             id="titulo-receitas-origem"
@@ -286,7 +286,7 @@ function Conteudo({ painel: p }: { painel: Painel }) {
         </Cartao>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Cartao aria-labelledby="titulo-lanchonete" className="flex flex-col gap-5">
           <CabecalhoCartao
             id="titulo-lanchonete"
@@ -336,7 +336,7 @@ function Conteudo({ painel: p }: { painel: Painel }) {
             titulo="A receber"
             descricao="O que ainda não entrou no caixa"
           />
-          <dl className="grid gap-3 sm:grid-cols-2" data-testid="a-receber">
+          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="a-receber">
             <div className="bg-elevado/40 flex flex-col gap-2 rounded-2xl p-4">
               <dt className="text-suave flex items-center gap-2 text-sm">
                 <Icone nome="aulas" width={16} height={16} className="text-roxo-claro" />
@@ -471,7 +471,7 @@ function Conteudo({ painel: p }: { painel: Painel }) {
           titulo="Últimos 12 meses"
           descricao="Receitas e despesas de cada mês, regime de caixa"
         />
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:items-start">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:items-start">
           <BarrasMensais meses={p.comparativo} />
           <TabelaMensal meses={p.comparativo} />
         </div>

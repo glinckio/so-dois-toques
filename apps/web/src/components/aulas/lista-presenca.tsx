@@ -96,7 +96,7 @@ export function ListaPresenca({ lista }: { lista: Lista }) {
         </div>
       </section>
 
-      <ul className="grid gap-3 md:grid-cols-2" aria-label="Lista de presença">
+      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2" aria-label="Lista de presença">
         {lista.alunos.map((a, i) => (
           <CartaoDoAluno
             key={a.alunoId}

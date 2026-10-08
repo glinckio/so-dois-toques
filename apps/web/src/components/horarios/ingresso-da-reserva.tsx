@@ -65,7 +65,7 @@ export function IngressoDaReserva({
               </p>
             </div>
           </div>
-          <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             {!bloqueio && (
               <Dado icone="telefone" rotulo="Telefone">
                 {r.clienteTelefone ? formatarTelefone(r.clienteTelefone) : "Não informado"}

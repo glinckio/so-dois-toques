@@ -68,7 +68,7 @@ export default async function PaginaTurma({
       {salva && <Aviso tipo="sucesso">Turma salva.</Aviso>}
       <LinkVoltar href="/aulas">Voltar para as turmas</LinkVoltar>
 
-      <header className="superficie-destaque relative grid gap-6 overflow-hidden rounded-[2rem] p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <header className="superficie-destaque relative grid grid-cols-1 gap-6 overflow-hidden rounded-[2rem] p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <span
           aria-hidden="true"
           className="bg-roxo/25 pointer-events-none absolute -top-28 -right-20 size-80 rounded-full blur-3xl"

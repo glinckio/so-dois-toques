@@ -58,7 +58,7 @@ export function FormAluno({ aluno }: { aluno?: AlunoDetalhe }) {
           autoComplete="off"
         />
       </Grupo>
-      <div className="grid items-start gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         <Grupo
           legenda="Contato de emergência"
           icone="alerta"

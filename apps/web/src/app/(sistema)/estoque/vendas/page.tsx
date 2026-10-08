@@ -91,7 +91,7 @@ function Dia({ vendas, admin, ehHoje }: { vendas: VendasDoDia; admin: boolean; e
   const maisVendido = top[0]?.quantidade ?? 1;
   return (
     <>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <section
           aria-labelledby="titulo-total-dia"
           className="superficie-destaque relative flex flex-col justify-between gap-5 overflow-hidden rounded-[1.75rem] p-5 sm:p-6"

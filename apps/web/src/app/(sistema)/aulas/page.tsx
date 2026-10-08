@@ -102,7 +102,7 @@ export default async function PaginaTurmas({ searchParams }: PageProps<"/aulas">
       ) : (
         <>
           {!encerradas && <Ocupacao resumo={resumo} />}
-          <ul className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3" aria-label="Turmas">
+          <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3" aria-label="Turmas">
             {turmas.map((t, i) => (
               <CartaoTurma
                 key={t.id}
@@ -129,7 +129,7 @@ function Ocupacao({ resumo }: { resumo: ResumoDasTurmas }) {
   return (
     <section
       aria-label="Ocupação das turmas"
-      className="superficie-destaque relative grid gap-5 overflow-hidden rounded-[2rem] p-5 sm:p-6 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,20rem)] lg:items-center"
+      className="superficie-destaque relative grid grid-cols-1 gap-5 overflow-hidden rounded-[2rem] p-5 sm:p-6 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,20rem)] lg:items-center"
     >
       <span
         aria-hidden="true"

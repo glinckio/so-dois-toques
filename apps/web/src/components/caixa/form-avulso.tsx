@@ -122,7 +122,7 @@ function Formulario({
         padrao={iniciais.forma}
         colunas="grid-cols-1 @sm:grid-cols-2"
       />
-      <div className="grid gap-4 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
         <Campo
           rotulo="Valor (R$)"
           id="valor-avulso"
