@@ -4,6 +4,7 @@ import { useActionState, useState, type FormEvent } from "react";
 import { lancarAvulso } from "@/app/acoes/caixa";
 import { ESTADO_INICIAL, type EstadoFormulario } from "@/app/acoes/estado";
 import { CabecalhoCartao } from "@/components/base/cartao";
+import { CampoReais } from "@/components/base/campos-com-mascara";
 import { BotaoEnviar } from "@/components/base/enviar";
 import { ICONES_DAS_FORMAS, OpcoesEmBlocos, type Opcao } from "@/components/base/opcoes";
 import { Valor } from "@/components/base/valor";
@@ -123,15 +124,11 @@ function Formulario({
         colunas="grid-cols-1 @sm:grid-cols-2"
       />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-        <Campo
+        <CampoReais
           rotulo="Valor (R$)"
           id="valor-avulso"
           name="valor"
-          prefixo="R$"
-          inputMode="decimal"
-          autoComplete="off"
           required
-          placeholder="50,00"
           defaultValue={iniciais.valor}
         />
         <Campo

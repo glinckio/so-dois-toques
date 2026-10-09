@@ -8,6 +8,7 @@ import {
   percentual,
   previaDoAvulso,
   resultadoDoTurno,
+  TOM_DA_DIFERENCA,
   resumoDosTurnos,
 } from "./painel";
 
@@ -51,6 +52,18 @@ describe("CAIXA-CA-04: diferença do fechamento enquanto se digita", () => {
     const falta = diferencaDoFechamento("1,00", 5000);
     expect(falta).toMatchObject({ situacao: "falta", centavos: -4900, titulo: "Faltam R$ 49,00" });
     expect(falta.detalhe).toMatch(/observação/);
+  });
+});
+
+describe("AJU-CA-04: sobra no fechamento fica verde", () => {
+  it("verde quando bate ou sobra, vermelho só quando falta", () => {
+    const tom = (digitado: string) =>
+      TOM_DA_DIFERENCA[diferencaDoFechamento(digitado, 5000).situacao];
+    expect(tom("50,00")).toBe("sucesso");
+    expect(tom("52,50")).toBe("sucesso");
+    expect(tom("49,99")).toBe("perigo");
+    expect(tom("")).toBe("neutro");
+    expect(diferencaDoFechamento("52,50", 5000).detalhe).toMatch(/observação/);
   });
 });
 

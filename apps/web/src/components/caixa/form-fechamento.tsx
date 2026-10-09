@@ -4,16 +4,17 @@ import { useActionState, useState } from "react";
 import { fecharCaixa } from "@/app/acoes/caixa";
 import { ESTADO_INICIAL, type EstadoFormulario } from "@/app/acoes/estado";
 import { CabecalhoCartao } from "@/components/base/cartao";
+import { CampoReais } from "@/components/base/campos-com-mascara";
 import { BotaoEnviar } from "@/components/base/enviar";
 import { Valor } from "@/components/base/valor";
 import { Icone } from "@/components/icones";
-import { Aviso, Campo, classeBotaoSecundario, classeCampo, classeRotulo } from "@/components/ui";
-import { diferencaDoFechamento } from "@/lib/caixa/painel";
+import { Aviso, classeBotaoSecundario, classeCampo, classeRotulo } from "@/components/ui";
+import { diferencaDoFechamento, TOM_DA_DIFERENCA } from "@/lib/caixa/painel";
 
 /**
  * CAIXA-CA-04: conta a gaveta. A diferença para o esperado aparece enquanto se
- * digita, verde quando bate e vermelha quando não bate; diferença exige observação
- * (quem confere é a API).
+ * digita: verde quando bate ou sobra dinheiro (AJU-CA-04), vermelha quando falta.
+ * Qualquer diferença exige observação (quem confere é a API).
  */
 export function FormFechamento({
   turnoId,
@@ -50,14 +51,13 @@ function Formulario({
 }) {
   const [contado, setContado] = useState(estado.valores?.contado ?? "");
   const diferenca = diferencaDoFechamento(contado, esperadoCentavos);
-  const naoBateu = diferenca.situacao === "falta" || diferenca.situacao === "sobra";
+  const tom = TOM_DA_DIFERENCA[diferenca.situacao];
   const cores = {
-    vazio: "border-borda bg-elevado/35 text-suave",
-    invalido: "border-ouro/30 bg-ouro/8 text-ouro",
-    bate: "border-sucesso/35 bg-sucesso/10 text-sucesso",
-    sobra: "border-perigo/35 bg-perigo/10 text-perigo",
-    falta: "border-perigo/35 bg-perigo/10 text-perigo",
-  }[diferenca.situacao];
+    neutro: "border-borda bg-elevado/35 text-suave",
+    ouro: "border-ouro/30 bg-ouro/8 text-ouro",
+    sucesso: "border-sucesso/35 bg-sucesso/10 text-sucesso",
+    perigo: "border-perigo/35 bg-perigo/10 text-perigo",
+  }[tom];
 
   return (
     <form
@@ -81,20 +81,17 @@ function Formulario({
         <Valor centavos={esperadoCentavos} className="text-xl font-extrabold" />
       </div>
 
-      <Campo
+      <CampoReais
         rotulo="Dinheiro contado (R$)"
         id="contado"
-        prefixo="R$"
-        inputMode="decimal"
-        autoComplete="off"
         required
-        placeholder="0,00"
         defaultValue={estado.valores?.contado ?? ""}
         onChange={(e) => setContado(e.currentTarget.value)}
       />
 
       <div
         data-testid="diferenca-fechamento"
+        data-tom={tom}
         aria-live="polite"
         className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors duration-300 ${cores}`}
       >
@@ -115,7 +112,13 @@ function Formulario({
             </svg>
           ) : (
             <Icone
-              nome={diferenca.situacao === "vazio" ? "dinheiro" : "alerta"}
+              nome={
+                diferenca.situacao === "vazio"
+                  ? "dinheiro"
+                  : diferenca.situacao === "sobra"
+                    ? "entrada"
+                    : "alerta"
+              }
               width={19}
               height={19}
             />
@@ -136,7 +139,13 @@ function Formulario({
           name="observacao"
           maxLength={300}
           rows={2}
-          className={`${classeCampo} py-3 ${naoBateu ? "ring-perigo/35 ring-2" : ""}`}
+          className={`${classeCampo} py-3 ${
+            diferenca.situacao === "falta"
+              ? "ring-perigo/35 ring-2"
+              : diferenca.situacao === "sobra"
+                ? "ring-sucesso/35 ring-2"
+                : ""
+          }`}
           defaultValue={estado.valores?.observacao ?? ""}
         />
       </div>

@@ -9,14 +9,18 @@ import { OpcoesEmBlocos } from "@/components/base/opcoes";
 import { Icone } from "@/components/icones";
 import { Aviso, Campo } from "@/components/ui";
 
-/** Cadastro de local: nome, tipo em blocos (parceira ou própria) e endereço. */
+/**
+ * Cadastro de local: nome, tipo em blocos (parceira ou própria) e endereço. Os blocos
+ * ficam lado a lado só quando o cartão tem largura para isso (AJU-CA-01): na coluna
+ * estreita do computador, um embaixo do outro, sem cortar o texto.
+ */
 export function FormLocal() {
   const [estado, acao, enviando] = useActionState(criarLocal, ESTADO_INICIAL);
   return (
     <form
       action={acao}
       aria-labelledby="titulo-cadastrar-local"
-      className="superficie flex flex-col gap-5 rounded-[1.75rem] p-5 sm:p-6"
+      className="superficie @container flex flex-col gap-5 rounded-[1.75rem] p-5 sm:p-6"
     >
       <CabecalhoCartao
         id="titulo-cadastrar-local"
@@ -39,7 +43,7 @@ export function FormLocal() {
         nome="tipo"
         legenda="Tipo"
         padrao="PARCEIRA"
-        colunas="grid-cols-1 sm:grid-cols-2"
+        colunas="grid-cols-1 @md:grid-cols-2"
         opcoes={[
           {
             valor: "PARCEIRA",

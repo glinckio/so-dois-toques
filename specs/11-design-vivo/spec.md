@@ -106,7 +106,7 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
 - **Painel do caixa:** o caixa aberto tem brilho verde, ponto pulsando e "Aberto há 2 h 14 min", atualizando sozinho, além do troco e do esperado em dinheiro. O caixa fechado mostra um cartão para abrir com o troco.
 - **Resumo:** entradas, saídas e saldo, e um bloco com ícone para cada forma de pagamento.
 - **Lançamentos:** uma linha do tempo com o selo da categoria e o valor em verde ou vermelho. O estorno abre na confirmação.
-- **Fechamento:** a diferença entre o contado e o esperado aparece na hora: verde quando bate, vermelho quando não bate.
+- **Fechamento:** a diferença entre o contado e o esperado aparece na hora: verde quando bate, vermelho quando não bate (desde a etapa 12, a sobra também fica verde).
 - **Mensalidades e inadimplentes:**
   - Linhas com selo de situação.
   - Inadimplentes têm uma barra de atraso e o atalho de WhatsApp.

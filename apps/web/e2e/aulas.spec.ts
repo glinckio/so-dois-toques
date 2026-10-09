@@ -23,6 +23,24 @@ test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma
 
   // Local.
   await page.goto("/aulas/locais");
+  // AJU-CA-01: na coluna estreita do cadastro, os tipos ficam um embaixo do outro e o
+  // texto de cada bloco cabe inteiro, sem cortar.
+  const tipos = page.getByRole("group", { name: "Tipo" });
+  const parceira = await tipos
+    .locator("label")
+    .filter({ hasText: "Quadra parceira" })
+    .boundingBox();
+  const propria = await tipos.locator("label").filter({ hasText: "Quadra própria" }).boundingBox();
+  expect(propria!.y).toBeGreaterThanOrEqual(parceira!.y + parceira!.height);
+  for (const texto of ["Quadra parceira", "Paga por hora de aula", "Do Só Dois Toques"]) {
+    const linhas = await tipos.getByText(texto, { exact: true }).evaluate((el) => {
+      // Uma caixa por linha de texto: mais de uma altura distinta é texto quebrado.
+      const faixa = document.createRange();
+      faixa.selectNodeContents(el);
+      return new Set([...faixa.getClientRects()].map((r) => Math.round(r.top))).size;
+    });
+    expect(linhas, texto).toBe(1);
+  }
   const nomeLocal = `Arena ${marca}`;
   await page.getByLabel("Nome do local").fill(nomeLocal);
   await page.getByRole("button", { name: "Cadastrar" }).click();
@@ -51,10 +69,13 @@ test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma
   await page.goto("/aulas/alunos/novo");
   const nomeAluno = `Ana Areia ${marca}`;
   await page.getByLabel("Nome", { exact: true }).fill(nomeAluno);
-  await page.getByLabel("Telefone (com DDD)").fill("(21) 99876-5432");
+  // AJU-CA-02: o telefone se formata enquanto se digita, só com os números.
+  await page.getByLabel("Telefone (com DDD)").pressSequentially("21a998765432");
+  await expect(page.getByLabel("Telefone (com DDD)")).toHaveValue("(21) 99876-5432");
   await page.getByLabel("Data de nascimento").fill("1995-03-20");
   await page.getByLabel("Nome do contato").fill("Maria Contato");
-  await page.getByLabel("Telefone do contato").fill("(21) 3456-7890");
+  await page.getByLabel("Telefone do contato").pressSequentially("2134567890");
+  await expect(page.getByLabel("Telefone do contato")).toHaveValue("(21) 3456-7890");
   await page.getByRole("button", { name: "Salvar aluno" }).click();
   await expect(
     page.getByText("Registre o consentimento do aluno (ou do responsável) para salvar o cadastro."),

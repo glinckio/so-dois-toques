@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { salvarAluno } from "@/app/acoes/aulas";
 import { ESTADO_INICIAL } from "@/app/acoes/estado";
+import { CampoTelefone } from "@/components/base/campos-com-mascara";
 import { BotaoEnviar } from "@/components/base/enviar";
 import { Icone } from "@/components/icones";
 import { Aviso, Campo, classeCampo, classeRotulo } from "@/components/ui";
@@ -29,16 +30,11 @@ export function FormAluno({ aluno }: { aluno?: AlunoDetalhe }) {
           defaultValue={valor("nome", aluno?.nome)}
           autoComplete="off"
         />
-        <Campo
+        <CampoTelefone
           rotulo="Telefone (com DDD)"
           id="telefone"
-          icone="telefone"
-          type="tel"
-          inputMode="tel"
           required
-          placeholder="(21) 99999-9999"
           defaultValue={valor("telefone", formatarTelefone(aluno?.telefone))}
-          autoComplete="off"
         />
         <Campo
           rotulo="Data de nascimento"
@@ -72,12 +68,9 @@ export function FormAluno({ aluno }: { aluno?: AlunoDetalhe }) {
             maxLength={120}
             defaultValue={valor("emergenciaNome", aluno?.emergenciaNome)}
           />
-          <Campo
+          <CampoTelefone
             rotulo="Telefone do contato"
             id="emergenciaTelefone"
-            icone="telefone"
-            type="tel"
-            inputMode="tel"
             required
             defaultValue={valor("emergenciaTelefone", formatarTelefone(aluno?.emergenciaTelefone))}
           />
@@ -93,12 +86,9 @@ export function FormAluno({ aluno }: { aluno?: AlunoDetalhe }) {
             maxLength={120}
             defaultValue={valor("responsavelNome", aluno?.responsavelNome)}
           />
-          <Campo
+          <CampoTelefone
             rotulo="Telefone do responsável"
             id="responsavelTelefone"
-            icone="telefone"
-            type="tel"
-            inputMode="tel"
             defaultValue={valor(
               "responsavelTelefone",
               formatarTelefone(aluno?.responsavelTelefone),
