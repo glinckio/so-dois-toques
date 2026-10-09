@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { centavosDe } from "@/lib/mensalidades/formatacao";
 import { CORES_DE_AVATAR, corDoAvatar, iniciais } from "./avatar";
 import { filtrarBusca, itensDaBusca, normalizar } from "./busca";
+import { mascararReais, mascararTelefone, posicaoDoCursor } from "./mascaras";
 import { leituraDoMes, type DadosDaLeitura } from "./leitura";
 import { fatiasDaRosca } from "./rosca";
 import { semanaDe } from "./semana";
@@ -193,5 +195,66 @@ describe("leitura do mês", () => {
       "O resultado do mês está em R$ 56,00.",
       "Aulas (mensalidades) responde por toda receita.",
     ]);
+  });
+});
+
+describe("AJU-CA-02: máscara de telefone", () => {
+  it("monta (DD) 00000-0000 enquanto se digita", () => {
+    expect(mascararTelefone("")).toBe("");
+    expect(mascararTelefone("2")).toBe("(2");
+    expect(mascararTelefone("21")).toBe("(21");
+    expect(mascararTelefone("219")).toBe("(21) 9");
+    expect(mascararTelefone("219987")).toBe("(21) 9987");
+    expect(mascararTelefone("2199876")).toBe("(21) 9987-6");
+    expect(mascararTelefone("21998765432")).toBe("(21) 99876-5432");
+  });
+
+  it("aceita fixo com 10 dígitos, ignora letras e para no 11º dígito", () => {
+    expect(mascararTelefone("2134567890")).toBe("(21) 3456-7890");
+    expect(mascararTelefone("(21) 9a9876-5432 999")).toBe("(21) 99876-5432");
+    expect(mascararTelefone("+55 21 99876-5432")).toBe("(21) 99876-5432");
+    expect(mascararTelefone(mascararTelefone("21998765432"))).toBe("(21) 99876-5432");
+  });
+
+  it("mantém o cursor depois do mesmo dígito", () => {
+    // Digitou "9" logo depois do DDD em "(21) 8765-4321": o cursor fica depois do 9.
+    const antes = "(21) 98765-4321";
+    const depois = mascararTelefone(antes);
+    expect(posicaoDoCursor(antes, 6, depois)).toBe(6);
+    expect(posicaoDoCursor("2", 1, "(2")).toBe(2);
+  });
+});
+
+describe("AJU-CA-03: valor em reais só com números", () => {
+  it("preenche a partir dos centavos", () => {
+    expect(mascararReais("")).toBe("");
+    expect(mascararReais("1")).toBe("0,01");
+    expect(mascararReais("12")).toBe("0,12");
+    expect(mascararReais("123")).toBe("1,23");
+    expect(mascararReais("1234")).toBe("12,34");
+    expect(mascararReais("123456")).toBe("1.234,56");
+    expect(mascararReais("12345678")).toBe("123.456,78");
+  });
+
+  it("ignora letras e sinais e continua do valor já formatado", () => {
+    expect(mascararReais("abc")).toBe("");
+    expect(mascararReais("1a2-3,4")).toBe("12,34");
+    expect(mascararReais("12,345")).toBe("123,45");
+    expect(mascararReais("1,2")).toBe("0,12");
+    expect(mascararReais("0,00")).toBe("");
+    expect(mascararReais("50,00")).toBe("50,00");
+  });
+
+  it("dá um texto que o servidor converte para os mesmos centavos", () => {
+    for (const digitos of ["1", "99", "5000", "123456", "99999999999"]) {
+      expect(centavosDe(mascararReais(digitos))).toBe(Number(digitos));
+    }
+    expect(mascararReais("1234567890123")).toBe("123.456.789,01");
+  });
+
+  it("mantém o cursor contando os dígitos pela direita", () => {
+    expect(posicaoDoCursor("12,345", 6, "123,45", true)).toBe(6);
+    // Apagou o "2" de "12,34": o cursor fica logo antes do "3" em "1,34".
+    expect(posicaoDoCursor("1,34", 1, "1,34", true)).toBe(2);
   });
 });

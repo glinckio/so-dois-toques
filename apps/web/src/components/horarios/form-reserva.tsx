@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { ESTADO_INICIAL } from "@/app/acoes/estado";
 import { criarReserva } from "@/app/acoes/horarios";
+import { CampoTelefone } from "@/components/base/campos-com-mascara";
 import { BotaoEnviar } from "@/components/base/enviar";
 import { OpcoesEmBlocos } from "@/components/base/opcoes";
 import { Selo } from "@/components/base/selo";
@@ -215,13 +216,9 @@ export function FormReserva({
               autoComplete="off"
               defaultValue={valor("clienteNome")}
             />
-            <Campo
+            <CampoTelefone
               rotulo="Telefone (opcional)"
               id="clienteTelefone"
-              icone="telefone"
-              type="tel"
-              inputMode="tel"
-              placeholder="(21) 99999-9999"
               defaultValue={valor("clienteTelefone")}
             />
           </div>
