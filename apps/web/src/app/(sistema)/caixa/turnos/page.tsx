@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: "Turnos do caixa | Só Dois Toques" }
 const DIA_DA_SEMANA = new Intl.DateTimeFormat("pt-BR", { weekday: "short", timeZone: "UTC" });
 const MES_CURTO = new Intl.DateTimeFormat("pt-BR", { month: "short", timeZone: "UTC" });
 
-const TONS = { aberto: "sucesso", bateu: "sucesso", sobrou: "perigo", faltou: "perigo" } as const;
+const TONS = { aberto: "sucesso", bateu: "sucesso", sobrou: "sucesso", faltou: "perigo" } as const;
 
 /** CAIXA-CA-05: turnos, mais recentes primeiro, com quem abriu e fechou e se o dinheiro bateu. */
 export default async function PaginaTurnos() {

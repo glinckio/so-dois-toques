@@ -30,7 +30,7 @@ const DATA_LONGA = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "UTC",
 });
 
-const TONS = { aberto: "sucesso", bateu: "sucesso", sobrou: "perigo", faltou: "perigo" } as const;
+const TONS = { aberto: "sucesso", bateu: "sucesso", sobrou: "sucesso", faltou: "perigo" } as const;
 
 /** CAIXA-CA-05: relatório do turno, para conferir e imprimir. */
 export default async function PaginaTurno({
@@ -95,7 +95,7 @@ export default async function PaginaTurno({
           <CabecalhoCartao
             id="titulo-conferencia"
             icone="dinheiro"
-            tom={aberto ? "sucesso" : resultado.situacao === "bateu" ? "sucesso" : "perigo"}
+            tom={TONS[resultado.situacao]}
             titulo="Conferência do dinheiro"
             descricao="Troco, o que devia estar na gaveta e o que foi contado"
           />
@@ -116,7 +116,10 @@ export default async function PaginaTurno({
               <Bloco rotulo="Dinheiro contado">
                 <Valor centavos={contado} />
               </Bloco>
-              <Bloco rotulo="Diferença" tom={t.diferencaCentavos === 0 ? "sucesso" : "perigo"}>
+              <Bloco
+                rotulo="Diferença"
+                tom={(t.diferencaCentavos ?? 0) >= 0 ? "sucesso" : "perigo"}
+              >
                 <Valor centavos={t.diferencaCentavos ?? 0} />
               </Bloco>
             </>
@@ -145,7 +148,7 @@ export default async function PaginaTurno({
             <BarraNivel
               fracao={contado / escala}
               marca={t.esperadoDinheiroCentavos / escala}
-              tom={t.diferencaCentavos === 0 ? "sucesso" : "perigo"}
+              tom={(t.diferencaCentavos ?? 0) >= 0 ? "sucesso" : "perigo"}
               rotulo={`Contado ${formatarReais(contado)} para ${formatarReais(t.esperadoDinheiroCentavos)} esperados`}
             />
             <p className="text-apagado text-xs">

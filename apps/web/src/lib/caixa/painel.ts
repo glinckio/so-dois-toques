@@ -29,6 +29,21 @@ export function desdeQuando(
 export type SituacaoDaDiferenca = "vazio" | "invalido" | "bate" | "sobra" | "falta";
 
 /**
+ * AJU-CA-04: cor da diferença no fechamento. Sobrar dinheiro é bom sinal e fica verde
+ * como o "bateu"; só a falta fica vermelha. A observação continua obrigatória nos dois.
+ */
+export const TOM_DA_DIFERENCA: Record<
+  SituacaoDaDiferenca,
+  "neutro" | "ouro" | "sucesso" | "perigo"
+> = {
+  vazio: "neutro",
+  invalido: "ouro",
+  bate: "sucesso",
+  sobra: "sucesso",
+  falta: "perigo",
+};
+
+/**
  * CAIXA-CA-04: diferença entre o dinheiro contado e o esperado, calculada enquanto se
  * digita (contado − esperado, como a API). Quem decide se o fechamento vale é a API.
  */
@@ -62,19 +77,18 @@ export function diferencaDoFechamento(
       detalhe: "O dinheiro contado confere com o esperado.",
     };
   }
-  const detalhe = "Não bateu: escreva o motivo na observação.";
   return diferenca > 0
     ? {
         situacao: "sobra",
         centavos: diferenca,
         titulo: `Sobram ${formatarReais(diferenca)}`,
-        detalhe,
+        detalhe: "Não bateu, mas sobrou: escreva o motivo na observação.",
       }
     : {
         situacao: "falta",
         centavos: diferenca,
         titulo: `Faltam ${formatarReais(-diferenca)}`,
-        detalhe,
+        detalhe: "Não bateu: escreva o motivo na observação.",
       };
 }
 

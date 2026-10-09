@@ -78,7 +78,10 @@ test("CAIXA-CA-01, CAIXA-CA-02, CAIXA-CA-04, CAIXA-CA-05, CAIXA-CA-06 e CAIXA-CA
     await avulso.getByText("Despesa", { exact: true }).click();
     await avulso.getByText("Dinheiro", { exact: true }).click();
     await expect(avulso.getByText("Sai do caixa em dinheiro")).toBeVisible();
-    await avulso.getByLabel("Valor (R$)").fill("12,50");
+    // AJU-CA-03: o valor só aceita números e se preenche pelos centavos.
+    await avulso.getByLabel("Valor (R$)").fill("");
+    await avulso.getByLabel("Valor (R$)").pressSequentially("1a2,50");
+    await expect(avulso.getByLabel("Valor (R$)")).toHaveValue("12,50");
     await avulso.getByLabel("Descrição").fill(despesa);
     await avulso.getByRole("button", { name: "Registrar lançamento" }).click();
     await expect(avulso.getByText("Lançamento registrado.")).toBeVisible();
@@ -98,9 +101,15 @@ test("CAIXA-CA-01, CAIXA-CA-02, CAIXA-CA-04, CAIXA-CA-05, CAIXA-CA-06 e CAIXA-CA
     // Fechamento com diferença exige observação.
     await atendente.reload();
     const fechamento = atendente.getByRole("form", { name: "Fechar caixa" });
+    // AJU-CA-04: dinheiro a mais fica verde; a falta, vermelha.
+    const diferenca = fechamento.getByTestId("diferenca-fechamento");
+    await fechamento.getByLabel("Dinheiro contado (R$)").fill("99.999,00");
+    await expect(diferenca).toContainText("Sobram");
+    await expect(diferenca).toHaveAttribute("data-tom", "sucesso");
     await fechamento.getByLabel("Dinheiro contado (R$)").fill("1,00");
     // A diferença aparece enquanto se digita, antes de enviar.
-    await expect(fechamento.getByTestId("diferenca-fechamento")).toContainText("Não bateu");
+    await expect(diferenca).toContainText("Não bateu");
+    await expect(diferenca).toHaveAttribute("data-tom", "perigo");
     await fechamento.getByRole("button", { name: "Fechar caixa" }).click();
     await expect(fechamento.getByText(/explique a diferença na observação/)).toBeVisible();
     await fechamento
