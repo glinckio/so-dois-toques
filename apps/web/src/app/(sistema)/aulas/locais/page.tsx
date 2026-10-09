@@ -62,7 +62,7 @@ export default async function PaginaLocais() {
                       tom={parceira ? "ouro" : "roxo"}
                     />
                     <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                      <span className="truncate text-lg leading-tight font-bold">{l.nome}</span>
+                      <span className="text-lg leading-tight font-bold break-words">{l.nome}</span>
                       <span className="flex flex-wrap gap-1.5">
                         <Selo tom={parceira ? "ouro" : "roxo"} semPonto>
                           {TIPOS_LOCAL[l.tipo]}
