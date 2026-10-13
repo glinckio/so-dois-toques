@@ -22,7 +22,7 @@ const CONVITE: Record<Perfil, { antes: string; palavra: string; depois: string }
 
 /**
  * Abertura do Início: a data, a saudação com a palavra em destaque, as ações mais
- * usadas do perfil e o dia em anéis (aulas dadas, ocupação das quadras, estoque).
+ * usadas do perfil e o dia em anéis (aulas dadas, alunos, ocupação das quadras).
  */
 export function Saudacao({
   nome,

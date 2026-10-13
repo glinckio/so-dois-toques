@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { partesDoValor } from "./valor";
 
 /**
- * Dinheiro que corre do valor anterior até o novo sempre que muda (total da venda,
- * custo da compra), com os centavos menores. Na primeira pintura já mostra o valor;
+ * Dinheiro que corre do valor anterior até o novo sempre que muda (saldo do caixa),
+ * com os centavos menores. Na primeira pintura já mostra o valor;
  * com "reduzir movimento", troca direto.
  */
 export function ValorQueAcompanha({

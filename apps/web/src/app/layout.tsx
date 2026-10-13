@@ -11,7 +11,7 @@ const fonte = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "Só Dois Toques",
-  description: "Gestão de aulas, quadras, estoque e caixa do Só Dois Toques",
+  description: "Gestão de aulas, quadras e caixa do Só Dois Toques",
 };
 
 export const viewport: Viewport = {

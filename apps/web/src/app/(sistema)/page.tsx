@@ -6,7 +6,6 @@ import { TabelaMensal } from "@/components/graficos/tabela-mensal";
 import type { NomeIcone } from "@/components/icones";
 import { AulasDeHoje } from "@/components/inicio/aulas-hoje";
 import { CaixaDeHoje } from "@/components/inicio/caixa-hoje";
-import { EstoqueDeHoje } from "@/components/inicio/estoque-hoje";
 import { CartaoNumero } from "@/components/inicio/kpi";
 import { LeituraDoMes } from "@/components/inicio/leitura";
 import { QuadrasDeHoje } from "@/components/inicio/quadras-hoje";
@@ -19,7 +18,6 @@ import { itensDaBusca } from "@/lib/base/busca";
 import { leituraDoMes } from "@/lib/base/leitura";
 import { formatarPorcentagem, ORIGENS_RECEITA } from "@/lib/contabil/formatacao";
 import type { Painel } from "@/lib/contabil/tipos";
-import type { Produto } from "@/lib/estoque/tipos";
 import type { Grade } from "@/lib/horarios/tipos";
 import { formatarReais, nomeDoMes } from "@/lib/mensalidades/formatacao";
 import type { CaixaDoDia, Inadimplentes } from "@/lib/mensalidades/tipos";
@@ -44,11 +42,9 @@ const DATA_LONGA = new Intl.DateTimeFormat("pt-BR", {
 
 const ICONES_DAS_ACOES: Record<string, NomeIcone> = {
   "/horarios/nova": "horarios",
-  "/estoque/venda": "carrinho",
   "/caixa": "caixa",
   "/aulas/alunos/novo": "pessoa",
   "/aulas/turmas/nova": "aulas",
-  "/estoque/compra": "sacola",
 };
 
 function talvez<T>(sim: boolean, chamada: () => Promise<RespostaApi<T>>) {
@@ -74,13 +70,12 @@ export default async function Inicio({ searchParams }: PageProps<"/">) {
   const hoje = hojeEmSaoPaulo(agora);
   const minutoAtual = minutoEmSaoPaulo(agora);
 
-  const [painel, caixa, sessao, inadimplentes, grade, produtos, turmas] = await Promise.all([
+  const [painel, caixa, sessao, inadimplentes, grade, turmas] = await Promise.all([
     talvez(pode("contabil"), () => chamarApi<Painel>("/contabil/painel")),
     talvez(pode("caixa"), () => chamarApi<CaixaDoDia>(`/caixa/lancamentos?data=${hoje}`)),
     talvez(pode("caixa"), sessaoDoCaixa),
     talvez(pode("caixa"), () => chamarApi<Inadimplentes>("/mensalidades/inadimplentes")),
     talvez(pode("horarios"), () => chamarApi<Grade>(`/horarios/grade?data=${hoje}`)),
-    talvez(pode("estoque"), () => chamarApi<Produto[]>("/produtos")),
     talvez(pode("aulas"), () => chamarApi<TurmaResumo[]>("/turmas?situacao=ativas")),
   ]);
 
@@ -123,18 +118,6 @@ export default async function Inicio({ searchParams }: PageProps<"/">) {
       tom: "areia",
     });
   }
-  if (produtos?.ok) {
-    const ativos = produtos.dados.filter((p) => p.ativo);
-    const emDia = ativos.filter((p) => !p.abaixoDoMinimo).length;
-    aneis.push({
-      titulo: "Estoque",
-      fracao: ativos.length > 0 ? emDia / ativos.length : 0,
-      centro: `${emDia}/${ativos.length}`,
-      detalhe: "produtos em dia",
-      tom: "sucesso",
-    });
-  }
-
   const cartoesDoDia = [
     caixa && sessao && inadimplentes && (
       <CaixaDeHoje
@@ -154,7 +137,6 @@ export default async function Inicio({ searchParams }: PageProps<"/">) {
         minutoAtual={minutoAtual}
       />
     ),
-    produtos && <EstoqueDeHoje key="estoque" resposta={produtos} />,
   ].filter(Boolean);
 
   return (

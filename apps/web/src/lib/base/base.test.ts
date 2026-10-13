@@ -93,31 +93,31 @@ describe("VIVO-CA-03: busca rápida", () => {
     const professor = itensDaBusca(["inicio", "aulas"], false);
     expect(professor.map((i) => i.rotulo)).toEqual(["Início", "Aulas", "Alunos"]);
 
-    const atendente = itensDaBusca(["inicio", "horarios", "estoque", "caixa"], false);
+    const atendente = itensDaBusca(["inicio", "horarios", "caixa"], false);
     expect(atendente.filter((i) => i.grupo === "Ações rápidas").map((i) => i.rotulo)).toEqual([
       "Nova reserva",
-      "Registrar venda",
-      "Registrar compra",
       "Lançar no caixa",
     ]);
     expect(atendente.some((i) => i.area === "contabil")).toBe(false);
 
     const admin = itensDaBusca(
-      ["inicio", "aulas", "horarios", "estoque", "caixa", "contabil", "usuarios", "auditoria"],
+      ["inicio", "aulas", "horarios", "caixa", "contabil", "usuarios", "auditoria"],
       true,
     );
     expect(admin[0]!.rotulo).toBe("Novo aluno");
-    expect(admin.filter((i) => i.grupo === "Áreas")).toHaveLength(8);
+    expect(admin.filter((i) => i.grupo === "Áreas")).toHaveLength(7);
+  });
+
+  it("LANCH-CA-02: a busca rápida não oferece mais venda, compra ou estoque", () => {
+    const itens = itensDaBusca(["inicio", "horarios", "estoque", "caixa"], true);
+    expect(itens.some((i) => i.href.startsWith("/estoque"))).toBe(false);
+    expect(filtrarBusca(itens, "venda")).toEqual([]);
   });
 
   it("filtra sem ligar para acento, maiúscula ou ordem das palavras", () => {
-    const itens = itensDaBusca(["inicio", "horarios", "estoque", "caixa"], false);
+    const itens = itensDaBusca(["inicio", "horarios", "caixa"], false);
     expect(normalizar("  Horários ")).toBe("horarios");
     expect(filtrarBusca(itens, "horarios").map((i) => i.rotulo)).toContain("Horários");
-    expect(filtrarBusca(itens, "venda").map((i) => i.rotulo)).toEqual([
-      "Registrar venda",
-      "Vendas do dia",
-    ]);
     expect(filtrarBusca(itens, "sangria").map((i) => i.rotulo)).toEqual(["Lançar no caixa"]);
     expect(filtrarBusca(itens, "quadra alugar").map((i) => i.rotulo)).toEqual(["Nova reserva"]);
     expect(filtrarBusca(itens, "   ")).toHaveLength(itens.length);

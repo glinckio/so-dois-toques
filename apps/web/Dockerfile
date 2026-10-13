@@ -11,7 +11,6 @@ RUN pnpm install --frozen-lockfile --filter @sdt/web
 COPY apps/web apps/web
 # Um teste do web confere regras com as da API; o typecheck do build precisa delas.
 COPY apps/api/src/acesso/regras.ts apps/api/src/acesso/
-COPY apps/api/src/estoque/regras.ts apps/api/src/estoque/
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter @sdt/web build && chown -R node:node /app
 

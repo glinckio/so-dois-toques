@@ -87,7 +87,10 @@ test("ACESSO-CA-12, ACESSO-CA-13, ACESSO-CA-11 e ACESSO-CA-10: novo professor tr
   }
 });
 
-test("ACESSO-CA-11: atendente vê Horários, Estoque e Caixa no menu", async ({ page, browser }) => {
+test("ACESSO-CA-11 e LANCH-CA-02: atendente vê Horários e Caixa no menu, sem Estoque", async ({
+  page,
+  browser,
+}) => {
   await entrarComoAdmin(page);
   const email = emailUnico("atendente");
   const senhaTemporaria = await cadastrarUsuario(page, {
@@ -105,7 +108,7 @@ test("ACESSO-CA-11: atendente vê Horários, Estoque e Caixa no menu", async ({ 
     await atendente.getByLabel("Confirme a nova senha").fill("copa-gelada-2026");
     await atendente.getByRole("button", { name: "Salvar nova senha" }).click();
     const menu = atendente.getByRole("navigation", { name: "Menu principal" });
-    await expect(menu.getByRole("link")).toHaveText(["Início", "Horários", "Estoque", "Caixa"]);
+    await expect(menu.getByRole("link")).toHaveText(["Início", "Horários", "Caixa"]);
   } finally {
     await contexto.close();
   }

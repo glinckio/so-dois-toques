@@ -3,7 +3,6 @@ export const AREAS = [
   "inicio",
   "aulas",
   "horarios",
-  "estoque",
   "caixa",
   "contabil",
   "usuarios",
@@ -15,7 +14,6 @@ export const MENU: Record<Area, { rotulo: string; href: string }> = {
   inicio: { rotulo: "Início", href: "/" },
   aulas: { rotulo: "Aulas", href: "/aulas" },
   horarios: { rotulo: "Horários", href: "/horarios" },
-  estoque: { rotulo: "Estoque", href: "/estoque" },
   caixa: { rotulo: "Caixa", href: "/caixa" },
   contabil: { rotulo: "Contábil", href: "/contabil" },
   usuarios: { rotulo: "Usuários", href: "/usuarios" },
@@ -53,7 +51,7 @@ export function linkAtivo(caminho: string, hrefs: readonly string[]): string | u
 /** VIVO-CA-02: grupos do menu lateral. */
 export const GRUPOS_DO_MENU: { rotulo: string; areas: readonly Area[] }[] = [
   { rotulo: "Visão geral", areas: ["inicio"] },
-  { rotulo: "Operação", areas: ["aulas", "horarios", "estoque", "caixa"] },
+  { rotulo: "Operação", areas: ["aulas", "horarios", "caixa"] },
   { rotulo: "Gestão", areas: ["contabil", "usuarios", "auditoria"] },
 ];
 
@@ -63,7 +61,6 @@ const PRIORIDADE_NO_CELULAR: readonly Area[] = [
   "aulas",
   "horarios",
   "caixa",
-  "estoque",
   "contabil",
   "usuarios",
   "auditoria",

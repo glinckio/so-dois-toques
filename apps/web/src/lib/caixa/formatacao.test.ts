@@ -11,3 +11,10 @@ describe("CAIXA-CA-05: categorias na tela", () => {
     expect(ehAvulso("toString")).toBe(false);
   });
 });
+
+describe("LANCH-CA-04: lançamentos antigos da lanchonete", () => {
+  it("continuam com nome no histórico do Caixa", () => {
+    expect(nomeDaCategoria("VENDA")).toBe("Venda");
+    expect(nomeDaCategoria("COMPRA_ESTOQUE")).toBe("Compra de estoque");
+  });
+});
