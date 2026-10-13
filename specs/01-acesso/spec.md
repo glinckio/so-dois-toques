@@ -12,11 +12,13 @@ As próximas etapas guardam dados pessoais de alunos (LGPD) e dinheiro. Sem logi
 
 ## Perfis
 
-| Perfil        | Pode acessar                                        | Não pode acessar                   |
-| ------------- | --------------------------------------------------- | ---------------------------------- |
-| Administrador | Tudo, incluindo usuários e o painel Contábil        | —                                  |
-| Professor     | Aulas (alunos, turmas, presença) e a própria agenda | Contábil, Caixa, Estoque, usuários |
-| Atendente     | Horários, Estoque, Caixa                            | Contábil, usuários                 |
+| Perfil        | Pode acessar                                        | Não pode acessar          |
+| ------------- | --------------------------------------------------- | ------------------------- |
+| Administrador | Tudo, incluindo usuários e o painel Contábil        | —                         |
+| Professor     | Aulas (alunos, turmas, presença) e a própria agenda | Contábil, Caixa, usuários |
+| Atendente     | Horários, Caixa                                     | Contábil, usuários        |
+
+O Estoque saiu do sistema na Etapa 13 (a lanchonete fechou).
 
 O que cada perfil pode fazer dentro de cada módulo é detalhado na spec do módulo. Esta etapa cria os perfis e a checagem; as telas dos módulos ainda não existem. A checagem de permissão vale na API (que é quem guarda os dados); as telas só escondem o que o perfil não pode usar.
 

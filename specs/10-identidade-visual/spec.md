@@ -46,7 +46,7 @@ Cada perfil vê os cartões das áreas que acessa:
 - **VIS-CA-02**: Há um único menu principal com as áreas do perfil, e a área aberta fica marcada (`aria-current="page"`), no celular e no computador.
 - **VIS-CA-03**: O logo aparece no login e no menu, e o ícone do site é o logo.
 - **VIS-CA-04**: No Início, o administrador vê receitas, despesas, resultado e a receber do mês, e o gráfico dos últimos 12 meses com tabela equivalente.
-- **VIS-CA-05**: No Início, o atendente vê o caixa do dia, as reservas de hoje e o estoque, sem cartões do Contábil; o professor vê as turmas de hoje e nada de Caixa.
+- **VIS-CA-05**: No Início, o atendente vê o caixa do dia e as reservas de hoje (o estoque saiu na Etapa 13), sem cartões do Contábil; o professor vê as turmas de hoje e nada de Caixa.
 - **VIS-CA-06**: O Contábil mostra os gráficos dos 12 meses e das receitas por origem, com legenda e tabela, sem erro de CSP no navegador.
 - **VIS-CA-07** [manual]: O visual fica coerente com o logo e com as referências enviadas, no celular e no computador.
 
