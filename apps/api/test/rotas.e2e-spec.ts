@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { AREA, PUBLICO, SEM_CHAVE_INTERNA } from "../src/comum/decoradores.js";
 import { criarApp } from "./apoio.js";
+import { logado } from "./apoio-aulas.js";
 
 type Rota = {
   metodo: string;
@@ -88,6 +89,16 @@ describe("Inventário de rotas da API (LANC-CA-03)", () => {
     for (const prefixo of ["/alunos", "/caixa", "/contabil", "/horarios", "/usuarios"]) {
       expect(rotas.some((r) => r.caminho.startsWith(prefixo))).toBe(true);
     }
+  });
+
+  it("LANCH-CA-01: não há mais rotas de produtos, estoque ou vendas", async () => {
+    expect(rotas.filter((r) => /^\/(produtos|estoque)(\/|$)/.test(r.caminho)).map(chave)).toEqual(
+      [],
+    );
+    const { api, token } = await logado(app, "ADMINISTRADOR");
+    await api.get("/produtos", token).expect(404);
+    await api.get("/estoque/vendas", token).expect(404);
+    await api.post("/estoque/vendas", { itens: [], forma: "PIX" }, token).expect(404);
   });
 
   it("LANC-CA-03: só as rotas da lista fixa dispensam chave, sessão ou área", () => {

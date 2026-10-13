@@ -1,4 +1,6 @@
 import {
+  AREAS,
+  PERFIS,
   areasDoPerfil,
   bloqueioEmailAte,
   gerarSenhaTemporaria,
@@ -130,22 +132,20 @@ describe("permissões", () => {
     expect(podeAcessar("ADMINISTRADOR", "usuarios")).toBe(true);
   });
 
+  it("LANCH-CA-02: nenhum perfil tem a área de estoque", () => {
+    expect(AREAS).not.toContain("estoque");
+    for (const perfil of PERFIS) expect(areasDoPerfil(perfil)).not.toContain("estoque");
+  });
+
   it("ACESSO-CA-10: professor só acessa aulas", () => {
     expect(podeAcessar("PROFESSOR", "aulas")).toBe(true);
-    for (const area of [
-      "contabil",
-      "caixa",
-      "estoque",
-      "horarios",
-      "usuarios",
-      "auditoria",
-    ] as const) {
+    for (const area of ["contabil", "caixa", "horarios", "usuarios", "auditoria"] as const) {
       expect(podeAcessar("PROFESSOR", area)).toBe(false);
     }
   });
 
-  it("ACESSO-CA-10: atendente acessa horários, estoque e caixa, sem contábil e usuários", () => {
-    expect(areasDoPerfil("ATENDENTE")).toEqual(["inicio", "horarios", "estoque", "caixa"]);
+  it("ACESSO-CA-10 e LANCH-CA-02: atendente acessa horários e caixa, sem estoque, contábil e usuários", () => {
+    expect(areasDoPerfil("ATENDENTE")).toEqual(["inicio", "horarios", "caixa"]);
     expect(podeAcessar("ATENDENTE", "contabil")).toBe(false);
     expect(podeAcessar("ATENDENTE", "usuarios")).toBe(false);
   });

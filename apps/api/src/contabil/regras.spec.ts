@@ -33,10 +33,24 @@ describe("CONT-CA-01 e CONT-CA-02: receitas, despesas e conferência", () => {
     entrada("ESTORNO", 2000, "SANGRIA"),
   ];
 
+  it("LANCH-CA-03: vendas e compras de estoque antigas contam como outras receitas e despesas", () => {
+    const r = resumoFinanceiro([
+      entrada("VENDA", 2000),
+      saida("ESTORNO", 500, "VENDA"),
+      saida("COMPRA_ESTOQUE", 1200),
+      entrada("ESTORNO", 200, "COMPRA_ESTOQUE"),
+    ]);
+    expect(r.receitas).toEqual({ AULAS: 0, LOCACAO: 0, OUTRAS: 1500 });
+    expect(r.despesas).toEqual({ QUADRAS_PARCEIRAS: 0, OUTRAS: 1000 });
+    expect(r.resultado).toBe(500);
+    expect(r.naoClassificado).toBe(0);
+    expect(r.confere).toBe(true);
+  });
+
   it("soma por origem e tipo, descontando estornos da origem do original", () => {
     const r = resumoFinanceiro(lancamentos);
-    expect(r.receitas).toEqual({ AULAS: 15000, LOCACAO: 16000, LANCHONETE: 2000, OUTRAS: 500 });
-    expect(r.despesas).toEqual({ ESTOQUE: 1000, QUADRAS_PARCEIRAS: 8000, OUTRAS: 300 });
+    expect(r.receitas).toEqual({ AULAS: 15000, LOCACAO: 16000, OUTRAS: 2500 });
+    expect(r.despesas).toEqual({ QUADRAS_PARCEIRAS: 8000, OUTRAS: 1300 });
     expect(r.totalReceitas).toBe(33500);
     expect(r.totalDespesas).toBe(9300);
     expect(r.resultado).toBe(24200);
