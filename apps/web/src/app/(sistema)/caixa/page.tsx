@@ -137,7 +137,7 @@ export default async function PaginaCaixa({ searchParams }: PageProps<"/caixa">)
             />
             {lancamentos.length === 0 ? (
               <Vazio compacto titulo="Nenhum lançamento neste dia.">
-                Mensalidades, vendas, reservas e avulsos pagos neste dia aparecem aqui.
+                Mensalidades, reservas e avulsos pagos neste dia aparecem aqui.
               </Vazio>
             ) : (
               <LinhaDoTempo

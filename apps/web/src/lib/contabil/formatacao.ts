@@ -6,12 +6,10 @@ import type { LancamentoExportado, Turno } from "./tipos";
 export const ORIGENS_RECEITA = {
   AULAS: "Aulas (mensalidades)",
   LOCACAO: "Locação de quadras",
-  LANCHONETE: "Lanchonete",
   OUTRAS: "Outras receitas",
 } as const;
 
 export const TIPOS_DESPESA = {
-  ESTOQUE: "Compras de estoque",
   QUADRAS_PARCEIRAS: "Quadras parceiras",
   OUTRAS: "Outras despesas",
 } as const;

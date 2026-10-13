@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import type { Ator } from "../aulas/comum.js";
 import { deDataDoBanco, hojeEmSaoPaulo, paraDataDoBanco } from "../aulas/regras.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
-import { inicioDaHora, somarDias } from "../horarios/regras.js";
+import { inicioDaHora } from "../horarios/regras.js";
 import {
   competenciaAtual,
   competenciaDe,
@@ -91,22 +91,6 @@ export class ContabilService {
       };
     });
 
-    // CONT-CA-05: vendas feitas no período (horário de São Paulo), sem as estornadas.
-    const itens = await this.prisma.itemVenda.findMany({
-      where: {
-        venda: {
-          estornadaEm: null,
-          feitaEm: {
-            gte: inicioDaHora(periodo.de, 0),
-            lt: inicioDaHora(somarDias(periodo.ate, 1), 0),
-          },
-        },
-      },
-      select: { quantidade: true, precoCentavos: true, custoCentavos: true },
-    });
-    const vendido = itens.reduce((s, i) => s + i.quantidade * i.precoCentavos, 0);
-    const custo = itens.reduce((s, i) => s + i.quantidade * i.custoCentavos, 0);
-
     // CONT-CA-06
     const [quadras, faixas, ocupacoes] = await Promise.all([
       this.prisma.quadra.findMany({ orderBy: { ordem: "asc" }, select: { id: true, nome: true } }),
@@ -168,12 +152,6 @@ export class ContabilService {
       ...resumo,
       porForma,
       comparativo,
-      lanchonete: {
-        vendidoCentavos: vendido,
-        custoCentavos: custo,
-        margemBrutaCentavos: vendido - custo,
-        margemPercentual: porcentagem(vendido - custo, vendido),
-      },
       ocupacao,
       aReceber: {
         mensalidades: {

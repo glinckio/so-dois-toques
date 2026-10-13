@@ -1,6 +1,6 @@
 # Só Dois Toques
 
-Sistema de gestão do Só Dois Toques: aulas e mensalidades, horários das quadras de areia, estoque da copa, caixa e painel contábil.
+Sistema de gestão do Só Dois Toques: aulas e mensalidades, horários das quadras de areia, caixa e painel contábil.
 
 O desenvolvimento segue SDD (spec-driven development): cada etapa tem uma spec em `specs/`, uma branch própria e um PR com CI obrigatório.
 

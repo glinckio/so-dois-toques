@@ -1,6 +1,6 @@
 # Só Dois Toques
 
-Sistema de gestão (aulas, horários das quadras, estoque, caixa, contábil). Usuários e documentação em português do Brasil: specs, commits, PRs e textos de tela em pt-BR.
+Sistema de gestão (aulas, horários das quadras, caixa, contábil). Usuários e documentação em português do Brasil: specs, commits, PRs e textos de tela em pt-BR.
 
 ## Estrutura
 

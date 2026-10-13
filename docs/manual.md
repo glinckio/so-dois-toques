@@ -16,7 +16,6 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 | Início               | Sim           | Sim               | Sim                   |
 | Aulas                | Tudo          | Não               | Só as próprias turmas |
 | Horários             | Tudo          | Reservas          | Não                   |
-| Estoque              | Tudo          | Vender e comprar  | Não                   |
 | Caixa                | Tudo          | Sim, sem estornos | Não                   |
 | Contábil             | Sim           | Não               | Não                   |
 | Usuários e Auditoria | Sim           | Não               | Não                   |
@@ -49,17 +48,11 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 - **Privacidade (administrador):** apaga nome e telefone de clientes de reservas com mais de 12 meses.
 - **Bloqueio (administrador):** em Nova reserva, escolha "Bloqueio" para reservar horário de aula ou manutenção.
 
-## Estoque
-
-- **Produtos:** itens da lanchonete com estoque atual e mínimo; o que está abaixo do mínimo aparece em destaque.
-- **Vender:** precisa do caixa aberto. Escolha os itens e a forma de pagamento; o estoque baixa e o dinheiro entra no Caixa.
-- **Compra:** entrada de mercadoria com o custo; o custo médio é recalculado.
-- **Ajuste (administrador):** perda, quebra ou contagem.
-- **Vendas do dia:** lista das vendas, com estorno pelo administrador.
-
 ## Contábil (administrador)
 
-Escolha o mês ou um período. O painel mostra receitas por origem (aulas, locação, lanchonete, outras), despesas por tipo, resultado e margem, a conferência com o Caixa, a margem da lanchonete, a ocupação das quadras por turno, o que há a receber e os últimos 12 meses. **Baixar lançamentos (CSV)** gera a planilha para o contador.
+Escolha o mês ou um período. O painel mostra receitas por origem (aulas, locação, outras), despesas por tipo (quadras parceiras, outras), resultado e margem, a conferência com o Caixa, a ocupação das quadras por turno, o que há a receber e os últimos 12 meses. **Baixar lançamentos (CSV)** gera a planilha para o contador.
+
+Vendas e compras da antiga lanchonete continuam no Caixa do dia em que foram feitas e, no Contábil, contam em "Outras receitas" e "Outras despesas".
 
 ## Usuários e Auditoria (administrador)
 

@@ -1,6 +1,8 @@
 # Etapa 6: Estoque da lanchonete
 
-**Status:** implementada
+**Status:** removida
+
+> A lanchonete fechou e esta etapa saiu do sistema na [Etapa 13](../13-sem-lanchonete/spec.md). A spec fica como histórico: as vendas e compras já feitas continuam no banco e no livro-razão.
 
 ## Objetivo
 

@@ -5,7 +5,7 @@ import { somarDias } from "../src/horarios/regras.js";
 import { competenciaAtual } from "../src/mensalidades/regras.js";
 import { PrismaService } from "../src/prisma/prisma.service.js";
 import { criarApp } from "./apoio.js";
-import { criarAluno, criarLocal, logado, unico } from "./apoio-aulas.js";
+import { criarAluno, criarLocal, logado } from "./apoio-aulas.js";
 import { criarPlano, mensalidadeNoPassado, mesesAtras } from "./apoio-mensalidades.js";
 
 const hoje = () => hojeEmSaoPaulo(new Date());
@@ -24,11 +24,6 @@ type Painel = {
   confere: boolean;
   porForma: Record<string, { entradas: number; saidas: number; saldo: number }>;
   comparativo: { competencia: string; receitas: number; despesas: number; resultado: number }[];
-  lanchonete: {
-    vendidoCentavos: number;
-    custoCentavos: number;
-    margemBrutaCentavos: number;
-  };
   ocupacao: {
     id: string;
     nome: string;
@@ -98,19 +93,38 @@ describe("Etapa 8: painel contábil", () => {
   const diferenca = (antes: Record<string, number>, depois: Record<string, number>) =>
     Object.fromEntries(Object.keys(depois).map((k) => [k, (depois[k] ?? 0) - (antes[k] ?? 0)]));
 
-  async function produtoComSaldo(quantidade: number, totalCentavos: number, preco = 800) {
-    const { api, token } = admin;
-    const produtoId = (
-      await api.post("/produtos", { nome: unico("Coco"), precoCentavos: preco }, token).expect(201)
-    ).body.id as string;
-    const compra = await api
-      .post(
-        "/estoque/compras",
-        { produtoId, quantidade, totalCentavos, forma: "DINHEIRO", data: hoje() },
-        token,
-      )
-      .expect(201);
-    return { produtoId, compraId: compra.body.id as string };
+  /** Lançamentos da lanchonete feitos antes da Etapa 13: ficam no livro-razão para sempre. */
+  async function lancamentosDaLanchonete(criadoPorId: string) {
+    const data = paraDataDoBanco(hoje());
+    const base = { forma: "PIX" as const, data, criadoPorId };
+    const venda = await prisma.lancamento.create({
+      data: {
+        ...base,
+        tipo: "ENTRADA",
+        categoria: "VENDA",
+        valorCentavos: 2400,
+        descricao: "Venda",
+      },
+    });
+    await prisma.lancamento.create({
+      data: {
+        ...base,
+        tipo: "SAIDA",
+        categoria: "ESTORNO",
+        valorCentavos: 800,
+        descricao: "Estorno da venda",
+        estornoDeId: venda.id,
+      },
+    });
+    await prisma.lancamento.create({
+      data: {
+        ...base,
+        tipo: "SAIDA",
+        categoria: "COMPRA_ESTOQUE",
+        valorCentavos: 3000,
+        descricao: "Compra de estoque",
+      },
+    });
   }
 
   async function reservaPaga(data: string, horaInicio: number, duracao = 1) {
@@ -134,7 +148,7 @@ describe("Etapa 8: painel contábil", () => {
     return r.body.id as string;
   }
 
-  it("CONT-CA-01 e CONT-CA-02: soma receitas e despesas por origem, desconta estornos e confere com o Caixa", async () => {
+  it("CONT-CA-01, CONT-CA-02 e LANCH-CA-03: soma receitas e despesas por origem, desconta estornos e confere com o Caixa", async () => {
     const { api, token, usuario } = admin;
     const antes = await painel();
 
@@ -154,17 +168,8 @@ describe("Etapa 8: painel contábil", () => {
       .expect(201);
     // Locação.
     await reservaPaga(somarDias(hoje(), 175), 18, 2);
-    // Lanchonete: compra (estoque) e venda; uma venda estornada.
-    const { produtoId } = await produtoComSaldo(10, 3000);
-    await api
-      .post("/estoque/vendas", { itens: [{ produtoId, quantidade: 2 }], forma: "PIX" }, token)
-      .expect(201);
-    const estornada = await api
-      .post("/estoque/vendas", { itens: [{ produtoId, quantidade: 1 }], forma: "PIX" }, token)
-      .expect(201);
-    await api
-      .post(`/estoque/vendas/${estornada.body.id}/estornar`, { motivo: "Engano" }, token)
-      .expect(200);
+    // Lanchonete antiga: venda (com estorno parcial) e compra de estoque.
+    await lancamentosDaLanchonete(usuario.id);
     // Quadra parceira.
     const localId = await criarLocal(api, token);
     await api
@@ -198,14 +203,13 @@ describe("Etapa 8: painel contábil", () => {
     expect(diferenca(antes.receitas, depois.receitas)).toEqual({
       AULAS: 15000,
       LOCACAO: 10000,
-      LANCHONETE: 1600,
-      OUTRAS: 2500,
+      OUTRAS: 2500 + 1600,
     });
     expect(diferenca(antes.despesas, depois.despesas)).toEqual({
-      ESTOQUE: 3000,
       QUADRAS_PARCEIRAS: 7000,
-      OUTRAS: 400,
+      OUTRAS: 400 + 3000,
     });
+    expect(depois).not.toHaveProperty("lanchonete");
     expect(depois.gaveta - antes.gaveta).toBe(2000);
     expect(depois.resultado).toBe(depois.totalReceitas - depois.totalDespesas);
     expect(depois.resultado - antes.resultado).toBe(
@@ -276,26 +280,6 @@ describe("Etapa 8: painel contábil", () => {
       "2026-01",
       "2026-02",
     ]);
-  });
-
-  it("CONT-CA-05: lanchonete mostra vendido, custo e margem bruta sem as vendas estornadas", async () => {
-    const { api, token } = admin;
-    const antes = (await painel()).lanchonete;
-    // 10 unidades por R$ 30,00: custo médio de R$ 3,00.
-    const { produtoId } = await produtoComSaldo(10, 3000, 800);
-    await api
-      .post("/estoque/vendas", { itens: [{ produtoId, quantidade: 3 }], forma: "PIX" }, token)
-      .expect(201);
-    const estornada = await api
-      .post("/estoque/vendas", { itens: [{ produtoId, quantidade: 2 }], forma: "PIX" }, token)
-      .expect(201);
-    await api
-      .post(`/estoque/vendas/${estornada.body.id}/estornar`, { motivo: "Engano" }, token)
-      .expect(200);
-    const depois = (await painel()).lanchonete;
-    expect(depois.vendidoCentavos - antes.vendidoCentavos).toBe(2400);
-    expect(depois.custoCentavos - antes.custoCentavos).toBe(900);
-    expect(depois.margemBrutaCentavos - antes.margemBrutaCentavos).toBe(1500);
   });
 
   it("CONT-CA-06: ocupação por quadra e turno é reservadas sobre abertas menos bloqueadas", async () => {

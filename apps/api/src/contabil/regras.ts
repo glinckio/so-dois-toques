@@ -5,16 +5,18 @@ import { competenciaDe, primeiroDia, proximaCompetencia } from "../mensalidades/
 export const DIAS_MAXIMOS = 366;
 export const MESES_DO_COMPARATIVO = 12;
 
+// LANCH-CA-03: a lanchonete saiu na Etapa 13. Vendas e compras de estoque antigas
+// continuam no livro-razão e passam a contar como outras receitas e despesas.
 export const ORIGENS_RECEITA = {
   MENSALIDADE: "AULAS",
   ALUGUEL_QUADRA: "LOCACAO",
-  VENDA: "LANCHONETE",
   RECEITA_AVULSA: "OUTRAS",
+  VENDA: "OUTRAS",
 } as const;
 export const TIPOS_DESPESA = {
-  COMPRA_ESTOQUE: "ESTOQUE",
   QUADRA_PARCEIRA: "QUADRAS_PARCEIRAS",
   DESPESA: "OUTRAS",
+  COMPRA_ESTOQUE: "OUTRAS",
 } as const;
 const GAVETA = new Set(["SUPRIMENTO", "SANGRIA"]);
 

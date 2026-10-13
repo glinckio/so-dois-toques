@@ -69,21 +69,6 @@ const ITENS_DAS_AREAS: Partial<Record<Area, Definicao[]>> = {
       palavras: "valor hora faixa",
     },
   ],
-  estoque: [
-    {
-      rotulo: "Registrar venda",
-      href: "/estoque/venda",
-      grupo: "Ações rápidas",
-      palavras: "vender lanchonete copa",
-    },
-    {
-      rotulo: "Registrar compra",
-      href: "/estoque/compra",
-      grupo: "Ações rápidas",
-      palavras: "entrada fornecedor",
-    },
-    { rotulo: "Vendas do dia", href: "/estoque/vendas", grupo: "Atalhos" },
-  ],
   caixa: [
     {
       rotulo: "Lançar no caixa",

@@ -6,11 +6,12 @@ const spec = `
 - **AULAS-CA-01**: aluno é cadastrado
 - **AULAS-CA-02** [manual]: revisão visual
 | AULAS-CA-03 | turma cheia recusa aluno |
+- **AULAS-CA-04** [removido na Etapa 13]: tela que saiu do sistema
 Texto corrido citando AULAS-CA-09 não é critério.
 `;
 
 describe("extractCriteria", () => {
-  it("FUND-CA-05: lê critérios de listas e tabelas, marcando os manuais", () => {
+  it("FUND-CA-05: lê critérios de listas e tabelas, marcando os manuais e deixando de fora os removidos", () => {
     expect(extractCriteria(spec)).toEqual([
       { id: "AULAS-CA-01", manual: false },
       { id: "AULAS-CA-02", manual: true },
@@ -38,6 +39,7 @@ describe("extractStatus", () => {
     expect(extractStatus("# Etapa\n\n**Status:** rascunho\n")).toBe("rascunho");
     expect(extractStatus("Status: aprovada")).toBe("aprovada");
     expect(extractStatus("**Status:** Implementada")).toBe("implementada");
+    expect(extractStatus("**Status:** removida (Etapa 13)")).toBe("removida");
   });
 
   it("FUND-CA-05: spec sem status é tratada como implementada", () => {

@@ -59,7 +59,7 @@ test("VIS-CA-04: o Início do administrador mostra o mês e o gráfico de 12 mes
   const tabela = page.getByRole("table", { name: "Comparativo mensal" });
   await expect(tabela).toBeVisible();
   await expect(tabela.getByRole("row")).toHaveCount(13);
-  for (const secao of ["Caixa de hoje", "Quadras hoje", "Aulas de hoje", "Estoque"]) {
+  for (const secao of ["Caixa de hoje", "Quadras hoje", "Aulas de hoje"]) {
     await expect(page.getByRole("region", { name: secao })).toBeVisible();
   }
   expect(erros).toEqual([]);
@@ -87,7 +87,7 @@ test("VIS-CA-05: atendente e professor veem só o resumo das suas áreas", async
   const pessoa = await contexto.newPage();
   try {
     await primeiroAcesso(pessoa, emailAtendente, senhaAtendente, "saque-curto-2026-a");
-    for (const secao of ["Caixa de hoje", "Quadras hoje", "Estoque"]) {
+    for (const secao of ["Caixa de hoje", "Quadras hoje"]) {
       await expect(pessoa.getByRole("region", { name: secao })).toBeVisible();
     }
     await expect(pessoa.getByTestId("situacao-caixa")).toBeVisible();
@@ -99,7 +99,7 @@ test("VIS-CA-05: atendente e professor veem só o resumo das suas áreas", async
     await expect(pessoa).toHaveURL("/login");
     await primeiroAcesso(pessoa, emailProfessor, senhaProfessor, "manchete-baixa-2026-p");
     await expect(pessoa.getByRole("region", { name: "Aulas de hoje" })).toBeVisible();
-    for (const secao of ["Caixa de hoje", "Quadras hoje", "Estoque"]) {
+    for (const secao of ["Caixa de hoje", "Quadras hoje"]) {
       await expect(pessoa.getByRole("region", { name: secao })).toHaveCount(0);
     }
     await expect(pessoa.getByTestId("kpi-Receitas")).toHaveCount(0);

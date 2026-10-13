@@ -69,7 +69,7 @@ export function SeloIcone({
   );
 }
 
-/** Ponto "ao vivo" que pulsa (caixa aberto, estoque baixo). */
+/** Ponto "ao vivo" que pulsa (caixa aberto). */
 export function PontoVivo({ tom = "sucesso" }: { tom?: Tom }) {
   return (
     <span

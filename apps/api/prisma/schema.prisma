@@ -431,7 +431,9 @@ model SessaoCaixa {
   @@index([abertaEm])
 }
 
-// Etapa 6: Estoque da lanchonete
+// Etapa 6: Estoque da lanchonete. Sem tela e sem rota desde a Etapa 13 (a lanchonete
+// fechou); as tabelas ficam só como histórico, porque vendas e compras são ligadas a
+// lançamentos do livro-razão, que nunca são apagados.
 
 enum TipoMovimento {
   COMPRA

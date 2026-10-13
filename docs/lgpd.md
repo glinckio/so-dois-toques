@@ -18,7 +18,7 @@ Este documento descreve os dados pessoais que o sistema Só Dois Toques guarda, 
 | Equipe (usuários)         | Nome, e-mail, perfil, hash da senha (Argon2id), sessões com IP e navegador, tentativas de login | Login, segurança e auditoria                        | Legítimo interesse (IX) e obrigação de segurança        | Enquanto ativo; sessões expiram em até 7 dias          |
 | Todos                     | Registros de auditoria (quem fez o quê, quando e de qual IP)                                    | Rastrear alterações e prevenir fraude               | Legítimo interesse (IX)                                 | Permanente (a auditoria não pode ser apagada)          |
 
-Dinheiro (mensalidades, pagamentos, vendas, lançamentos do Caixa) não é dado pessoal por si só, mas fica ligado ao aluno ou à reserva. Esses registros nunca são apagados, por obrigação contábil: na anonimização, eles ficam e só o nome e o contato somem.
+Dinheiro (mensalidades, pagamentos, lançamentos do Caixa) não é dado pessoal por si só, mas fica ligado ao aluno ou à reserva. Esses registros nunca são apagados, por obrigação contábil: na anonimização, eles ficam e só o nome e o contato somem.
 
 O sistema não coleta CPF, endereço, foto, dados de saúde ou de cartão. O pagamento é registrado à mão, sem integração com maquininha ou banco.
 

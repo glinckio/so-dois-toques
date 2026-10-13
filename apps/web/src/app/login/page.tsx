@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Entrar | Só Dois Toques" };
 const AREAS: { icone: NomeIcone; nome: string; texto: string }[] = [
   { icone: "aulas", nome: "Aulas", texto: "Turmas e presença" },
   { icone: "horarios", nome: "Quadras", texto: "Reservas das quadras" },
-  { icone: "estoque", nome: "Lanchonete", texto: "Vendas e estoque" },
+  { icone: "pessoa", nome: "Alunos", texto: "Cadastro e mensalidades" },
   { icone: "caixa", nome: "Caixa", texto: "Turnos e fechamento" },
 ];
 

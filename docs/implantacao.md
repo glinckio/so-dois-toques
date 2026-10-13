@@ -104,7 +104,7 @@ O `pnpm db:backup` e o `pnpm db:restaurar` continuam valendo da sua máquina; pa
 - [ ] `/health` da API responde ok pelo endereço final.
 - [ ] Login funcionando pelo domínio, com https.
 - [ ] Primeiro administrador criado; equipe cadastrada com o perfil certo.
-- [ ] Faixas de preço das quadras, locais, planos e produtos cadastrados.
+- [ ] Faixas de preço das quadras, locais e planos cadastrados.
 - [ ] Um backup feito e restaurado com conferência igual.
 - [ ] Conferência manual das telas no celular e no computador.
 - [ ] Tag `v1.0.0` criada no commit que foi para produção:

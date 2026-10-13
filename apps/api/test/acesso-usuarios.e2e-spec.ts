@@ -45,8 +45,10 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
       area: "contabil",
       permitido: false,
     });
-    expect((await api.get("/acesso/estoque", token).expect(200)).body.permitido).toBe(true);
+    expect((await api.get("/acesso/caixa", token).expect(200)).body.permitido).toBe(true);
     await api.get("/acesso/inexistente", token).expect(400);
+    // LANCH-CA-02: o estoque deixou de ser uma área do sistema.
+    await api.get("/acesso/estoque", token).expect(400);
     const negados = await prisma.auditoria.count({
       where: {
         acao: "ACESSO_NEGADO",
@@ -57,20 +59,11 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
     expect(negados).toBe(1);
   });
 
-  it("ACESSO-CA-11: cada perfil recebe só as áreas que pode acessar (base do menu)", async () => {
+  it("ACESSO-CA-11 e LANCH-CA-02: cada perfil recebe só as áreas que pode acessar (base do menu)", async () => {
     const esperado = {
-      ADMINISTRADOR: [
-        "inicio",
-        "aulas",
-        "horarios",
-        "estoque",
-        "caixa",
-        "contabil",
-        "usuarios",
-        "auditoria",
-      ],
+      ADMINISTRADOR: ["inicio", "aulas", "horarios", "caixa", "contabil", "usuarios", "auditoria"],
       PROFESSOR: ["inicio", "aulas"],
-      ATENDENTE: ["inicio", "horarios", "estoque", "caixa"],
+      ATENDENTE: ["inicio", "horarios", "caixa"],
     } as const;
     for (const [perfil, areas] of Object.entries(esperado)) {
       const usuario = await criarUsuario(app, perfil as keyof typeof esperado);

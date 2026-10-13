@@ -286,78 +286,35 @@ function Conteudo({ painel: p }: { painel: Painel }) {
         </Cartao>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Cartao aria-labelledby="titulo-lanchonete" className="flex flex-col gap-5">
-          <CabecalhoCartao
-            id="titulo-lanchonete"
-            icone="estoque"
-            tom="sucesso"
-            titulo="Lanchonete"
-            descricao="O que sobrou das vendas depois do custo"
-          />
-          <div className="flex items-center gap-5">
-            <Anel
-              fracao={Math.max(0, p.lanchonete.margemPercentual ?? 0) / 100}
-              tom="sucesso"
-              tamanho={104}
-              espessura={10}
-              rotulo={`Margem bruta da lanchonete: ${formatarPorcentagem(p.lanchonete.margemPercentual)}`}
-            >
-              <span className="flex flex-col">
-                <span className="text-lg font-extrabold tabular-nums">
-                  {formatarPorcentagem(p.lanchonete.margemPercentual)}
-                </span>
-                <span className="text-apagado text-[0.6rem] font-bold tracking-wider uppercase">
-                  margem
-                </span>
-              </span>
-            </Anel>
-            <dl
-              className="grid flex-1 grid-cols-[1fr_auto] gap-y-2 text-sm"
-              data-testid="lanchonete"
-            >
-              <dt className="text-suave">Vendido</dt>
-              <dd className={numero}>{formatarReais(p.lanchonete.vendidoCentavos)}</dd>
-              <dt className="text-suave">Custo do vendido</dt>
-              <dd className={numero}>{formatarReais(p.lanchonete.custoCentavos)}</dd>
-              <dt className="border-borda border-t pt-2 font-semibold">Margem bruta</dt>
-              <dd className={`${numero} border-borda border-t pt-2 font-bold`}>
-                {formatarReais(p.lanchonete.margemBrutaCentavos)} (
-                {formatarPorcentagem(p.lanchonete.margemPercentual)})
-              </dd>
-            </dl>
+      <Cartao aria-labelledby="titulo-a-receber" className="flex flex-col gap-5">
+        <CabecalhoCartao
+          id="titulo-a-receber"
+          icone="relogio"
+          tom="areia"
+          titulo="A receber"
+          descricao="O que ainda não entrou no caixa"
+        />
+        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="a-receber">
+          <div className="bg-elevado/40 flex flex-col gap-2 rounded-2xl p-4">
+            <dt className="text-suave flex items-center gap-2 text-sm">
+              <Icone nome="aulas" width={16} height={16} className="text-roxo-claro" />
+              Mensalidades vencidas ({p.aReceber.mensalidades.quantidade}), até hoje
+            </dt>
+            <dd className="text-2xl font-extrabold">
+              <Valor centavos={p.aReceber.mensalidades.valorCentavos} />
+            </dd>
           </div>
-        </Cartao>
-        <Cartao aria-labelledby="titulo-a-receber" className="flex flex-col gap-5">
-          <CabecalhoCartao
-            id="titulo-a-receber"
-            icone="relogio"
-            tom="areia"
-            titulo="A receber"
-            descricao="O que ainda não entrou no caixa"
-          />
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="a-receber">
-            <div className="bg-elevado/40 flex flex-col gap-2 rounded-2xl p-4">
-              <dt className="text-suave flex items-center gap-2 text-sm">
-                <Icone nome="aulas" width={16} height={16} className="text-roxo-claro" />
-                Mensalidades vencidas ({p.aReceber.mensalidades.quantidade}), até hoje
-              </dt>
-              <dd className="text-2xl font-extrabold">
-                <Valor centavos={p.aReceber.mensalidades.valorCentavos} />
-              </dd>
-            </div>
-            <div className="bg-elevado/40 flex flex-col gap-2 rounded-2xl p-4">
-              <dt className="text-suave flex items-center gap-2 text-sm">
-                <Icone nome="horarios" width={16} height={16} className="text-areia" />
-                Reservas não pagas ({p.aReceber.reservas.quantidade}), no período
-              </dt>
-              <dd className="text-2xl font-extrabold">
-                <Valor centavos={p.aReceber.reservas.valorCentavos} />
-              </dd>
-            </div>
-          </dl>
-        </Cartao>
-      </div>
+          <div className="bg-elevado/40 flex flex-col gap-2 rounded-2xl p-4">
+            <dt className="text-suave flex items-center gap-2 text-sm">
+              <Icone nome="horarios" width={16} height={16} className="text-areia" />
+              Reservas não pagas ({p.aReceber.reservas.quantidade}), no período
+            </dt>
+            <dd className="text-2xl font-extrabold">
+              <Valor centavos={p.aReceber.reservas.valorCentavos} />
+            </dd>
+          </div>
+        </dl>
+      </Cartao>
 
       <Cartao aria-labelledby="titulo-ocupacao" className="flex flex-col gap-5">
         <CabecalhoCartao

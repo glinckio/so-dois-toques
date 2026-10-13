@@ -11,8 +11,8 @@ export type OcupacaoTurno = {
 
 export type Painel = {
   periodo: { de: string; ate: string };
-  receitas: { AULAS: number; LOCACAO: number; LANCHONETE: number; OUTRAS: number };
-  despesas: { ESTOQUE: number; QUADRAS_PARCEIRAS: number; OUTRAS: number };
+  receitas: { AULAS: number; LOCACAO: number; OUTRAS: number };
+  despesas: { QUADRAS_PARCEIRAS: number; OUTRAS: number };
   totalReceitas: number;
   totalDespesas: number;
   resultado: number;
@@ -24,12 +24,6 @@ export type Painel = {
   confere: boolean;
   porForma: Record<Forma, { entradas: number; saidas: number; saldo: number }>;
   comparativo: { competencia: string; receitas: number; despesas: number; resultado: number }[];
-  lanchonete: {
-    vendidoCentavos: number;
-    custoCentavos: number;
-    margemBrutaCentavos: number;
-    margemPercentual: number | null;
-  };
   ocupacao: {
     id: string;
     nome: string;
