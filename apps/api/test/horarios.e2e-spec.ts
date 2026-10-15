@@ -7,7 +7,7 @@ import { criarAluno, criarTurma, logado } from "./apoio-aulas.js";
 
 const hoje = () => hojeEmSaoPaulo(new Date());
 
-describe("Etapa 12: agenda da quadra (aulas e bloqueios)", () => {
+describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let admin: Awaited<ReturnType<typeof logado>>;

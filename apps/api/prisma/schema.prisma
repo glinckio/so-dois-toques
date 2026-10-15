@@ -87,7 +87,7 @@ model Auditoria {
   @@index([acao, criadaEm])
 }
 
-// Etapa 2: Aulas (alunos, turmas, matrículas e presença). Etapa 12: toda turma é na quadra.
+// Etapa 2: Aulas (alunos, turmas, matrículas e presença). Etapa 14: toda turma é na quadra.
 
 enum Nivel {
   INICIANTE
@@ -329,7 +329,7 @@ model Lancamento {
   @@index([data])
 }
 
-// Etapa 7 e 12: agenda da quadra
+// Etapa 7 e 14: agenda da quadra
 
 /// A quadra do local. Uma só, criada na migração.
 model Quadra {

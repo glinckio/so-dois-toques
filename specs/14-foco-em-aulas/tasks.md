@@ -1,6 +1,6 @@
-# Etapa 12: Tarefas
+# Etapa 14: Tarefas
 
-- [x] `check:specs` aceita `substituída` e `[removido]` (FOCO-CA-12)
+- [x] `check:specs` com `removida` e `[removido]` (FOCO-CA-12)
 - [x] Migração com trava de dados (FOCO-CA-11)
 - [x] API: tirar estoque, caixa e custos; área Mensalidades (FOCO-CA-01, 03)
 - [x] API: turma sem local e sem sobreposição na quadra (FOCO-CA-04)

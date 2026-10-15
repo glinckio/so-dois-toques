@@ -1,4 +1,4 @@
-# Etapa 12: Foco em aulas
+# Etapa 14: Foco em aulas
 
 **Status:** implementada
 
@@ -62,8 +62,8 @@ O sistema ainda não tem dados reais dessas partes, então as tabelas podem ser 
 
 ### Specs antigas
 
-- As Etapas 4, 5 e 6 passam ao status `substituída`, com uma linha apontando para esta etapa. A verificação `pnpm check:specs` aceita esse status e não cobra testes delas.
-- Nas Etapas 2, 3, 7, 8, 9 e 11, cada critério que deixou de valer recebe a marca `[removido]` e a verificação deixa de cobrá-lo. Os critérios que mudaram de sentido são reescritos nesta spec.
+- As Etapas 4, 5, 6 e 13 passam ao status `removida` (o mesmo da Etapa 13), com uma linha apontando para esta etapa. A verificação `pnpm check:specs` não cobra testes delas.
+- Nas Etapas 2, 3, 7, 8, 9, 10, 11 e 12, cada critério que deixou de valer recebe a marca `[removido]` e a verificação deixa de cobrá-lo. Os critérios que mudaram de sentido são reescritos nesta spec.
 - Manual, LGPD e guia de implantação (`docs/`) são atualizados.
 
 ## Quem faz o quê
@@ -91,7 +91,7 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 - **FOCO-CA-09**: O Contábil mostra recebido, estornos, resultado, totais por forma, mensalidades vencidas não pagas e o comparativo de 12 meses, e o resultado confere com entradas menos saídas do livro-razão no período.
 - **FOCO-CA-10**: O Início não mostra caixa nem estoque; mostra as aulas de hoje e as mensalidades atrasadas, e o recebido no mês só para o administrador.
 - **FOCO-CA-11**: A migração, num banco com dados de alguma parte que sai, para sem alterar nada e diz o que encontrou; num banco só com dados de aulas e mensalidades, apaga as partes que saem e mantém alunos, turmas, presenças, mensalidades, pagamentos e lançamentos.
-- **FOCO-CA-12**: `pnpm check:specs` aceita o status `substituída` e a marca `[removido]` sem cobrar testes, e continua cobrando os demais critérios.
+- **FOCO-CA-12**: `pnpm check:specs` aceita a etapa `removida` e o critério `[removido]`, inclusive com o critério substituto ao lado, sem cobrar testes, e continua cobrando os demais critérios.
 - **FOCO-CA-13**: Renomear a quadra, bloquear e cancelar bloqueio ficam na auditoria com autor, data e IP.
 - **FOCO-CA-14** [manual]: A grade, o bloqueio, as turmas, o Início e o Contábil funcionam no celular e no computador, em português.
 - **FOCO-CA-15** [manual]: `docs/manual.md`, `docs/lgpd.md` e `docs/implantacao.md` não citam mais estoque, caixa, quadras parceiras nem clientes de reserva.
@@ -105,6 +105,7 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 
 ## Decisões registradas
 
+- 15/10/2026: esta etapa nasceu como 12, mas a `main` recebeu antes as Etapas 12 (ajustes do primeiro teste) e 13 (sem lanchonete); virou a 14. Ela vai além da 13: as tabelas da lanchonete também saem do banco, porque o dono confirmou que não há dados reais.
 - 15/10/2026: o dono pediu para tirar estoque e caixa e ficar só com aulas, controlando os horários da única quadra e os horários, planos e mensalidades dos alunos. Respostas dele:
   - O Contábil fica.
   - Na quadra não há aluguel para clientes: a agenda tem só aulas e bloqueios.

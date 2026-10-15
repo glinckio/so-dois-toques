@@ -20,10 +20,6 @@ let failed = false;
 for (const spec of specs) {
   const text = readFileSync(spec, "utf8");
   const status = extractStatus(text);
-  if (status === "substituída") {
-    console.log(`${spec}: substituída por outra etapa, testes não exigidos`);
-    continue;
-  }
   if (status !== "implementada") {
     console.log(`${spec}: status "${status}", testes ainda não exigidos`);
     continue;

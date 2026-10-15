@@ -1,4 +1,4 @@
--- Etapa 12: foco em aulas. Saem estoque, caixa (turnos e avulsos), quadras parceiras
+-- Etapa 14: foco em aulas. Saem estoque, caixa (turnos e avulsos), quadras parceiras
 -- e aluguel de quadra; a agenda da única quadra fica só com bloqueios (as aulas vêm
 -- das turmas).
 
@@ -47,7 +47,7 @@ BEGIN
   IF n > 0 THEN achados := achados || format('%s bloqueio(s) semanal(is) na segunda quadra ou antes das 5h', n); END IF;
 
   IF array_length(achados, 1) > 0 THEN
-    RAISE EXCEPTION 'Etapa 12 parada: o banco tem dados das partes que saem (%). Faça o backup e decida o que fazer com eles antes de migrar.',
+    RAISE EXCEPTION 'Etapa 14 parada: o banco tem dados das partes que saem (%). Faça o backup e decida o que fazer com eles antes de migrar.',
       array_to_string(achados, ', ');
   END IF;
 END $$;

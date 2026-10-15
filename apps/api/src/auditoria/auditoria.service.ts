@@ -61,7 +61,7 @@ export const ACOES = [
   "PAGAMENTO_RESERVA_ESTORNADO",
   "CONTABIL_EXPORTADO",
   "CLIENTES_ANONIMIZADOS",
-  // Etapa 12: as ações acima de locais, quadras parceiras, caixa, estoque e reservas
+  // Etapa 14: as ações acima de locais, quadras parceiras, caixa, estoque e reservas
   // não são mais gravadas, mas continuam aqui para filtrar o histórico.
   "BLOQUEIO_CRIADO",
   "BLOQUEIO_CANCELADO",

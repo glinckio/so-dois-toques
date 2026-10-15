@@ -51,7 +51,7 @@ As Etapas 0 a 8 entregaram as telas. Antes de colocar dinheiro e dados pessoais 
 
 ## Critérios de aceite
 
-> **Etapa 12 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/12-foco-em-aulas/spec.md`.
+> **Etapa 14 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/14-foco-em-aulas/spec.md`.
 
 ### Produção
 

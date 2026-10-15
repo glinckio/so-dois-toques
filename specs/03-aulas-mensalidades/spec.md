@@ -66,7 +66,7 @@ As mensalidades ficam na área Caixa (Administrador e Atendente), porque é no b
 
 ## Critérios de aceite
 
-> **Etapa 12 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/12-foco-em-aulas/spec.md`.
+> **Etapa 14 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/14-foco-em-aulas/spec.md`.
 
 ### Planos e assinaturas
 

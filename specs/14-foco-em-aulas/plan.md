@@ -1,4 +1,4 @@
-# Etapa 12: Plano técnico
+# Etapa 14: Plano técnico
 
 ## Modelo de dados (Prisma)
 
@@ -45,8 +45,8 @@ Migração escrita à mão (`20261015120000_foco_em_aulas`), conferida com `pris
 
 ## Specs e verificação
 
-- `scripts/spec-coverage.ts`: novo status `substituída` (não cobra testes) e marca `[removido]` no critério (não cobra teste).
-- Etapas 4, 5 e 6: `substituída`. Etapas 2, 3, 7, 8, 9 e 11: `[removido]` nos critérios que saíram.
+- `scripts/spec-coverage.ts`: usa o status `removida` e a marca `[removido` da Etapa 13.
+- Etapas 4, 5, 6 e 13: `removida`. Etapas 2, 3, 7, 8, 9, 10, 11 e 12: `[removido]` nos critérios que saíram.
 
 ## Testes
 

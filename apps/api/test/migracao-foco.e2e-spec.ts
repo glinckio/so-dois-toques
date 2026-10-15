@@ -3,7 +3,7 @@ import { join } from "node:path";
 import pg from "pg";
 
 const PASTA = "prisma/migrations";
-const ETAPA_12 = "20261015120000_foco_em_aulas";
+const ETAPA_14 = "20261015120000_foco_em_aulas";
 
 /** Banco só deste teste, ao lado do banco de teste: "<nome>_migracao_test". */
 function urlDoBanco(): URL {
@@ -16,7 +16,7 @@ function urlDoBanco(): URL {
 
 const sql = (migracao: string) => readFileSync(join(PASTA, migracao, "migration.sql"), "utf8");
 
-/** Recria o banco com as migrações anteriores à Etapa 12 e devolve um cliente nele. */
+/** Recria o banco com as migrações anteriores à Etapa 14 e devolve um cliente nele. */
 async function bancoAntesDaEtapa12() {
   const url = urlDoBanco();
   const nome = url.pathname.slice(1);
@@ -33,7 +33,7 @@ async function bancoAntesDaEtapa12() {
   const cliente = new pg.Client({ connectionString: url.toString() });
   await cliente.connect();
   const anteriores = readdirSync(PASTA)
-    .filter((m) => /^\d/.test(m) && m < ETAPA_12)
+    .filter((m) => /^\d/.test(m) && m < ETAPA_14)
     .sort();
   for (const migracao of anteriores) await cliente.query(sql(migracao));
   return cliente;
@@ -82,7 +82,7 @@ async function dadosDeAulas(c: pg.Client) {
 const contar = async (c: pg.Client, tabela: string) =>
   Number((await c.query(`SELECT count(*) FROM "${tabela}"`)).rows[0].count);
 
-describe("Migração da Etapa 12", () => {
+describe("Migração da Etapa 14", () => {
   let cliente: pg.Client | undefined;
 
   afterEach(async () => {
@@ -101,8 +101,8 @@ describe("Migração da Etapa 12", () => {
       [usuario],
     );
 
-    await expect(cliente.query(sql(ETAPA_12))).rejects.toThrow(
-      /Etapa 12 parada: .*1 produto\(s\), 1 turno\(s\) de caixa/,
+    await expect(cliente.query(sql(ETAPA_14))).rejects.toThrow(
+      /Etapa 14 parada: .*1 produto\(s\), 1 turno\(s\) de caixa/,
     );
     expect(await contar(cliente, "Produto")).toBe(1);
     expect(await contar(cliente, "SessaoCaixa")).toBe(1);
@@ -132,7 +132,7 @@ describe("Migração da Etapa 12", () => {
        SELECT gen_random_uuid(), 'RESERVA', id, '2026-11-04', 18, 19, 'Cliente', 8000, $1 FROM "Quadra" WHERE ordem = 1`,
       [usuario],
     );
-    await expect(cliente.query(sql(ETAPA_12))).rejects.toThrow(
+    await expect(cliente.query(sql(ETAPA_14))).rejects.toThrow(
       /1 par\(es\) de turmas ativas no mesmo horário, 1 reserva\(s\) de cliente/,
     );
   });
@@ -140,7 +140,7 @@ describe("Migração da Etapa 12", () => {
   it("FOCO-CA-11: só com aulas e mensalidades, apaga o que sai e mantém turmas, lançamentos e bloqueios", async () => {
     cliente = await bancoAntesDaEtapa12();
     const { turma } = await dadosDeAulas(cliente);
-    await cliente.query(sql(ETAPA_12));
+    await cliente.query(sql(ETAPA_14));
 
     expect(await contar(cliente, "Turma")).toBe(1);
     expect(await contar(cliente, "HorarioTurma")).toBe(1);

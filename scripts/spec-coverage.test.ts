@@ -6,11 +6,12 @@ const spec = `
 - **AULAS-CA-01**: aluno é cadastrado
 - **AULAS-CA-02** [manual]: revisão visual
 | AULAS-CA-03 | turma cheia recusa aluno |
+- **AULAS-CA-04** [removido na Etapa 13]: tela que saiu do sistema
 Texto corrido citando AULAS-CA-09 não é critério.
 `;
 
 describe("extractCriteria", () => {
-  it("FUND-CA-05: lê critérios de listas e tabelas, marcando os manuais", () => {
+  it("FUND-CA-05: lê critérios de listas e tabelas, marcando os manuais e deixando de fora os removidos", () => {
     expect(extractCriteria(spec)).toEqual([
       { id: "AULAS-CA-01", manual: false },
       { id: "AULAS-CA-02", manual: true },
@@ -20,11 +21,16 @@ describe("extractCriteria", () => {
 });
 
 describe("critério removido", () => {
-  it("FOCO-CA-12: critério marcado [removido] não é cobrado, os outros continuam", () => {
-    const texto = "- **CAIXA-CA-01** [removido]: abre o caixa\n- **CAIXA-CA-02**: lança avulso\n";
+  it("FOCO-CA-12: critério [removido] com o substituto ao lado não é cobrado, os outros continuam", () => {
+    const texto =
+      "- **CAIXA-CA-01** [removido] (ver FOCO-CA-01): abre o caixa\n- **CAIXA-CA-02**: lança avulso\n";
     const criteria = extractCriteria(texto);
     expect(criteria).toEqual([{ id: "CAIXA-CA-02", manual: false }]);
     expect(findUncoveredCriteria(criteria, [])).toEqual(["CAIXA-CA-02"]);
+  });
+
+  it("FOCO-CA-12: etapa removida não exige testes", () => {
+    expect(extractStatus("**Status:** removida pela Etapa 14\n")).toBe("removida");
   });
 });
 
@@ -47,10 +53,7 @@ describe("extractStatus", () => {
     expect(extractStatus("# Etapa\n\n**Status:** rascunho\n")).toBe("rascunho");
     expect(extractStatus("Status: aprovada")).toBe("aprovada");
     expect(extractStatus("**Status:** Implementada")).toBe("implementada");
-  });
-
-  it("FOCO-CA-12: lê o status substituída", () => {
-    expect(extractStatus("# Etapa\n\n**Status:** substituída pela etapa 12\n")).toBe("substituída");
+    expect(extractStatus("**Status:** removida (Etapa 13)")).toBe("removida");
   });
 
   it("FUND-CA-05: spec sem status é tratada como implementada", () => {

@@ -76,7 +76,7 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 
 ## Critérios de aceite
 
-> **Etapa 12 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/12-foco-em-aulas/spec.md`.
+> **Etapa 14 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/14-foco-em-aulas/spec.md`.
 
 - **CONT-CA-01** [removido] (ver FOCO-CA-09): O painel soma as receitas por origem e as despesas por tipo do período, desconta os estornos da origem do lançamento original e mostra resultado e margem.
 - **CONT-CA-02** [removido] (ver FOCO-CA-09): Receitas − despesas + movimentação da gaveta é igual a entradas − saídas dos lançamentos do Caixa no período, e o painel mostra que confere.

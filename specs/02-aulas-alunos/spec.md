@@ -70,7 +70,7 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 
 ## Critérios de aceite
 
-> **Etapa 12 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/12-foco-em-aulas/spec.md`.
+> **Etapa 14 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/14-foco-em-aulas/spec.md`.
 
 ### Alunos
 

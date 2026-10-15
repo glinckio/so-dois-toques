@@ -2,7 +2,7 @@ import { formatarData } from "@/lib/aulas/formatacao";
 import { competenciaValida, FORMAS } from "@/lib/mensalidades/formatacao";
 import type { LancamentoExportado } from "./tipos";
 
-/** O livro-razão só tem mensalidades e estornos (Etapa 12). */
+/** O livro-razão só tem mensalidades e estornos (Etapa 14). */
 export const CATEGORIAS: Record<string, string> = {
   MENSALIDADE: "Mensalidade",
   ESTORNO: "Estorno",

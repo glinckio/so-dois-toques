@@ -42,7 +42,7 @@ Cada perfil vê os cartões das áreas que acessa:
 
 ## Critérios de aceite
 
-> **Etapa 12 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/12-foco-em-aulas/spec.md`.
+> **Etapa 14 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/14-foco-em-aulas/spec.md`.
 
 - **VIS-CA-01**: As cores do tema garantem contraste de pelo menos 4,5:1 para texto principal e secundário sobre o fundo e os cartões, e para o texto dos botões; as séries dos gráficos têm pelo menos 3:1 sobre o cartão.
 - **VIS-CA-02**: Há um único menu principal com as áreas do perfil, e a área aberta fica marcada (`aria-current="page"`), no celular e no computador.

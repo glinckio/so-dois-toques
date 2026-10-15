@@ -77,7 +77,7 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 
 ## Critérios de aceite
 
-> **Etapa 12 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/12-foco-em-aulas/spec.md`.
+> **Etapa 14 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/14-foco-em-aulas/spec.md`.
 
 - **HOR-CA-01** [removido] (ver FOCO-CA-01): O administrador cria faixas de preço para um ou vários dias e remove faixas; faixa que se sobrepõe a outra do mesmo dia, hora de fim antes do início e valor fora da faixa são recusados.
 - **HOR-CA-02** [removido] (ver FOCO-CA-05): A grade de um dia mostra, para cada quadra, as horas de funcionamento com reservas e bloqueios (cliente, valor e se está pago); reservas canceladas não aparecem.
