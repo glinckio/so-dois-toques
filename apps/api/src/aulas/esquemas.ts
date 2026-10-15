@@ -5,7 +5,6 @@ import {
   HORARIO_MINIMO,
   NIVEIS,
   normalizarTelefone,
-  TIPOS_LOCAL,
   VAGAS_MAXIMO,
   VAGAS_MINIMO,
 } from "./regras.js";
@@ -82,13 +81,6 @@ export const consultaAlunosSchema = z.object({
   pagina: z.coerce.number().int().min(1).max(10000).default(1),
 });
 
-export const localSchema = z.object({
-  nome: z.string().trim().min(2, "Informe o nome do local.").max(80),
-  tipo: z.enum(TIPOS_LOCAL),
-  endereco: textoOpcional(200),
-  ativo: z.boolean().default(true),
-});
-
 const horarioSchema = z
   .object({
     diaSemana: z.number().int().min(0).max(6),
@@ -103,7 +95,6 @@ const horarioSchema = z
 export const turmaSchema = z.object({
   nome: z.string().trim().min(2, "Informe o nome da turma.").max(80),
   nivel: z.enum(NIVEIS),
-  localId: z.uuid(),
   professorId: z.uuid(),
   vagas: z
     .number()

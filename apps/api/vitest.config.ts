@@ -21,6 +21,7 @@ export default defineConfig({
           include: ["test/**/*.e2e-spec.ts"],
           env: bancoDeTeste,
           globalSetup: ["test/global-setup.ts"],
+          setupFiles: ["test/limpar-agenda.ts"],
           fileParallelism: false,
           testTimeout: 20_000,
           hookTimeout: 60_000,

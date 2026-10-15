@@ -1,51 +1,28 @@
-import { dataValida, diaDaSemana } from "../aulas/regras.js";
+import { dataValida } from "../aulas/regras.js";
 import { somarDias } from "../horarios/regras.js";
 import { competenciaDe, primeiroDia, proximaCompetencia } from "../mensalidades/regras.js";
 
 export const DIAS_MAXIMOS = 366;
 export const MESES_DO_COMPARATIVO = 12;
 
-export const ORIGENS_RECEITA = {
-  MENSALIDADE: "AULAS",
-  ALUGUEL_QUADRA: "LOCACAO",
-  VENDA: "LANCHONETE",
-  RECEITA_AVULSA: "OUTRAS",
-} as const;
-export const TIPOS_DESPESA = {
-  COMPRA_ESTOQUE: "ESTOQUE",
-  QUADRA_PARCEIRA: "QUADRAS_PARCEIRAS",
-  DESPESA: "OUTRAS",
-} as const;
-const GAVETA = new Set(["SUPRIMENTO", "SANGRIA"]);
-
-type OrigemReceita = (typeof ORIGENS_RECEITA)[keyof typeof ORIGENS_RECEITA];
-type TipoDespesa = (typeof TIPOS_DESPESA)[keyof typeof TIPOS_DESPESA];
-
 export type LancamentoContabil = {
   tipo: "ENTRADA" | "SAIDA";
   categoria: string;
   valorCentavos: number;
-  /** Categoria do lançamento estornado, quando este é um estorno. */
-  categoriaOriginal?: string | null;
 };
 
 export type ResumoFinanceiro = {
-  receitas: Record<OrigemReceita, number>;
-  despesas: Record<TipoDespesa, number>;
-  totalReceitas: number;
-  totalDespesas: number;
+  /** Mensalidades recebidas no período. */
+  recebido: number;
+  /** Estornos de mensalidade feitos no período. */
+  estornos: number;
   resultado: number;
-  margemPercentual: number | null;
-  gaveta: number;
-  /** Lançamentos de categoria que o painel não conhece; entram só na conferência. */
+  /** Lançamento que não é mensalidade nem estorno; entra só na conferência. */
   naoClassificado: number;
   entradas: number;
   saidas: number;
   confere: boolean;
 };
-
-const zerado = <K extends string>(chaves: readonly K[]) =>
-  Object.fromEntries(chaves.map((c) => [c, 0])) as Record<K, number>;
 
 /** Uma casa decimal; null quando não há base. */
 export function porcentagem(parte: number, total: number): number | null {
@@ -54,46 +31,31 @@ export function porcentagem(parte: number, total: number): number | null {
 }
 
 /**
- * CONT-CA-01 e 02: receitas por origem e despesas por tipo, com o estorno descontado da
- * origem do lançamento estornado. Suprimento e sangria ficam à parte (gaveta).
+ * FOCO-CA-09: o livro-razão só tem mensalidades (entradas) e estornos de mensalidade
+ * (saídas). O resultado é o recebido menos os estornos e confere com entradas − saídas.
  */
 export function resumoFinanceiro(lancamentos: readonly LancamentoContabil[]): ResumoFinanceiro {
-  const receitas = zerado(Object.values(ORIGENS_RECEITA));
-  const despesas = zerado(Object.values(TIPOS_DESPESA));
-  let gaveta = 0;
+  let recebido = 0;
+  let estornos = 0;
   let naoClassificado = 0;
   let entradas = 0;
   let saidas = 0;
   for (const l of lancamentos) {
-    const comSinal = l.tipo === "ENTRADA" ? l.valorCentavos : -l.valorCentavos;
     if (l.tipo === "ENTRADA") entradas += l.valorCentavos;
     else saidas += l.valorCentavos;
-    const categoria = l.categoria === "ESTORNO" ? (l.categoriaOriginal ?? "") : l.categoria;
-    if (Object.hasOwn(ORIGENS_RECEITA, categoria)) {
-      receitas[ORIGENS_RECEITA[categoria as keyof typeof ORIGENS_RECEITA]] += comSinal;
-    } else if (Object.hasOwn(TIPOS_DESPESA, categoria)) {
-      despesas[TIPOS_DESPESA[categoria as keyof typeof TIPOS_DESPESA]] -= comSinal;
-    } else if (GAVETA.has(categoria)) {
-      gaveta += comSinal;
-    } else {
-      naoClassificado += comSinal;
-    }
+    if (l.tipo === "ENTRADA" && l.categoria === "MENSALIDADE") recebido += l.valorCentavos;
+    else if (l.tipo === "SAIDA" && l.categoria === "ESTORNO") estornos += l.valorCentavos;
+    else naoClassificado += l.tipo === "ENTRADA" ? l.valorCentavos : -l.valorCentavos;
   }
-  const totalReceitas = Object.values(receitas).reduce((a, b) => a + b, 0);
-  const totalDespesas = Object.values(despesas).reduce((a, b) => a + b, 0);
-  const resultado = totalReceitas - totalDespesas;
+  const resultado = recebido - estornos;
   return {
-    receitas,
-    despesas,
-    totalReceitas,
-    totalDespesas,
+    recebido,
+    estornos,
     resultado,
-    margemPercentual: porcentagem(resultado, totalReceitas),
-    gaveta,
     naoClassificado,
     entradas,
     saidas,
-    confere: resultado + gaveta + naoClassificado === entradas - saidas,
+    confere: resultado + naoClassificado === entradas - saidas,
   };
 }
 
@@ -135,82 +97,4 @@ export function datasDoPeriodo({ de, ate }: Periodo): string[] {
   const datas: string[] = [];
   for (let data = de; data <= ate; data = somarDias(data, 1)) datas.push(data);
   return datas;
-}
-
-export const TURNOS = ["MANHA", "TARDE", "NOITE"] as const;
-export type Turno = (typeof TURNOS)[number];
-
-export function turnoDaHora(hora: number): Turno {
-  if (hora < 12) return "MANHA";
-  if (hora < 18) return "TARDE";
-  return "NOITE";
-}
-
-type FaixaHoras = { diaSemana: number; horaInicio: number; horaFim: number };
-type Ocupacao = {
-  quadraId: string;
-  data: string;
-  tipo: "RESERVA" | "BLOQUEIO";
-  horaInicio: number;
-  horaFim: number;
-};
-
-export type OcupacaoTurno = {
-  abertas: number;
-  bloqueadas: number;
-  reservadas: number;
-  ocupacaoPercentual: number | null;
-};
-
-/**
- * CONT-CA-06: horas abertas (faixas de cada dia da semana), bloqueadas e reservadas por
- * quadra e turno. Ocupação = reservadas ÷ (abertas − bloqueadas).
- */
-export function ocupacaoPorTurno(
-  quadras: readonly string[],
-  datas: readonly string[],
-  faixas: readonly FaixaHoras[],
-  ocupacoes: readonly Ocupacao[],
-) {
-  const abertasPorDia = Array.from({ length: 7 }, () => zerado(TURNOS));
-  for (const f of faixas) {
-    for (let h = f.horaInicio; h < f.horaFim; h++) {
-      (abertasPorDia[f.diaSemana] as Record<Turno, number>)[turnoDaHora(h)] += 1;
-    }
-  }
-  const abertas = zerado(TURNOS);
-  for (const data of datas) {
-    const doDia = abertasPorDia[diaDaSemana(data)] as Record<Turno, number>;
-    for (const t of TURNOS) abertas[t] += doDia[t];
-  }
-  const resultado = new Map<string, Record<Turno, OcupacaoTurno>>();
-  for (const quadraId of quadras) {
-    const contas = Object.fromEntries(
-      TURNOS.map((t) => [t, { abertas: abertas[t], bloqueadas: 0, reservadas: 0 }]),
-    ) as Record<Turno, Omit<OcupacaoTurno, "ocupacaoPercentual">>;
-    for (const o of ocupacoes) {
-      if (o.quadraId !== quadraId) continue;
-      for (let h = o.horaInicio; h < o.horaFim; h++) {
-        const conta = contas[turnoDaHora(h)];
-        if (o.tipo === "BLOQUEIO") conta.bloqueadas += 1;
-        else conta.reservadas += 1;
-      }
-    }
-    resultado.set(
-      quadraId,
-      Object.fromEntries(
-        TURNOS.map((t) => [
-          t,
-          {
-            ...contas[t],
-            ocupacaoPercentual: porcentagem(
-              contas[t].reservadas,
-              contas[t].abertas - contas[t].bloqueadas,
-            ),
-          },
-        ]),
-      ) as Record<Turno, OcupacaoTurno>,
-    );
-  }
-  return resultado;
 }

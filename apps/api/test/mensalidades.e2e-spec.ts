@@ -537,34 +537,46 @@ describe("Etapa 3: mensalidades e Caixa", () => {
       expect(intacto.valorCentavos).toBe(lancamento.valorCentavos);
     });
 
-    it("MENS-CA-17: o Caixa do dia mostra os lançamentos e o saldo por forma de pagamento", async () => {
+    it("FOCO-CA-03: pagamento e estorno vão para o livro-razão sem turno de caixa, que continua imutável", async () => {
       const { api, token } = admin;
-      const antes = await api.get(`/caixa/lancamentos?data=${hoje()}`, token).expect(200);
-      const { mensalidadeId: a } = await alunoComMensalidade({ valorCentavos: 10000 });
-      const { mensalidadeId: b } = await alunoComMensalidade({ valorCentavos: 20000 });
-      await api
-        .post(`/mensalidades/${a}/pagamentos`, { forma: "PIX", data: hoje() }, token)
+      const { mensalidadeId } = await alunoComMensalidade({ valorCentavos: 20000 });
+      const pago = await api
+        .post(
+          `/mensalidades/${mensalidadeId}/pagamentos`,
+          { forma: "CARTAO_CREDITO", data: hoje() },
+          token,
+        )
         .expect(201);
-      const pagoB = await api
-        .post(`/mensalidades/${b}/pagamentos`, { forma: "CARTAO_CREDITO", data: hoje() }, token)
-        .expect(201);
       await api
-        .post(`/pagamentos/${pagoB.body.id}/estornar`, { motivo: "Cobrado em dobro" }, token)
+        .post(`/pagamentos/${pago.body.id}/estornar`, { motivo: "Cobrado em dobro" }, token)
         .expect(200);
 
-      const depois = await api.get(`/caixa/lancamentos?data=${hoje()}`, token).expect(200);
-      expect(depois.body.data).toBe(hoje());
-      expect(depois.body.lancamentos.length).toBe(antes.body.lancamentos.length + 3);
-      const r0 = antes.body.resumo;
-      const r1 = depois.body.resumo;
-      expect(r1.entradas).toBe(r0.entradas + 30000);
-      expect(r1.saidas).toBe(r0.saidas + 20000);
-      expect(r1.porForma.PIX.saldo).toBe(r0.porForma.PIX.saldo + 10000);
-      expect(r1.porForma.CARTAO_CREDITO.saldo).toBe(r0.porForma.CARTAO_CREDITO.saldo);
-
-      const semData = await api.get("/caixa/lancamentos", token).expect(200);
-      expect(semData.body.data).toBe(hoje());
-      await api.get("/caixa/lancamentos?data=2026-02-30", token).expect(400);
+      const pagamento = await prisma.pagamento.findUniqueOrThrow({
+        where: { id: pago.body.id },
+        include: { lancamento: true, estornoLancamento: true },
+      });
+      expect(pagamento.lancamento).toMatchObject({
+        tipo: "ENTRADA",
+        categoria: "MENSALIDADE",
+        valorCentavos: 20000,
+        forma: "CARTAO_CREDITO",
+      });
+      expect(pagamento.lancamento).not.toHaveProperty("sessaoId");
+      expect(pagamento.estornoLancamento).toMatchObject({
+        tipo: "SAIDA",
+        categoria: "ESTORNO",
+        valorCentavos: 20000,
+        estornoDeId: pagamento.lancamentoId,
+      });
+      await expect(
+        prisma.lancamento.update({
+          where: { id: pagamento.lancamentoId },
+          data: { valorCentavos: 1 },
+        }),
+      ).rejects.toThrow();
+      await expect(
+        prisma.lancamento.delete({ where: { id: pagamento.lancamentoId } }),
+      ).rejects.toThrow();
     });
   });
 
@@ -585,7 +597,6 @@ describe("Etapa 3: mensalidades e Caixa", () => {
         )
         .expect(201);
       await api.get(`/pagamentos/${pago.body.id}/recibo`, token).expect(200);
-      await api.get("/caixa/lancamentos", token).expect(200);
 
       await api
         .post(`/pagamentos/${pago.body.id}/estornar`, { motivo: "Teste" }, token)
@@ -614,7 +625,7 @@ describe("Etapa 3: mensalidades e Caixa", () => {
       expect(negado).not.toBeNull();
     });
 
-    it("MENS-CA-19: professor não acessa mensalidades, planos nem o Caixa", async () => {
+    it("MENS-CA-19: professor não acessa mensalidades nem planos", async () => {
       const { api, token } = await logado(app, "PROFESSOR");
       const { alunoId, mensalidadeId, competencia } = await alunoComMensalidade();
       await api.get(`/mensalidades?competencia=${competencia}`, token).expect(403);
@@ -623,7 +634,6 @@ describe("Etapa 3: mensalidades e Caixa", () => {
       await api
         .post(`/mensalidades/${mensalidadeId}/pagamentos`, { forma: "PIX", data: hoje() }, token)
         .expect(403);
-      await api.get("/caixa/lancamentos", token).expect(403);
       await api.get("/planos", token).expect(403);
       await api.get(`/alunos/${alunoId}/assinaturas`, token).expect(403);
     });

@@ -25,5 +25,7 @@ export default async function setup(): Promise<void> {
   execFileSync("pnpm", ["exec", "prisma", "migrate", "deploy"], {
     stdio: "inherit",
     env: { ...process.env, DATABASE_URL: urlTeste },
+    // No Windows o pnpm é um .cmd, que só roda por um shell.
+    shell: process.platform === "win32",
   });
 }

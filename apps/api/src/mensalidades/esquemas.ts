@@ -64,7 +64,3 @@ export const pagamentoSchema = z.object({
 });
 
 export const motivoSchema = z.object({ motivo });
-
-export const consultaCaixaSchema = z.object({
-  data: z.string().refine(dataValida, "Data inválida.").optional(),
-});

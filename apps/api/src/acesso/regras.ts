@@ -166,9 +166,8 @@ export function ipBloqueado(falhasNaJanela: number): boolean {
 export const AREAS = [
   "inicio",
   "aulas",
+  "mensalidades",
   "horarios",
-  "estoque",
-  "caixa",
   "contabil",
   "usuarios",
   "auditoria",
@@ -177,8 +176,8 @@ export type Area = (typeof AREAS)[number];
 
 const PERMISSOES: Record<PerfilUsuario, readonly Area[]> = {
   ADMINISTRADOR: AREAS,
-  PROFESSOR: ["inicio", "aulas"],
-  ATENDENTE: ["inicio", "horarios", "estoque", "caixa"],
+  PROFESSOR: ["inicio", "aulas", "horarios"],
+  ATENDENTE: ["inicio", "mensalidades", "horarios"],
 };
 
 export function podeAcessar(perfil: PerfilUsuario, area: Area): boolean {

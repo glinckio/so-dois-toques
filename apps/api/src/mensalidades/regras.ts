@@ -1,4 +1,4 @@
-/** Regras puras de mensalidades e do Caixa (Etapa 3). Sem acesso a banco. */
+/** Regras puras de mensalidades e do livro-razão (Etapa 3). Sem acesso a banco. */
 
 import { hojeEmSaoPaulo } from "../aulas/regras.js";
 
@@ -95,7 +95,7 @@ export type ResumoCaixa = {
   porForma: Record<FormaPagamento, { entradas: number; saidas: number; saldo: number }>;
 };
 
-/** MENS-CA-17: totais de entradas, saídas e saldo, no geral e por forma de pagamento. */
+/** Totais de entradas, saídas e saldo, no geral e por forma de pagamento (Contábil). */
 export function resumoDoCaixa(lancamentos: readonly LancamentoResumo[]): ResumoCaixa {
   const porForma = Object.fromEntries(
     FORMAS_PAGAMENTO.map((f) => [f, { entradas: 0, saidas: 0, saldo: 0 }]),

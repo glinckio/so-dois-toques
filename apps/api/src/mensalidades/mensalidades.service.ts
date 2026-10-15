@@ -13,7 +13,6 @@ import {
 import type { Ator } from "../aulas/comum.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
 import { Prisma } from "../generated/prisma/client.js";
-import { turnoParaLancamento } from "../caixa/sessao.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import {
   competenciaAtual,
@@ -22,7 +21,6 @@ import {
   nomeDoMes,
   primeiroDia,
   proximaCompetencia,
-  resumoDoCaixa,
   situacaoEm,
   vencimentoEm,
   type FormaPagamento,
@@ -241,10 +239,8 @@ export class MensalidadesService {
         if (m.situacao === "CANCELADA") throw new ConflictException(MENSAGEM_CANCELADA);
         const competencia = competenciaDe(deDataDoBanco(m.competencia));
         // Sem dado pessoal no livro-razão, que é imutável: o aluno fica na origem.
-        const sessaoId = await turnoParaLancamento(tx);
         const lancamento = await tx.lancamento.create({
           data: {
-            sessaoId,
             tipo: "ENTRADA",
             valorCentavos: m.valorCentavos,
             forma: dados.forma,
@@ -307,10 +303,8 @@ export class MensalidadesService {
         const pagamento = await tx.pagamento.findUniqueOrThrow({ where: { id: pagamentoId } });
         if (pagamento.estornadoEm) throw new ConflictException("Este pagamento já foi estornado.");
         const hoje = hojeEmSaoPaulo(new Date());
-        const sessaoId = await turnoParaLancamento(tx);
         const estorno = await tx.lancamento.create({
           data: {
-            sessaoId,
             tipo: "SAIDA",
             valorCentavos: pagamento.valorCentavos,
             forma: pagamento.forma,
@@ -416,36 +410,6 @@ export class MensalidadesService {
       recebidoPor: p.recebidoPor.nome,
       recebidoEm: p.recebidoEm.toISOString(),
       estornado: p.estornadoEm !== null,
-    };
-  }
-
-  // ---------- Caixa (MENS-CA-17) ----------
-
-  async lancamentosDoDia(data?: string) {
-    const dia = data ?? hojeEmSaoPaulo(new Date());
-    const lancamentos = await this.prisma.lancamento.findMany({
-      where: { data: paraDataDoBanco(dia) },
-      include: { criadoPor: { select: { nome: true } }, estorno: { select: { id: true } } },
-      orderBy: { criadoEm: "asc" },
-    });
-    return {
-      data: dia,
-      resumo: resumoDoCaixa(lancamentos),
-      lancamentos: lancamentos.map((l) => ({
-        id: l.id,
-        tipo: l.tipo,
-        valorCentavos: l.valorCentavos,
-        forma: l.forma,
-        categoria: l.categoria,
-        descricao: l.descricao,
-        origemTipo: l.origemTipo,
-        origemId: l.origemId,
-        estornoDeId: l.estornoDeId,
-        estornado: l.estorno !== null,
-        sessaoId: l.sessaoId,
-        criadoPor: l.criadoPor.nome,
-        criadoEm: l.criadoEm.toISOString(),
-      })),
     };
   }
 }

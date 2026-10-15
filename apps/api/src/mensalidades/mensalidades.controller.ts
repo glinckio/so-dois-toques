@@ -5,7 +5,6 @@ import { ExigeArea, IpCliente, SomenteAdministrador, UsuarioAtual } from "../com
 import type { UsuarioAutenticado } from "../comum/requisicao.js";
 import { ZodPipe } from "../comum/zod.pipe.js";
 import {
-  consultaCaixaSchema,
   consultaMensalidadesSchema,
   geracaoSchema,
   motivoSchema,
@@ -15,8 +14,8 @@ import { MensalidadesService } from "./mensalidades.service.js";
 
 const ator = (u: UsuarioAutenticado, ip?: string): Ator => ({ id: u.id, perfil: u.perfil, ip });
 
-/** Mensalidades e lançamentos: área Caixa (Administrador e Atendente). */
-@ExigeArea("caixa")
+/** Mensalidades, pagamentos e recibos: área Mensalidades (Administrador e Atendente). */
+@ExigeArea("mensalidades")
 @Controller()
 export class MensalidadesController {
   constructor(private readonly mensalidades: MensalidadesService) {}
@@ -86,12 +85,5 @@ export class MensalidadesController {
   @Get("pagamentos/:id/recibo")
   recibo(@Param("id", ParseUUIDPipe) id: string) {
     return this.mensalidades.recibo(id);
-  }
-
-  @Get("caixa/lancamentos")
-  lancamentos(
-    @Query(new ZodPipe(consultaCaixaSchema)) filtro: z.infer<typeof consultaCaixaSchema>,
-  ) {
-    return this.mensalidades.lancamentosDoDia(filtro.data);
   }
 }

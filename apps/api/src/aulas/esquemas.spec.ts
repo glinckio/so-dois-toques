@@ -1,13 +1,7 @@
 import { NotFoundException } from "@nestjs/common";
 import type { AuditoriaService } from "../auditoria/auditoria.service.js";
 import { ehAdmin, negarForaDoEscopo } from "./comum.js";
-import {
-  alunoSchema,
-  localSchema,
-  novoAlunoSchema,
-  presencaSchema,
-  turmaSchema,
-} from "./esquemas.js";
+import { alunoSchema, novoAlunoSchema, presencaSchema, turmaSchema } from "./esquemas.js";
 
 const aluno = {
   nome: "  Ana Areia ",
@@ -58,17 +52,10 @@ describe("validação de entrada de Aulas", () => {
     );
   });
 
-  it("AULAS-CA-09 e AULAS-CA-10: local e turma", () => {
-    expect(localSchema.parse({ nome: "Arena", tipo: "PROPRIA" })).toEqual({
-      nome: "Arena",
-      tipo: "PROPRIA",
-      endereco: null,
-      ativo: true,
-    });
+  it("AULAS-CA-10 e FOCO-CA-04: turma sem local", () => {
     const turma = {
       nome: "Iniciantes",
       nivel: "INICIANTE",
-      localId: "0b8f9a3e-1c2d-4e5f-8a9b-0c1d2e3f4a5b",
       professorId: "1b8f9a3e-1c2d-4e5f-8a9b-0c1d2e3f4a5b",
       vagas: 10,
       horarios: [{ diaSemana: 1, inicio: 420, fim: 480 }],

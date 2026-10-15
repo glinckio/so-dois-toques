@@ -130,22 +130,16 @@ describe("permissões", () => {
     expect(podeAcessar("ADMINISTRADOR", "usuarios")).toBe(true);
   });
 
-  it("ACESSO-CA-10: professor só acessa aulas", () => {
-    expect(podeAcessar("PROFESSOR", "aulas")).toBe(true);
-    for (const area of [
-      "contabil",
-      "caixa",
-      "estoque",
-      "horarios",
-      "usuarios",
-      "auditoria",
-    ] as const) {
+  it("ACESSO-CA-10 e FOCO-CA-08: professor acessa aulas e a grade da quadra", () => {
+    expect(areasDoPerfil("PROFESSOR")).toEqual(["inicio", "aulas", "horarios"]);
+    for (const area of ["contabil", "mensalidades", "usuarios", "auditoria"] as const) {
       expect(podeAcessar("PROFESSOR", area)).toBe(false);
     }
   });
 
-  it("ACESSO-CA-10: atendente acessa horários, estoque e caixa, sem contábil e usuários", () => {
-    expect(areasDoPerfil("ATENDENTE")).toEqual(["inicio", "horarios", "estoque", "caixa"]);
+  it("ACESSO-CA-10 e FOCO-CA-02: atendente acessa mensalidades e horários, sem contábil e usuários", () => {
+    expect(areasDoPerfil("ATENDENTE")).toEqual(["inicio", "mensalidades", "horarios"]);
+    expect(podeAcessar("ATENDENTE", "aulas")).toBe(false);
     expect(podeAcessar("ATENDENTE", "contabil")).toBe(false);
     expect(podeAcessar("ATENDENTE", "usuarios")).toBe(false);
   });

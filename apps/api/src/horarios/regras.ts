@@ -1,54 +1,20 @@
-import { dataValida, diaDaSemana, paraDataDoBanco } from "../aulas/regras.js";
+import {
+  dataValida,
+  diaDaSemana,
+  horariosSobrepostos,
+  paraDataDoBanco,
+  type Horario,
+} from "../aulas/regras.js";
 
-export const DURACAO_MAXIMA = 4;
+/** A grade e os bloqueios vão das 05h às 24h, o mesmo limite dos horários de turma. */
+export const HORA_ABRE = 5;
+export const HORA_FECHA = 24;
 export const DIAS_DE_ANTECEDENCIA = 180;
 export const OCORRENCIAS_MAXIMAS = 26;
-export const HORAS_PARA_CANCELAR = 24;
-export const VALOR_HORA_MINIMO = 100;
-export const VALOR_HORA_MAXIMO = 200_000;
-
-export type Faixa = {
-  diaSemana: number;
-  horaInicio: number;
-  horaFim: number;
-  valorHoraCentavos: number;
-};
-
-type Intervalo = Pick<Faixa, "diaSemana" | "horaInicio" | "horaFim">;
-
-const sobrepostas = (a: Intervalo, b: Intervalo) =>
-  a.diaSemana === b.diaSemana && a.horaInicio < b.horaFim && b.horaInicio < a.horaFim;
-
-/** HOR-CA-01: faixas novas que batem com as existentes ou entre si. */
-export function conflitosDeFaixa(novas: readonly Intervalo[], existentes: readonly Intervalo[]) {
-  const internas = novas.some((a, i) => novas.slice(i + 1).some((b) => sobrepostas(a, b)));
-  return {
-    internas,
-    existentes: existentes.filter((e) => novas.some((n) => sobrepostas(n, e))),
-  };
-}
-
-/**
- * HOR-CA-03: soma o preço de cada hora pela faixa em que ela cai. Devolve null se
- * alguma hora não está em faixa nenhuma (fora do funcionamento).
- */
-export function valorDaReserva(
-  faixasDoDia: readonly Faixa[],
-  horaInicio: number,
-  horaFim: number,
-): number | null {
-  let total = 0;
-  for (let hora = horaInicio; hora < horaFim; hora++) {
-    const faixa = faixasDoDia.find((f) => f.horaInicio <= hora && hora < f.horaFim);
-    if (!faixa) return null;
-    total += faixa.valorHoraCentavos;
-  }
-  return total;
-}
 
 /**
  * Instante em que a hora começa, no horário de São Paulo. O Brasil não tem horário de
- * verão desde 2019, então o fuso é sempre UTC−3 (decisão registrada na spec).
+ * verão desde 2019, então o fuso é sempre UTC−3 (decisão registrada na Etapa 7).
  */
 export function inicioDaHora(data: string, hora: number): Date {
   return new Date(paraDataDoBanco(data).getTime() + (hora + 3) * 60 * 60 * 1000);
@@ -60,32 +26,14 @@ export function somarDias(data: string, dias: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** Nome que fica no lugar do cliente depois do prazo de guarda (LANC-CA-07). */
-export const CLIENTE_ANONIMIZADO = "Cliente anonimizado";
-export const MESES_DE_GUARDA_DO_CLIENTE = 12;
-
-/**
- * Primeiro dia ainda dentro do prazo de guarda: reservas com data anterior a
- * ele podem ter o cliente anonimizado. Dia que não existe no mês de destino
- * (29/02, 31/04) vira o último dia daquele mês.
- */
-export function limiteDeRetencao(hoje: string, meses = MESES_DE_GUARDA_DO_CLIENTE): string {
-  const [ano, mes, dia] = hoje.split("-").map(Number) as [number, number, number];
-  const indice = ano * 12 + (mes - 1) - meses;
-  const anoAlvo = Math.floor(indice / 12);
-  const mesAlvo = indice % 12;
-  const ultimoDia = new Date(Date.UTC(anoAlvo, mesAlvo + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(anoAlvo, mesAlvo, Math.min(dia, ultimoDia))).toISOString().slice(0, 10);
-}
-
 export type ProblemaDeData = "JA_COMECOU" | "MUITO_LONGE";
 
 export const MENSAGENS_DATA: Record<ProblemaDeData, string> = {
   JA_COMECOU: "Esse horário já começou ou já passou.",
-  MUITO_LONGE: `Só dá para reservar até ${DIAS_DE_ANTECEDENCIA} dias à frente.`,
+  MUITO_LONGE: `Só dá para bloquear até ${DIAS_DE_ANTECEDENCIA} dias à frente.`,
 };
 
-/** HOR-CA-03: o horário ainda não começou e está dentro da antecedência máxima. */
+/** O horário ainda não começou e está dentro da antecedência máxima. */
 export function problemaDeData(
   data: string,
   horaInicio: number,
@@ -97,7 +45,7 @@ export function problemaDeData(
   return null;
 }
 
-/** HOR-CA-05: as datas do dia da semana entre início e fim (inclusive). */
+/** As datas do dia da semana entre início e fim (inclusive). */
 export function datasDaSerie(dataInicio: string, dataFim: string, diaSemana: number): string[] {
   if (!dataValida(dataInicio) || !dataValida(dataFim) || dataFim < dataInicio) return [];
   const datas: string[] = [];
@@ -109,22 +57,69 @@ export function datasDaSerie(dataInicio: string, dataFim: string, diaSemana: num
   return datas;
 }
 
-export type ProblemaDeCancelamento = "JA_COMECOU" | "SO_ADMIN";
-
-/** HOR-CA-08: quem pode cancelar, pela antecedência. */
-export function problemaDeCancelamento(
-  inicio: Date,
-  agora: Date,
-  admin: boolean,
-): ProblemaDeCancelamento | null {
-  if (inicio <= agora) return "JA_COMECOU";
-  if (!admin && inicio.getTime() - agora.getTime() < HORAS_PARA_CANCELAR * 60 * 60 * 1000) {
-    return "SO_ADMIN";
-  }
-  return null;
-}
-
 export function descreverHorario(data: string, horaInicio: number, horaFim: number): string {
   const [, mes, dia] = data.split("-");
   return `${dia}/${mes} das ${horaInicio}h às ${horaFim}h`;
+}
+
+export const formatarData = (data: string) => data.split("-").reverse().slice(0, 2).join("/");
+
+/**
+ * Uma turma vista pela agenda: dá aula do dia de início até o dia anterior ao
+ * encerramento (`ate`, exclusivo; null enquanto ativa).
+ */
+export type TurmaNaAgenda = {
+  id: string;
+  nome: string;
+  desde: string;
+  ate: string | null;
+  horarios: readonly Horario[];
+};
+
+export type AulaDoDia = { turmaId: string; nome: string; inicio: number; fim: number };
+
+/** FOCO-CA-05: as aulas de um dia, em minutos, pela ordem de início. */
+export function aulasDoDia(turmas: readonly TurmaNaAgenda[], data: string): AulaDoDia[] {
+  const dia = diaDaSemana(data);
+  return turmas
+    .filter((t) => t.desde <= data && (t.ate === null || data < t.ate))
+    .flatMap((t) =>
+      t.horarios
+        .filter((h) => h.diaSemana === dia)
+        .map((h) => ({ turmaId: t.id, nome: t.nome, inicio: h.inicio, fim: h.fim })),
+    )
+    .sort((a, b) => a.inicio - b.inicio);
+}
+
+/** FOCO-CA-06: datas em que o bloqueio (horas inteiras) cai sobre alguma aula. */
+export function datasComAula(
+  datas: readonly string[],
+  horaInicio: number,
+  horaFim: number,
+  turmas: readonly TurmaNaAgenda[],
+): string[] {
+  return datas.filter((data) =>
+    aulasDoDia(turmas, data).some((a) => a.inicio < horaFim * 60 && horaInicio * 60 < a.fim),
+  );
+}
+
+type BloqueioNaAgenda = { data: string; horaInicio: number; horaFim: number };
+
+/** FOCO-CA-06: datas de bloqueios que caem sobre os horários de uma turma. */
+export function datasDeBloqueioSobreHorarios(
+  horarios: readonly Horario[],
+  bloqueios: readonly BloqueioNaAgenda[],
+): string[] {
+  const datas = bloqueios
+    .filter((b) =>
+      horarios.some((h) =>
+        horariosSobrepostos(h, {
+          diaSemana: diaDaSemana(b.data),
+          inicio: b.horaInicio * 60,
+          fim: b.horaFim * 60,
+        }),
+      ),
+    )
+    .map((b) => b.data);
+  return [...new Set(datas)].sort();
 }

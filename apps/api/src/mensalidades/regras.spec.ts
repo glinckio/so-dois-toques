@@ -81,7 +81,7 @@ describe("situação", () => {
 });
 
 describe("Caixa", () => {
-  it("MENS-CA-17: soma entradas, saídas e saldo por forma de pagamento", () => {
+  it("FOCO-CA-09: soma entradas, saídas e saldo por forma de pagamento", () => {
     const resumo = resumoDoCaixa([
       { tipo: "ENTRADA", forma: "PIX", valorCentavos: 15000 },
       { tipo: "ENTRADA", forma: "DINHEIRO", valorCentavos: 12000 },
