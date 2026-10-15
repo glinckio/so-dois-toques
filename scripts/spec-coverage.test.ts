@@ -19,6 +19,15 @@ describe("extractCriteria", () => {
   });
 });
 
+describe("critério removido", () => {
+  it("FOCO-CA-12: critério marcado [removido] não é cobrado, os outros continuam", () => {
+    const texto = "- **CAIXA-CA-01** [removido]: abre o caixa\n- **CAIXA-CA-02**: lança avulso\n";
+    const criteria = extractCriteria(texto);
+    expect(criteria).toEqual([{ id: "CAIXA-CA-02", manual: false }]);
+    expect(findUncoveredCriteria(criteria, [])).toEqual(["CAIXA-CA-02"]);
+  });
+});
+
 describe("findUncoveredCriteria", () => {
   it("FUND-CA-05: aponta critérios automatizáveis sem teste", () => {
     const criteria = extractCriteria(spec);
@@ -38,6 +47,10 @@ describe("extractStatus", () => {
     expect(extractStatus("# Etapa\n\n**Status:** rascunho\n")).toBe("rascunho");
     expect(extractStatus("Status: aprovada")).toBe("aprovada");
     expect(extractStatus("**Status:** Implementada")).toBe("implementada");
+  });
+
+  it("FOCO-CA-12: lê o status substituída", () => {
+    expect(extractStatus("# Etapa\n\n**Status:** substituída pela etapa 12\n")).toBe("substituída");
   });
 
   it("FUND-CA-05: spec sem status é tratada como implementada", () => {
