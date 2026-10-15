@@ -77,23 +77,3 @@ export type Recibo = {
 };
 
 export type LinhaResumo = { entradas: number; saidas: number; saldo: number };
-
-export type CaixaDoDia = {
-  data: string;
-  resumo: LinhaResumo & { porForma: Record<Forma, LinhaResumo> };
-  lancamentos: {
-    id: string;
-    tipo: "ENTRADA" | "SAIDA";
-    valorCentavos: number;
-    forma: Forma;
-    categoria: string;
-    descricao: string;
-    origemTipo: string | null;
-    origemId: string | null;
-    estornoDeId: string | null;
-    estornado: boolean;
-    sessaoId: string | null;
-    criadoPor: string;
-    criadoEm: string;
-  }[];
-};

@@ -11,8 +11,13 @@ import { SenhaTemporaria } from "./senha-temporaria";
 
 const PERFIS_EM_BLOCOS = [
   { valor: "ADMINISTRADOR", rotulo: "Administrador", icone: "escudo", detalhe: "Tudo" },
-  { valor: "PROFESSOR", rotulo: "Professor", icone: "aulas", detalhe: "Início e Aulas" },
-  { valor: "ATENDENTE", rotulo: "Atendente", icone: "caixa", detalhe: "Quadras, estoque e caixa" },
+  { valor: "PROFESSOR", rotulo: "Professor", icone: "aulas", detalhe: "Aulas e agenda" },
+  {
+    valor: "ATENDENTE",
+    rotulo: "Atendente",
+    icone: "mensalidades",
+    detalhe: "Mensalidades e agenda",
+  },
 ] as const;
 
 /** Cadastro de usuário num cartão próprio; o perfil é escolhido em blocos. */

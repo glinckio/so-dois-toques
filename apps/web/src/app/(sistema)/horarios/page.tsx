@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { connection } from "next/server";
 import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { FaixaDeDias } from "@/components/base/faixa-de-dias";
-import { Vazio } from "@/components/base/vazio";
-import { AgendaDasQuadras } from "@/components/horarios/agenda-das-quadras";
+import { AgendaDaQuadra } from "@/components/horarios/agenda-da-quadra";
+import { FormQuadra } from "@/components/horarios/form-quadra";
 import { ResumoDoDia } from "@/components/horarios/resumo-do-dia";
 import { Icone } from "@/components/icones";
-import { Aviso, classeBotaoIcone, classeBotaoSecundario, classeCampo } from "@/components/ui";
+import { Aviso, classeBotaoIcone, classeCampo } from "@/components/ui";
 import { DIAS_SEMANA, formatarData, hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { agendaDoDia } from "@/lib/horarios/agenda";
 import type { Grade } from "@/lib/horarios/tipos";
@@ -20,29 +19,32 @@ export const metadata: Metadata = { title: "Horários | Só Dois Toques" };
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
- * HOR-CA-02 e VIVO-CA-06: grade do dia. A faixa de dias escolhe a data, o resumo mostra
- * a ocupação e a legenda, e a agenda tem uma coluna por quadra com cada reserva num
- * bloco que ocupa todas as suas horas.
+ * FOCO-CA-05 e 08: a agenda do dia da quadra, com as aulas das turmas e os bloqueios.
+ * A faixa de dias escolhe a data e o resumo mostra a ocupação e a legenda. Todos os
+ * perfis veem; o professor vê as aulas dele em destaque e só o administrador bloqueia.
  */
-export default async function PaginaGrade({ searchParams }: PageProps<"/horarios">) {
+export default async function PaginaAgenda({ searchParams }: PageProps<"/horarios">) {
   await connection();
   const { usuario } = await exigirArea("horarios");
   const admin = usuario.perfil === "ADMINISTRADOR";
+  const professor = usuario.perfil === "PROFESSOR";
   const { data: pedida } = await searchParams;
   const agora = new Date();
   const hoje = hojeEmSaoPaulo(agora);
   const data = typeof pedida === "string" && DATA.test(pedida) ? pedida : hoje;
   const resposta = await chamarApi<Grade>(`/horarios/grade?data=${data}`);
-  const agenda = resposta.ok ? agendaDoDia(resposta.dados, hoje, minutoEmSaoPaulo(agora)) : null;
+  const agenda = resposta.ok
+    ? agendaDoDia(resposta.dados, hoje, minutoEmSaoPaulo(agora), professor ? usuario.id : undefined)
+    : null;
 
   return (
     <>
       <Cabecalho
-        etiqueta="Quadras de areia"
+        etiqueta={resposta.ok ? resposta.dados.quadra.nome : "Quadra"}
         icone="horarios"
         titulo={
           <>
-            Horários das <Destaque>quadras</Destaque>
+            Agenda da <Destaque>quadra</Destaque>
           </>
         }
         descricao={
@@ -75,26 +77,11 @@ export default async function PaginaGrade({ searchParams }: PageProps<"/horarios
 
       <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <FaixaDeDias data={data} hoje={hoje} caminho="/horarios" />
-        {resposta.ok && agenda && agenda.horas.length > 0 && (
-          <ResumoDoDia agenda={agenda} grade={resposta.dados} />
-        )}
+        {agenda && <ResumoDoDia agenda={agenda} professor={professor} />}
       </div>
 
-      {!resposta.ok ? (
-        <Aviso tipo="erro">{resposta.mensagem}</Aviso>
-      ) : !agenda || agenda.horas.length === 0 ? (
-        <Vazio
-          titulo="As quadras não funcionam neste dia da semana."
-          acao={
-            admin && (
-              <Link href="/horarios/faixas" className={classeBotaoSecundario}>
-                Configurar horários e preços
-              </Link>
-            )
-          }
-        >
-          Escolha outro dia na faixa acima.
-        </Vazio>
+      {!resposta.ok || !agenda ? (
+        <Aviso tipo="erro">{resposta.ok ? "Agenda indisponível." : resposta.mensagem}</Aviso>
       ) : (
         <section
           aria-labelledby="titulo-agenda"
@@ -102,18 +89,35 @@ export default async function PaginaGrade({ searchParams }: PageProps<"/horarios
         >
           <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-2 sm:px-1 sm:pt-0">
             <h2 id="titulo-agenda" className="text-lg font-bold">
-              Agenda das quadras
+              {resposta.dados.quadra.nome}
             </h2>
             <p className="text-apagado text-sm">
               {data < hoje
                 ? "Este dia já passou."
-                : agenda.livresParaReservar > 0
-                  ? "Toque num horário livre para reservar."
-                  : "Nenhum horário livre para reservar."}
+                : admin && agenda.livresParaBloquear > 0
+                  ? "Toque numa hora livre para bloquear."
+                  : "As aulas vêm das turmas; os bloqueios, do administrador."}
             </p>
           </div>
-          <AgendaDasQuadras agenda={agenda} data={data} />
+          <AgendaDaQuadra
+            agenda={agenda}
+            data={data}
+            admin={admin}
+            linkDaTurma={usuario.areas.includes("aulas")}
+          />
         </section>
+      )}
+
+      {admin && resposta.ok && (
+        <details className="group superficie max-w-xl rounded-[1.5rem] p-4">
+          <summary className="text-suave hover:text-texto flex min-h-10 list-none items-center gap-2 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+            <Icone nome="editar" width={16} height={16} />
+            Mudar o nome da quadra
+          </summary>
+          <div className="animate-entrar pt-3">
+            <FormQuadra quadra={resposta.dados.quadra} />
+          </div>
+        </details>
       )}
     </>
   );

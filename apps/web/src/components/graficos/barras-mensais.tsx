@@ -5,6 +5,8 @@ import { escalaDoEixo, mesCurto, reaisCurto } from "@/lib/graficos/escala";
 import { formatarReais, nomeDoMes } from "@/lib/mensalidades/formatacao";
 
 export type MesDoGrafico = { competencia: string; receitas: number; despesas: number };
+export type NomesDasSeries = { receitas: string; despesas: string };
+export const NOMES_PADRAO: NomesDasSeries = { receitas: "Receitas", despesas: "Despesas" };
 
 const SERIES = [
   {
@@ -32,9 +34,12 @@ const SERIES = [
 export function BarrasMensais({
   meses,
   mesesNoCelular = 6,
+  nomes = NOMES_PADRAO,
 }: {
   meses: readonly MesDoGrafico[];
   mesesNoCelular?: number;
+  /** Nome de cada série na legenda (o Contábil das mensalidades usa Recebido e Estornos). */
+  nomes?: NomesDasSeries;
 }) {
   return (
     <figure className="flex flex-col gap-4" data-testid="grafico-mensal">
@@ -45,15 +50,15 @@ export function BarrasMensais({
             className="border-borda bg-elevado/50 inline-flex items-center gap-2 rounded-full border px-3 py-1"
           >
             <span aria-hidden className={`size-2.5 rounded-full ${s.amostra}`} />
-            <span>{s.nome}</span>
+            <span>{nomes[s.chave]}</span>
           </span>
         ))}
       </figcaption>
       <div className="sm:hidden">
-        <Grafico meses={meses.slice(-mesesNoCelular)} largura={360} />
+        <Grafico meses={meses.slice(-mesesNoCelular)} largura={360} nomes={nomes} />
       </div>
       <div className="hidden sm:block">
-        <Grafico meses={meses} largura={720} />
+        <Grafico meses={meses} largura={720} nomes={nomes} />
       </div>
     </figure>
   );
@@ -64,7 +69,15 @@ const MARGEM = { topo: 30, direita: 8, base: 34, esquerda: 58 };
 const LARGURA_DICA = 204;
 const ALTURA_DICA = 76;
 
-function Grafico({ meses, largura }: { meses: readonly MesDoGrafico[]; largura: number }) {
+function Grafico({
+  meses,
+  largura,
+  nomes,
+}: {
+  meses: readonly MesDoGrafico[];
+  largura: number;
+  nomes: NomesDasSeries;
+}) {
   const [ativo, setAtivo] = useState<number | null>(null);
   const maximo = Math.max(0, ...meses.flatMap((m) => [m.receitas, m.despesas]));
   const { teto, passos } = escalaDoEixo(maximo);
@@ -81,7 +94,7 @@ function Grafico({ meses, largura }: { meses: readonly MesDoGrafico[]; largura: 
       viewBox={`0 0 ${largura} ${ALTURA}`}
       className="h-auto w-full overflow-visible select-none"
       role="img"
-      aria-label="Receitas e despesas por mês. Os valores estão na tabela."
+      aria-label={`${nomes.receitas} e ${nomes.despesas.toLowerCase()} por mês. Os valores estão na tabela.`}
       onMouseLeave={() => setAtivo(null)}
     >
       {passos.map((p) => (
@@ -174,6 +187,7 @@ function Grafico({ meses, largura }: { meses: readonly MesDoGrafico[]; largura: 
 
       {ativo !== null && meses[ativo] && (
         <Dica
+          nomes={nomes}
           mes={meses[ativo]}
           x={dicaX(MARGEM.esquerda + faixa * ativo + faixa / 2, faixa, largura)}
         />
@@ -188,7 +202,7 @@ function dicaX(centro: number, faixa: number, largura: number): number {
   return Math.max(0, centro - faixa / 2 - 4 - LARGURA_DICA);
 }
 
-function Dica({ mes, x }: { mes: MesDoGrafico; x: number }) {
+function Dica({ mes, x, nomes }: { mes: MesDoGrafico; x: number; nomes: NomesDasSeries }) {
   return (
     <g pointerEvents="none" data-testid="dica-grafico" className="animate-surgir">
       <rect
@@ -206,7 +220,7 @@ function Dica({ mes, x }: { mes: MesDoGrafico; x: number }) {
         <g key={s.chave}>
           <circle cx={x + 18} cy={MARGEM.topo + 30 + j * 20} r={4} className={s.classe} />
           <text x={x + 29} y={MARGEM.topo + 34 + j * 20} fontSize={12} className="fill-suave">
-            {s.nome}
+            {nomes[s.chave]}
           </text>
           <text
             x={x + LARGURA_DICA - 14}

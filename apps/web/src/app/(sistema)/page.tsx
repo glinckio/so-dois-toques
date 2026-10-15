@@ -1,38 +1,24 @@
 import { connection } from "next/server";
 import { Cartao, CabecalhoCartao, LinkDoCartao } from "@/components/base/cartao";
 import { BarrasMensais } from "@/components/graficos/barras-mensais";
-import { Rosca } from "@/components/graficos/rosca";
 import { TabelaMensal } from "@/components/graficos/tabela-mensal";
 import type { NomeIcone } from "@/components/icones";
 import { AulasDeHoje } from "@/components/inicio/aulas-hoje";
-import { CaixaDeHoje } from "@/components/inicio/caixa-hoje";
-import { EstoqueDeHoje } from "@/components/inicio/estoque-hoje";
 import { CartaoNumero } from "@/components/inicio/kpi";
 import { LeituraDoMes } from "@/components/inicio/leitura";
-import { QuadrasDeHoje } from "@/components/inicio/quadras-hoje";
+import { MensalidadesEmAtraso } from "@/components/inicio/mensalidades-hoje";
 import { Saudacao, type AcaoDoInicio, type AnelDoDia } from "@/components/inicio/saudacao";
 import { Aviso } from "@/components/ui";
 import { type Area, PERFIS } from "@/lib/acesso/areas";
-import { diaDaSemana, hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
-import type { TurmaResumo } from "@/lib/aulas/tipos";
+import { hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { itensDaBusca } from "@/lib/base/busca";
 import { leituraDoMes } from "@/lib/base/leitura";
-import { formatarPorcentagem, ORIGENS_RECEITA } from "@/lib/contabil/formatacao";
-import type { Painel } from "@/lib/contabil/tipos";
-import type { Produto } from "@/lib/estoque/tipos";
+import { mesesDoGrafico, NOMES_DO_GRAFICO, type Painel } from "@/lib/contabil/tipos";
 import type { Grade } from "@/lib/horarios/tipos";
-import { formatarReais, nomeDoMes } from "@/lib/mensalidades/formatacao";
-import type { CaixaDoDia, Inadimplentes } from "@/lib/mensalidades/tipos";
-import {
-  minutoEmSaoPaulo,
-  momentoDe,
-  ocupacaoDoDia,
-  turmasDoDia,
-  variacao,
-  type TurmaDeHoje,
-} from "@/lib/painel/inicio";
+import { nomeDoMes } from "@/lib/mensalidades/formatacao";
+import type { Inadimplentes } from "@/lib/mensalidades/tipos";
+import { minutoEmSaoPaulo, resumoDasAulas, variacao } from "@/lib/painel/inicio";
 import { chamarApi, type RespostaApi } from "@/lib/servidor/api";
-import { sessaoDoCaixa } from "@/lib/servidor/caixa";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 
 const DATA_LONGA = new Intl.DateTimeFormat("pt-BR", {
@@ -43,12 +29,9 @@ const DATA_LONGA = new Intl.DateTimeFormat("pt-BR", {
 });
 
 const ICONES_DAS_ACOES: Record<string, NomeIcone> = {
-  "/horarios/nova": "horarios",
-  "/estoque/venda": "carrinho",
-  "/caixa": "caixa",
+  "/horarios/bloquear": "bloqueio",
   "/aulas/alunos/novo": "pessoa",
   "/aulas/turmas/nova": "aulas",
-  "/estoque/compra": "sacola",
 };
 
 function talvez<T>(sim: boolean, chamada: () => Promise<RespostaApi<T>>) {
@@ -60,9 +43,9 @@ function mesSemAno(competencia: string) {
 }
 
 /**
- * VIS-CA-04 e 05: o Início abre com a saudação e o dia em anéis; o administrador vê
- * os números do mês, o gráfico de 12 meses e a rosca das receitas; cada perfil vê o
- * resumo das áreas que acessa.
+ * FOCO-CA-10, VIS-CA-04 e 05: o Início abre com a saudação e o dia em anéis; mostra as
+ * aulas de hoje na quadra e as mensalidades em atraso; o administrador vê também o
+ * recebido no mês e os 12 meses.
  */
 export default async function Inicio({ searchParams }: PageProps<"/">) {
   // Renderização por requisição: o nonce da CSP é aplicado a cada acesso.
@@ -74,87 +57,58 @@ export default async function Inicio({ searchParams }: PageProps<"/">) {
   const hoje = hojeEmSaoPaulo(agora);
   const minutoAtual = minutoEmSaoPaulo(agora);
 
-  const [painel, caixa, sessao, inadimplentes, grade, produtos, turmas] = await Promise.all([
+  const [painel, inadimplentes, grade] = await Promise.all([
     talvez(pode("contabil"), () => chamarApi<Painel>("/contabil/painel")),
-    talvez(pode("caixa"), () => chamarApi<CaixaDoDia>(`/caixa/lancamentos?data=${hoje}`)),
-    talvez(pode("caixa"), sessaoDoCaixa),
-    talvez(pode("caixa"), () => chamarApi<Inadimplentes>("/mensalidades/inadimplentes")),
+    talvez(pode("mensalidades"), () => chamarApi<Inadimplentes>("/mensalidades/inadimplentes")),
     talvez(pode("horarios"), () => chamarApi<Grade>(`/horarios/grade?data=${hoje}`)),
-    talvez(pode("estoque"), () => chamarApi<Produto[]>("/produtos")),
-    talvez(pode("aulas"), () => chamarApi<TurmaResumo[]>("/turmas?situacao=ativas")),
   ]);
 
-  const aulas: TurmaDeHoje[] = turmas?.ok ? turmasDoDia(turmas.dados, diaDaSemana(hoje)) : [];
+  const aulas = grade?.ok ? grade.dados.aulas : [];
   const acoes: AcaoDoInicio[] = itensDaBusca(usuario.areas, usuario.perfil === "ADMINISTRADOR")
     .filter((i) => i.grupo === "Ações rápidas")
     .slice(0, 4)
     .map((i) => ({ rotulo: i.rotulo, href: i.href, icone: ICONES_DAS_ACOES[i.href] ?? "raio" }));
 
   const aneis: AnelDoDia[] = [];
-  if (turmas?.ok) {
-    const dadas = aulas.filter((a) => momentoDe(a.inicio, a.fim, minutoAtual) === "passou").length;
+  if (grade?.ok) {
+    const r = resumoDasAulas(aulas, minutoAtual);
     aneis.push({
       titulo: "Aulas",
-      fracao: aulas.length > 0 ? dadas / aulas.length : 0,
-      centro: `${dadas}/${aulas.length}`,
-      detalhe: aulas.length === 0 ? "nenhuma hoje" : `${dadas} de ${aulas.length} dadas`,
+      fracao: r.total > 0 ? r.dadas / r.total : 0,
+      centro: `${r.dadas}/${r.total}`,
+      detalhe: r.total === 0 ? "nenhuma hoje" : `${r.dadas} de ${r.total} dadas`,
       tom: "roxo",
     });
-    if (!pode("horarios")) {
-      const vagas = aulas.reduce((t, a) => t + a.turma.vagas, 0);
-      const ocupadas = aulas.reduce((t, a) => t + a.turma.ocupadas, 0);
-      aneis.push({
-        titulo: "Alunos",
-        fracao: vagas > 0 ? ocupadas / vagas : 0,
-        centro: String(ocupadas),
-        detalhe: `${ocupadas} de ${vagas} vagas hoje`,
-        tom: "ouro",
-      });
-    }
-  }
-  if (grade?.ok) {
-    const { reservadas, abertas } = ocupacaoDoDia(grade.dados);
-    const fracao = abertas > 0 ? reservadas / abertas : 0;
     aneis.push({
-      titulo: "Quadras",
-      fracao,
-      centro: `${Math.round(fracao * 100)}%`,
-      detalhe: `${reservadas} de ${abertas} h reservadas`,
+      titulo: "Alunos",
+      fracao: r.vagas > 0 ? r.alunos / r.vagas : 0,
+      centro: String(r.alunos),
+      detalhe: `${r.alunos} de ${r.vagas} vagas hoje`,
       tom: "areia",
     });
   }
-  if (produtos?.ok) {
-    const ativos = produtos.dados.filter((p) => p.ativo);
-    const emDia = ativos.filter((p) => !p.abaixoDoMinimo).length;
+  if (inadimplentes?.ok) {
+    const n = inadimplentes.dados.itens.length;
     aneis.push({
-      titulo: "Estoque",
-      fracao: ativos.length > 0 ? emDia / ativos.length : 0,
-      centro: `${emDia}/${ativos.length}`,
-      detalhe: "produtos em dia",
-      tom: "sucesso",
+      titulo: "Em atraso",
+      fracao: n > 0 ? 1 : 0,
+      centro: String(n),
+      detalhe: n === 0 ? "ninguém em atraso" : n === 1 ? "aluno em atraso" : "alunos em atraso",
+      tom: n > 0 ? "ouro" : "sucesso",
     });
   }
 
   const cartoesDoDia = [
-    caixa && sessao && inadimplentes && (
-      <CaixaDeHoje
-        key="caixa"
-        caixa={caixa}
-        turno={sessao.ok ? sessao.dados.turno : null}
-        inadimplentes={inadimplentes}
-        agora={agora}
-      />
-    ),
-    grade && <QuadrasDeHoje key="quadras" resposta={grade} minutoAtual={minutoAtual} />,
-    turmas && (
+    grade && (
       <AulasDeHoje
         key="aulas"
         aulas={aulas}
-        erro={turmas.ok ? undefined : turmas.mensagem}
+        erro={grade.ok ? undefined : grade.mensagem}
         minutoAtual={minutoAtual}
+        linkDaTurma={pode("aulas")}
       />
     ),
-    produtos && <EstoqueDeHoje key="estoque" resposta={produtos} />,
+    inadimplentes && <MensalidadesEmAtraso key="mensalidades" resposta={inadimplentes} />,
   ].filter(Boolean);
 
   return (
@@ -173,7 +127,7 @@ export default async function Inicio({ searchParams }: PageProps<"/">) {
 
       {cartoesDoDia.length > 0 && (
         <div
-          className={`grid items-start gap-4 ${cartoesDoDia.length > 1 ? "lg:grid-cols-2" : ""} [&>:last-child:nth-child(odd)]:lg:col-span-2`}
+          className={`grid items-start gap-4 ${cartoesDoDia.length > 1 ? "lg:grid-cols-2" : ""}`}
         >
           {cartoesDoDia}
         </div>
@@ -188,43 +142,41 @@ function Financeiro({ resposta }: { resposta: RespostaApi<Painel> }) {
   const anterior = p.comparativo.at(-2);
   const mesAnterior = anterior ? mesSemAno(anterior.competencia) : undefined;
   const ultimos = p.comparativo.slice(-12);
-  const aReceber = p.aReceber.mensalidades.valorCentavos + p.aReceber.reservas.valorCentavos;
+  const meses = mesesDoGrafico(p.comparativo);
   const frases = leituraDoMes({
     comparativo: p.comparativo,
-    receitas: p.receitas,
-    nomesDasOrigens: ORIGENS_RECEITA,
-    totalReceitas: p.totalReceitas,
-    totalDespesas: p.totalDespesas,
+    recebido: p.recebido,
+    estornos: p.estornos,
     resultado: p.resultado,
-    aReceberCentavos: aReceber,
-    mensalidadesVencidas: p.aReceber.mensalidades.quantidade,
+    aReceberCentavos: p.aReceber.valorCentavos,
+    mensalidadesVencidas: p.aReceber.quantidade,
   });
   return (
     <>
       <section aria-labelledby="titulo-mes" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
           <h2 id="titulo-mes" className="text-xl font-bold">
-            Resumo de {nomeDoMes(p.periodo.de.slice(0, 7)).toLowerCase()}
+            Mensalidades de {nomeDoMes(p.periodo.de.slice(0, 7)).toLowerCase()}
           </h2>
           <LinkDoCartao href="/contabil">Ver o Contábil</LinkDoCartao>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <CartaoNumero
-            rotulo="Receitas"
+            rotulo="Recebido"
             icone="subir"
             tom="roxo"
-            valor={p.totalReceitas}
-            serie={ultimos.map((m) => m.receitas)}
-            mudanca={anterior ? variacao(p.totalReceitas, anterior.receitas) : null}
+            valor={p.recebido}
+            serie={ultimos.map((m) => m.recebido)}
+            mudanca={anterior ? variacao(p.recebido, anterior.recebido) : null}
             mesAnterior={mesAnterior}
           />
           <CartaoNumero
-            rotulo="Despesas"
+            rotulo="Estornos"
             icone="descer"
             tom="ouro"
-            valor={p.totalDespesas}
-            serie={ultimos.map((m) => m.despesas)}
-            mudanca={anterior ? variacao(p.totalDespesas, anterior.despesas) : null}
+            valor={p.estornos}
+            serie={ultimos.map((m) => m.estornos)}
+            mudanca={anterior ? variacao(p.estornos, anterior.estornos) : null}
             mesAnterior={mesAnterior}
             subirEhRuim
           />
@@ -242,57 +194,29 @@ function Financeiro({ resposta }: { resposta: RespostaApi<Painel> }) {
             rotulo="A receber"
             icone="relogio"
             tom="areia"
-            valor={aReceber}
-            nota={`${p.aReceber.mensalidades.quantidade} mensalidades e ${p.aReceber.reservas.quantidade} reservas`}
+            valor={p.aReceber.valorCentavos}
+            nota={`${p.aReceber.quantidade} ${p.aReceber.quantidade === 1 ? "mensalidade vencida" : "mensalidades vencidas"}`}
           />
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.85fr)_minmax(0,1fr)]">
-        <Cartao aria-labelledby="titulo-12-meses" className="flex flex-col gap-5">
-          <CabecalhoCartao
-            id="titulo-12-meses"
-            icone="contabil"
-            titulo="Receitas e despesas"
-            descricao="Últimos 12 meses, regime de caixa"
-          />
-          <BarrasMensais meses={p.comparativo} />
-          <details className="group text-sm">
-            <summary className="text-roxo-claro hover:text-texto inline-flex items-center gap-1 font-semibold">
-              Ver em tabela
-            </summary>
-            <div className="animate-entrar mt-3">
-              <TabelaMensal meses={p.comparativo} />
-            </div>
-          </details>
-        </Cartao>
-        <Cartao aria-labelledby="titulo-origens" className="flex flex-col gap-5">
-          <CabecalhoCartao
-            id="titulo-origens"
-            icone="porcentagem"
-            tom="ouro"
-            titulo="De onde veio a receita"
-            descricao={`Margem do mês: ${formatarPorcentagem(p.margemPercentual)}`}
-          />
-          <Rosca
-            rotulo="Receitas por origem"
-            partes={Object.entries(ORIGENS_RECEITA).map(([chave, nome]) => ({
-              nome,
-              valor: p.receitas[chave as keyof Painel["receitas"]],
-            }))}
-            centro={
-              <span className="flex flex-col">
-                <span className="text-apagado text-[0.65rem] font-bold tracking-[0.14em] uppercase">
-                  Total
-                </span>
-                <span className="text-base font-extrabold tabular-nums">
-                  {formatarReais(p.totalReceitas).replace(/,\d+$/, "")}
-                </span>
-              </span>
-            }
-          />
-        </Cartao>
-      </div>
+      <Cartao aria-labelledby="titulo-12-meses" className="flex flex-col gap-5">
+        <CabecalhoCartao
+          id="titulo-12-meses"
+          icone="contabil"
+          titulo="Recebido e estornos"
+          descricao="Últimos 12 meses, regime de caixa"
+        />
+        <BarrasMensais meses={meses} nomes={NOMES_DO_GRAFICO} />
+        <details className="group text-sm">
+          <summary className="text-roxo-claro hover:text-texto inline-flex items-center gap-1 font-semibold">
+            Ver em tabela
+          </summary>
+          <div className="animate-entrar mt-3">
+            <TabelaMensal meses={meses} nomes={NOMES_DO_GRAFICO} />
+          </div>
+        </details>
+      </Cartao>
 
       {frases.length > 0 && <LeituraDoMes frases={frases} />}
     </>

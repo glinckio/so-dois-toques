@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Anel } from "@/components/base/anel";
-import { BarraNivel } from "@/components/base/barra";
 import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { Cartao, CabecalhoCartao } from "@/components/base/cartao";
 import { ICONES_DAS_FORMAS } from "@/components/base/opcoes";
 import { PilulasDeLinks } from "@/components/base/pilulas";
-import { Valor } from "@/components/base/valor";
-import { BarrasHorizontais } from "@/components/graficos/barras-horizontais";
 import { BarrasMensais } from "@/components/graficos/barras-mensais";
-import { Rosca } from "@/components/graficos/rosca";
 import { TabelaMensal } from "@/components/graficos/tabela-mensal";
 import { Icone } from "@/components/icones";
 import { CartaoNumero } from "@/components/inicio/kpi";
@@ -21,15 +16,8 @@ import {
   classeRotulo,
 } from "@/components/ui";
 import { mesCurto } from "@/lib/graficos/escala";
-import {
-  consultaDoPeriodo,
-  descreverPeriodo,
-  formatarPorcentagem,
-  ORIGENS_RECEITA,
-  TIPOS_DESPESA,
-  TURNOS,
-} from "@/lib/contabil/formatacao";
-import type { OcupacaoTurno, Painel, Turno } from "@/lib/contabil/tipos";
+import { consultaDoPeriodo, descreverPeriodo } from "@/lib/contabil/formatacao";
+import { mesesDoGrafico, NOMES_DO_GRAFICO, type Painel } from "@/lib/contabil/tipos";
 import {
   competenciaAtual,
   deslocarMes,
@@ -44,7 +32,7 @@ export const metadata: Metadata = { title: "Contábil | Só Dois Toques" };
 
 const numero = "text-right tabular-nums";
 
-/** CONT-CA-01 a 08: painel do período, só para o administrador (CONT-CA-10). */
+/** FOCO-CA-09: painel das mensalidades no período, só para o administrador (CONT-CA-10). */
 export default async function PaginaContabil({ searchParams }: PageProps<"/contabil">) {
   await connection();
   const { permitido } = await exigirArea("contabil");
@@ -67,7 +55,7 @@ export default async function PaginaContabil({ searchParams }: PageProps<"/conta
             <Destaque>Contábil</Destaque> do Só Dois Toques
           </>
         }
-        descricao="Receitas, despesas e resultado pelo dinheiro que entrou e saiu do caixa."
+        descricao="Mensalidades recebidas, estornos e o que falta receber, pelo dia em que o dinheiro entrou ou saiu."
         acoes={
           resposta.ok && (
             <a
@@ -180,27 +168,29 @@ export default async function PaginaContabil({ searchParams }: PageProps<"/conta
 }
 
 function Conteudo({ painel: p }: { painel: Painel }) {
-  const margem = p.margemPercentual;
+  const meses = mesesDoGrafico(p.comparativo);
+  const vencidas = p.aReceber.quantidade;
   return (
     <>
       <section aria-label="Resumo" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <CartaoNumero
-          rotulo="Receitas"
+          rotulo="Recebido"
           icone="subir"
           tom="roxo"
-          valor={p.totalReceitas}
-          serie={p.comparativo.map((m) => m.receitas)}
-          nota="Linha: últimos 12 meses"
-          testId="indicador-Receitas"
+          valor={p.recebido}
+          serie={p.comparativo.map((m) => m.recebido)}
+          nota="Mensalidades pagas no período"
+          testId="indicador-Recebido"
         />
         <CartaoNumero
-          rotulo="Despesas"
+          rotulo="Estornos"
           icone="descer"
           tom="ouro"
-          valor={p.totalDespesas}
-          serie={p.comparativo.map((m) => m.despesas)}
-          nota="Linha: últimos 12 meses"
-          testId="indicador-Despesas"
+          valor={p.estornos}
+          serie={p.comparativo.map((m) => m.estornos)}
+          nota="Pagamentos devolvidos no período"
+          testId="indicador-Estornos"
+          subirEhRuim
         />
         <CartaoNumero
           rotulo="Resultado"
@@ -208,208 +198,21 @@ function Conteudo({ painel: p }: { painel: Painel }) {
           tom="sucesso"
           valor={p.resultado}
           serie={p.comparativo.map((m) => m.resultado)}
-          nota="Receitas menos despesas"
+          nota="Recebido menos estornos"
           testId="indicador-Resultado"
           destaque
         />
-        <div className="superficie flex items-center gap-4 rounded-[1.6rem] p-5">
-          <Anel
-            fracao={margem === null ? 0 : Math.max(0, margem) / 100}
-            tom={margem !== null && margem < 0 ? "ouro" : "sucesso"}
-            tamanho={76}
-            espessura={10}
-            rotulo={`Margem do período: ${formatarPorcentagem(margem)}`}
-          >
-            <Icone nome="porcentagem" width={20} height={20} className="text-sucesso" />
-          </Anel>
-          <div className="flex flex-col gap-1">
-            <span className="text-suave text-sm font-semibold">Margem</span>
-            <span
-              className={`text-[1.75rem] leading-none font-extrabold tracking-tight tabular-nums ${margem !== null && margem < 0 ? "text-perigo" : ""}`}
-              data-testid="indicador-Margem"
-            >
-              {formatarPorcentagem(margem)}
-            </span>
-            <span className="text-apagado text-xs">do que entrou virou resultado</span>
-          </div>
-        </div>
+        <CartaoNumero
+          rotulo="A receber"
+          icone="relogio"
+          tom="areia"
+          valor={p.aReceber.valorCentavos}
+          nota={`${vencidas} ${vencidas === 1 ? "mensalidade vencida" : "mensalidades vencidas"}, até hoje`}
+          testId="indicador-A-receber"
+        />
       </section>
 
       <Conferencia painel={p} />
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Cartao aria-labelledby="titulo-receitas-origem" className="flex flex-col gap-5">
-          <CabecalhoCartao
-            id="titulo-receitas-origem"
-            icone="subir"
-            titulo="Receitas por origem"
-            descricao="De onde veio o dinheiro"
-          />
-          <Rosca
-            rotulo="Receitas por origem"
-            testId="grafico-Receitas por origem"
-            comTotal
-            lado
-            tamanho={164}
-            partes={Object.entries(ORIGENS_RECEITA).map(([chave, nome]) => ({
-              nome,
-              valor: p.receitas[chave as keyof Painel["receitas"]],
-            }))}
-            centro={
-              <span className="flex flex-col">
-                <span className="text-apagado text-[0.65rem] font-bold tracking-[0.14em] uppercase">
-                  Receitas
-                </span>
-                <span className="text-base font-extrabold tabular-nums">
-                  {formatarReais(p.totalReceitas).replace(/,\d+$/, "")}
-                </span>
-              </span>
-            }
-          />
-        </Cartao>
-        <Cartao aria-labelledby="titulo-despesas-tipo" className="flex flex-col gap-5">
-          <CabecalhoCartao
-            id="titulo-despesas-tipo"
-            icone="descer"
-            tom="ouro"
-            titulo="Despesas por tipo"
-            descricao="Para onde foi o dinheiro"
-          />
-          <BarrasHorizontais
-            rotulo="Despesas por tipo"
-            testId="grafico-Despesas por tipo"
-            cor="serie-2"
-            linhas={Object.entries(TIPOS_DESPESA).map(
-              ([chave, nome]) => [nome, p.despesas[chave as keyof Painel["despesas"]]] as const,
-            )}
-          />
-        </Cartao>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Cartao aria-labelledby="titulo-lanchonete" className="flex flex-col gap-5">
-          <CabecalhoCartao
-            id="titulo-lanchonete"
-            icone="estoque"
-            tom="sucesso"
-            titulo="Lanchonete"
-            descricao="O que sobrou das vendas depois do custo"
-          />
-          <div className="flex items-center gap-5">
-            <Anel
-              fracao={Math.max(0, p.lanchonete.margemPercentual ?? 0) / 100}
-              tom="sucesso"
-              tamanho={104}
-              espessura={10}
-              rotulo={`Margem bruta da lanchonete: ${formatarPorcentagem(p.lanchonete.margemPercentual)}`}
-            >
-              <span className="flex flex-col">
-                <span className="text-lg font-extrabold tabular-nums">
-                  {formatarPorcentagem(p.lanchonete.margemPercentual)}
-                </span>
-                <span className="text-apagado text-[0.6rem] font-bold tracking-wider uppercase">
-                  margem
-                </span>
-              </span>
-            </Anel>
-            <dl
-              className="grid flex-1 grid-cols-[1fr_auto] gap-y-2 text-sm"
-              data-testid="lanchonete"
-            >
-              <dt className="text-suave">Vendido</dt>
-              <dd className={numero}>{formatarReais(p.lanchonete.vendidoCentavos)}</dd>
-              <dt className="text-suave">Custo do vendido</dt>
-              <dd className={numero}>{formatarReais(p.lanchonete.custoCentavos)}</dd>
-              <dt className="border-borda border-t pt-2 font-semibold">Margem bruta</dt>
-              <dd className={`${numero} border-borda border-t pt-2 font-bold`}>
-                {formatarReais(p.lanchonete.margemBrutaCentavos)} (
-                {formatarPorcentagem(p.lanchonete.margemPercentual)})
-              </dd>
-            </dl>
-          </div>
-        </Cartao>
-        <Cartao aria-labelledby="titulo-a-receber" className="flex flex-col gap-5">
-          <CabecalhoCartao
-            id="titulo-a-receber"
-            icone="relogio"
-            tom="areia"
-            titulo="A receber"
-            descricao="O que ainda não entrou no caixa"
-          />
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="a-receber">
-            <div className="bg-elevado/40 flex flex-col gap-2 rounded-2xl p-4">
-              <dt className="text-suave flex items-center gap-2 text-sm">
-                <Icone nome="aulas" width={16} height={16} className="text-roxo-claro" />
-                Mensalidades vencidas ({p.aReceber.mensalidades.quantidade}), até hoje
-              </dt>
-              <dd className="text-2xl font-extrabold">
-                <Valor centavos={p.aReceber.mensalidades.valorCentavos} />
-              </dd>
-            </div>
-            <div className="bg-elevado/40 flex flex-col gap-2 rounded-2xl p-4">
-              <dt className="text-suave flex items-center gap-2 text-sm">
-                <Icone nome="horarios" width={16} height={16} className="text-areia" />
-                Reservas não pagas ({p.aReceber.reservas.quantidade}), no período
-              </dt>
-              <dd className="text-2xl font-extrabold">
-                <Valor centavos={p.aReceber.reservas.valorCentavos} />
-              </dd>
-            </div>
-          </dl>
-        </Cartao>
-      </div>
-
-      <Cartao aria-labelledby="titulo-ocupacao" className="flex flex-col gap-5">
-        <CabecalhoCartao
-          id="titulo-ocupacao"
-          icone="horarios"
-          tom="areia"
-          titulo="Ocupação das quadras"
-          descricao="Horas reservadas sobre horas abertas, sem contar as bloqueadas. As horas abertas seguem os preços e horários de hoje."
-        />
-        <div className="-mx-1 overflow-x-auto px-1">
-          <table
-            className="w-full min-w-[36rem] border-separate border-spacing-y-2 text-sm"
-            aria-label="Ocupação das quadras"
-          >
-            <thead>
-              <tr className="text-left">
-                <th scope="col">Quadra</th>
-                {(Object.keys(TURNOS) as Turno[]).map((t) => (
-                  <th key={t} scope="col" className="px-2">
-                    {TURNOS[t]}
-                  </th>
-                ))}
-                <th scope="col" className="px-2">
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {p.ocupacao.map((q) => (
-                <tr key={q.id}>
-                  <th scope="row" className="pr-2 text-left font-semibold whitespace-nowrap">
-                    <span className="flex items-center gap-2">
-                      <span className="bg-areia/15 text-areia grid size-8 place-items-center rounded-xl">
-                        <Icone nome="areia" width={16} height={16} />
-                      </span>
-                      {q.nome}
-                    </span>
-                  </th>
-                  {(Object.keys(TURNOS) as Turno[]).map((t) => (
-                    <td key={t} className="px-2">
-                      <Ocupacao dados={q.turnos[t]} nome={`${q.nome}, ${TURNOS[t]}`} />
-                    </td>
-                  ))}
-                  <td className="px-2">
-                    <Ocupacao dados={q.total} nome={`${q.nome}, total`} forte />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Cartao>
 
       <Cartao aria-labelledby="titulo-formas" className="flex flex-col gap-5">
         <CabecalhoCartao
@@ -469,11 +272,11 @@ function Conteudo({ painel: p }: { painel: Painel }) {
           id="titulo-12-meses"
           icone="contabil"
           titulo="Últimos 12 meses"
-          descricao="Receitas e despesas de cada mês, regime de caixa"
+          descricao="Mensalidades recebidas e estornos de cada mês, regime de caixa"
         />
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:items-start">
-          <BarrasMensais meses={p.comparativo} />
-          <TabelaMensal meses={p.comparativo} />
+          <BarrasMensais meses={meses} nomes={NOMES_DO_GRAFICO} />
+          <TabelaMensal meses={meses} nomes={NOMES_DO_GRAFICO} />
         </div>
       </Cartao>
     </>
@@ -481,13 +284,12 @@ function Conteudo({ painel: p }: { painel: Painel }) {
 }
 
 /**
- * Conferência com o Caixa: a conta escrita em blocos e um selo que desenha o
+ * Conferência com o livro-razão: a conta escrita em blocos e um selo que desenha o
  * "check" quando bate (ou mostra o alerta quando não bate).
  */
 function Conferencia({ painel: p }: { painel: Painel }) {
   const termos: { rotulo: string; valor: number; sinal?: string }[] = [
     { rotulo: "Resultado", valor: p.resultado },
-    { rotulo: "Gaveta (suprimento e sangria)", valor: p.gaveta, sinal: "+" },
     ...(p.naoClassificado !== 0
       ? [{ rotulo: "Outros", valor: p.naoClassificado, sinal: "+" }]
       : []),
@@ -496,7 +298,7 @@ function Conferencia({ painel: p }: { painel: Painel }) {
   ];
   return (
     <section
-      aria-label="Conferência com o Caixa"
+      aria-label="Conferência com os lançamentos"
       className={`flex flex-col gap-4 rounded-[1.75rem] border p-5 sm:flex-row sm:items-center ${
         p.confere
           ? "border-sucesso/30 bg-sucesso/8"
@@ -526,10 +328,10 @@ function Conferencia({ painel: p }: { painel: Painel }) {
       </span>
       <div className="flex min-w-0 flex-col gap-2.5" data-testid="conferencia">
         <p className="font-bold">
-          {p.confere ? "Confere com o Caixa" : "Não confere com o Caixa"}
+          {p.confere ? "Confere com os lançamentos" : "Não confere com os lançamentos"}
           <span className="text-suave font-normal">
             {p.confere
-              ? ": o resultado e a gaveta fecham com o que entrou e saiu."
+              ? ": o resultado fecha com o que entrou e saiu."
               : ": a conta abaixo não fecha. Confira os lançamentos do período."}
           </span>
         </p>
@@ -546,36 +348,5 @@ function Conferencia({ painel: p }: { painel: Painel }) {
         </p>
       </div>
     </section>
-  );
-}
-
-function Ocupacao({
-  dados,
-  nome,
-  forte = false,
-}: {
-  dados: OcupacaoTurno;
-  nome: string;
-  forte?: boolean;
-}) {
-  const abertas = Math.max(dados.abertas - dados.bloqueadas, 0);
-  const fracao = (dados.ocupacaoPercentual ?? 0) / 100;
-  return (
-    <span className="flex min-w-24 flex-col gap-1.5">
-      <span className="flex items-baseline justify-between gap-2">
-        <span className={`tabular-nums ${forte ? "font-extrabold" : "font-semibold"}`}>
-          {formatarPorcentagem(dados.ocupacaoPercentual)}
-        </span>
-        <span className="text-apagado text-xs tabular-nums">
-          {dados.reservadas} de {abertas} h
-        </span>
-      </span>
-      <BarraNivel
-        fracao={fracao}
-        tom={forte ? "ouro" : "areia"}
-        altura="h-1.5"
-        rotulo={`${nome}: ${formatarPorcentagem(dados.ocupacaoPercentual)} ocupado`}
-      />
-    </span>
   );
 }

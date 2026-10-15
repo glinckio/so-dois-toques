@@ -8,7 +8,7 @@ import { Vazio } from "@/components/base/vazio";
 import { Icone } from "@/components/icones";
 import { FormPlano } from "@/components/mensalidades/form-plano";
 import { AcessoNegado, Aviso } from "@/components/ui";
-import { proporcoes } from "@/lib/custos/formatacao";
+import { proporcoes } from "@/lib/graficos/escala";
 import { valorPorAula } from "@/lib/aulas/visual";
 import { formatarReais } from "@/lib/mensalidades/formatacao";
 import type { Plano } from "@/lib/mensalidades/tipos";

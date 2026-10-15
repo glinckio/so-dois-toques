@@ -22,7 +22,7 @@ import {
   type Horario,
   type Nivel,
 } from "@/lib/aulas/formatacao";
-import type { Local, Professor, TurmaResumo } from "@/lib/aulas/tipos";
+import type { Professor, TurmaResumo } from "@/lib/aulas/tipos";
 import { GrupoDoFormulario } from "./grupo-do-formulario";
 import { SemanaDaTurma } from "./horarios";
 import { SinalDoNivel } from "./selo-nivel";
@@ -45,11 +45,9 @@ const DICAS_DO_NIVEL: Record<Nivel, string> = {
 
 export function FormTurma({
   turma,
-  locais,
   professores,
 }: {
   turma?: TurmaResumo;
-  locais: Local[];
   professores: Professor[];
 }) {
   const [estado, acao, enviando] = useActionState(salvarTurma, ESTADO_INICIAL);
@@ -67,8 +65,6 @@ export function FormTurma({
     fim: minutosDe(l.fim) ?? -1,
   }));
   const validos = horarios.filter((h) => h.inicio >= 0 && h.fim > h.inicio);
-  // Local inativo só aparece se for o atual da turma (AULAS-CA-09).
-  const opcoesLocal = locais.filter((l) => l.ativo || l.id === turma?.local.id);
   const atualizar = (chave: number, mudanca: Partial<Linha>) =>
     setLinhas((atuais) => atuais.map((l) => (l.chave === chave ? { ...l, ...mudanca } : l)));
   const nivelEscolhido = valor("nivel", turma?.nivel ?? "INICIANTE");
@@ -123,27 +119,6 @@ export function FormTurma({
             ))}
           </div>
         </fieldset>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="localId" className={classeRotulo}>
-            Local
-          </label>
-          <select
-            id="localId"
-            name="localId"
-            className={classeCampo}
-            required
-            defaultValue={valor("localId", turma?.local.id)}
-          >
-            <option value="" disabled>
-              Escolha
-            </option>
-            {opcoesLocal.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.nome}
-              </option>
-            ))}
-          </select>
-        </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="professorId" className={classeRotulo}>
             Professor

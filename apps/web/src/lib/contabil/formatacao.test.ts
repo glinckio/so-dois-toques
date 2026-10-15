@@ -34,16 +34,16 @@ describe("CONT-CA-09: planilha dos lançamentos", () => {
       {
         data: "2026-10-07",
         tipo: "ENTRADA",
-        categoria: "ALUGUEL_QUADRA",
+        categoria: "MENSALIDADE",
         forma: "PIX",
         valorCentavos: 123456,
-        descricao: 'Aluguel: Quadra 1, "noite"',
+        descricao: 'Mensalidade de "outubro"',
         estorno: false,
       },
       {
         data: "2026-10-08",
         tipo: "SAIDA",
-        categoria: "DESPESA",
+        categoria: "ESTORNO",
         forma: "DINHEIRO",
         valorCentavos: 5,
         descricao: '=HIPERLINK("x")',
@@ -54,10 +54,10 @@ describe("CONT-CA-09: planilha dos lançamentos", () => {
     const linhas = csv.slice(1).split("\r\n");
     expect(linhas[0]).toBe('"Data";"Tipo";"Categoria";"Forma";"Valor (R$)";"Descrição";"Estorno"');
     expect(linhas[1]).toBe(
-      '"07/10/2026";"Entrada";"Aluguel de quadra";"Pix";1234,56;"Aluguel: Quadra 1, ""noite""";"Não"',
+      '"07/10/2026";"Entrada";"Mensalidade";"Pix";1234,56;"Mensalidade de ""outubro""";"Não"',
     );
     expect(linhas[2]).toBe(
-      '"08/10/2026";"Saída";"Despesa";"Dinheiro";-0,05;"\'=HIPERLINK(""x"")";"Sim"',
+      '"08/10/2026";"Saída";"Estorno";"Dinheiro";-0,05;"\'=HIPERLINK(""x"")";"Sim"',
     );
     expect(linhas[3]).toBe("");
   });

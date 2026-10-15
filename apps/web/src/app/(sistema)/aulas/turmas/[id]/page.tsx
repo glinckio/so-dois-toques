@@ -92,10 +92,6 @@ export default async function PaginaTurma({
               {turma.nome}
             </h1>
             <p className="text-suave flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-              <span className="inline-flex items-center gap-1.5">
-                <Icone nome="local" width={16} height={16} className="text-areia" />
-                {turma.local.nome}
-              </span>
               <span className="inline-flex items-center gap-2">
                 <Avatar nome={turma.professor.nome} tamanho="p" />
                 Professor: <strong className="text-texto">{turma.professor.nome}</strong>

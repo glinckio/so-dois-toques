@@ -26,7 +26,7 @@ const CAMINHOS = {
       <path d="M3.5 7.5 12 12l8.5-4.5M12 12v9" />
     </>
   ),
-  caixa: (
+  mensalidades: (
     <>
       <rect x="2.5" y="6" width="19" height="13" rx="2.5" />
       <path d="M2.5 10h19" />

@@ -29,7 +29,7 @@ const CAMPOS_ALUNO = [
   "consentimento",
 ] as const;
 
-const CAMPOS_TURMA = ["nome", "nivel", "localId", "professorId", "vagas"] as const;
+const CAMPOS_TURMA = ["nome", "nivel", "professorId", "vagas"] as const;
 
 export async function salvarAluno(_: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
   const alunoId = texto(form, "id");
@@ -83,50 +83,6 @@ export async function anonimizarAluno(
   return acaoDeAluno(form, "anonimizar");
 }
 
-const localSchema = z.object({
-  nome: z.string().trim().min(2, "Informe o nome do local.").max(80),
-  tipo: z.enum(["PARCEIRA", "PROPRIA"], { error: "Escolha o tipo do local." }),
-  endereco: z.string().trim().max(200),
-});
-
-export async function criarLocal(_: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
-  const dados = localSchema.safeParse({
-    nome: form.get("nome"),
-    tipo: form.get("tipo"),
-    endereco: form.get("endereco") ?? "",
-  });
-  if (!dados.success) return { erro: dados.error.issues[0]?.message ?? "Dados inválidos." };
-  const resposta = await chamarApi("/locais", {
-    metodo: "POST",
-    corpo: { ...dados.data, ativo: true },
-  });
-  if (!resposta.ok) return erroDe(resposta);
-  refresh();
-  return { sucesso: `Local ${dados.data.nome} cadastrado.` };
-}
-
-export async function alternarLocal(
-  _: EstadoFormulario,
-  form: FormData,
-): Promise<EstadoFormulario> {
-  const dados = localSchema.extend({ id, ativo: z.enum(["true", "false"]) }).safeParse({
-    id: form.get("id"),
-    nome: form.get("nome"),
-    tipo: form.get("tipo"),
-    endereco: form.get("endereco") ?? "",
-    ativo: form.get("ativo"),
-  });
-  if (!dados.success) return { erro: "Dados inválidos." };
-  const { id: localId, ativo, ...resto } = dados.data;
-  const resposta = await chamarApi(`/locais/${localId}`, {
-    metodo: "PATCH",
-    corpo: { ...resto, ativo: ativo === "true" },
-  });
-  if (!resposta.ok) return erroDe(resposta);
-  refresh();
-  return {};
-}
-
 const horariosSchema = z.array(
   z.object({ diaSemana: z.number().int(), inicio: z.number().int(), fim: z.number().int() }),
 );
@@ -145,7 +101,6 @@ export async function salvarTurma(_: EstadoFormulario, form: FormData): Promise<
   const corpo = {
     nome: texto(form, "nome"),
     nivel: texto(form, "nivel"),
-    localId: texto(form, "localId"),
     professorId: texto(form, "professorId"),
     vagas: Number(texto(form, "vagas")),
     horarios: horariosValidos.data,

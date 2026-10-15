@@ -52,13 +52,15 @@ export const ROTULOS_ACOES = {
   FAIXA_REMOVIDA: "Faixa de preço removida",
   QUADRA_RENOMEADA: "Quadra renomeada",
   RESERVA_CRIADA: "Reserva criada",
-  SERIE_CRIADA: "Reserva fixa criada",
-  SERIE_ENCERRADA: "Reserva fixa encerrada",
+  SERIE_CRIADA: "Bloqueio semanal criado",
+  SERIE_ENCERRADA: "Bloqueio semanal encerrado",
   RESERVA_CANCELADA: "Reserva cancelada",
   RESERVA_PAGA: "Reserva paga",
   PAGAMENTO_RESERVA_ESTORNADO: "Pagamento de reserva estornado",
   CONTABIL_EXPORTADO: "Lançamentos exportados do Contábil",
   CLIENTES_ANONIMIZADOS: "Clientes de reservas antigas anonimizados",
+  BLOQUEIO_CRIADO: "Horário bloqueado",
+  BLOQUEIO_CANCELADO: "Bloqueio cancelado",
 } as const;
 
 export const TAMANHO_PAGINA = 50;
@@ -141,7 +143,7 @@ type IconeDoEvento =
   | "check"
   | "recibo"
   | "dinheiro"
-  | "caixa"
+  | "mensalidades"
   | "estorno"
   | "estoque"
   | "carrinho"
@@ -159,7 +161,7 @@ const ASSUNTOS = [
     assunto: "Dinheiro",
   },
   { prefixos: ["PRODUTO_", "COMPRA_", "VENDA_", "ESTOQUE_"], assunto: "Estoque" },
-  { prefixos: ["FAIXA", "QUADRA_", "RESERVA_", "SERIE_"], assunto: "Horários" },
+  { prefixos: ["FAIXA", "QUADRA_", "RESERVA_", "SERIE_", "BLOQUEIO_"], assunto: "Horários" },
   { prefixos: ["CONTABIL_", "CLIENTES_"], assunto: "Dados" },
 ] as const;
 
@@ -199,7 +201,7 @@ export function eventoDaAuditoria(acao: string): {
     return { assunto, icone: "fechar", tom: "neutro" };
   if (acao === "PRESENCA_REGISTRADA") return { assunto, icone: "check", tom: "roxo" };
   if (acao.startsWith("LOCAL_")) return { assunto, icone: "local", tom: "roxo" };
-  if (acao.startsWith("CAIXA_")) return { assunto, icone: "caixa", tom: "ouro" };
+  if (acao.startsWith("CAIXA_")) return { assunto, icone: "mensalidades", tom: "ouro" };
   if (acao.startsWith("MENSALIDADE")) return { assunto, icone: "recibo", tom: "ouro" };
   if (acao.startsWith("VENDA_") || acao.startsWith("COMPRA_"))
     return { assunto, icone: "carrinho", tom: "ouro" };

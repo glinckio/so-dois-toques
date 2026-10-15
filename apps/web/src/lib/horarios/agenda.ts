@@ -1,160 +1,151 @@
-import { horaPassou, horasDeFuncionamento } from "./formatacao";
-import type { Grade, ReservaNaGrade } from "./tipos";
+import { faixaDeMinutos, HORA_ABRE, HORA_FECHA } from "./formatacao";
+import type { AulaNaGrade, BloqueioNaGrade, Grade } from "./tipos";
 
-/** Situação que dá a cor do bloco na grade (sempre acompanhada de texto). */
-export type SituacaoDoHorario = "pago" | "a-pagar" | "fixa" | "bloqueio";
+/** Cada linha da agenda é um quarto de hora: das 05h às 24h são 76 linhas. */
+export const MINUTOS_POR_LINHA = 15;
+const ABRE = HORA_ABRE * 60;
+const FECHA = HORA_FECHA * 60;
+export const LINHAS_DA_AGENDA = (FECHA - ABRE) / MINUTOS_POR_LINHA;
+
+/** Cor do bloco na agenda (sempre acompanhada de texto). */
+export type SituacaoDoHorario = "aula" | "minha" | "bloqueio";
 
 export const ROTULOS_DA_SITUACAO: Record<SituacaoDoHorario | "livre", string> = {
-  pago: "Pago",
-  "a-pagar": "A pagar",
-  fixa: "Fixa",
+  aula: "Aula",
+  minha: "Sua aula",
   bloqueio: "Bloqueio",
   livre: "Livre",
 };
 
-/** Bloqueio vem primeiro; reserva fixa tem cor própria; a avulsa, pela situação do pagamento. */
-export function situacaoDaReserva(
-  r: Pick<ReservaNaGrade, "tipo" | "serieId" | "pago">,
-): SituacaoDoHorario {
-  if (r.tipo === "BLOQUEIO") return "bloqueio";
-  if (r.serieId) return "fixa";
-  return r.pago ? "pago" : "a-pagar";
-}
-
 export type MomentoDoBloco = "passou" | "agora" | "depois";
 
-export type BlocoDaAgenda = {
-  tipo: "bloco";
-  reserva: ReservaNaGrade;
+export type BlocoDaAgenda =
+  | (BaseDoBloco & { tipo: "aula"; aula: AulaNaGrade })
+  | (BaseDoBloco & { tipo: "bloqueio"; bloqueio: BloqueioNaGrade });
+
+type BaseDoBloco = {
   situacao: SituacaoDoHorario;
-  /** Linha da grade em que o bloco começa (1 = primeira hora de funcionamento). */
+  /** Minutos desde 00:00. */
+  inicio: number;
+  fim: number;
+  /** Linha da agenda em que o bloco começa (1 = 05:00). */
   linha: number;
-  /** Quantas linhas (horas) o bloco ocupa. */
+  /** Quantas linhas (quartos de hora) o bloco ocupa. */
   linhas: number;
-  /** Horas mostradas pelo bloco (a parte da reserva dentro do funcionamento). */
-  horaInicio: number;
-  horaFim: number;
   momento: MomentoDoBloco;
 };
 
+/** Hora inteira sem aula nem bloqueio. */
 export type LivreDaAgenda = { tipo: "livre"; hora: number; linha: number; passou: boolean };
-
-export type ColunaDaAgenda = {
-  id: string;
-  nome: string;
-  /** Coluna da grade (a 1 é a das horas). */
-  coluna: number;
-  itens: (BlocoDaAgenda | LivreDaAgenda)[];
-  /** Horários livres que ainda aceitam reserva. */
-  livres: number;
-};
 
 export type HoraDaAgenda = { hora: number; linha: number; passou: boolean; agora: boolean };
 
 export type Agenda = {
   horas: HoraDaAgenda[];
-  colunas: ColunaDaAgenda[];
-  /** Onde fica a linha da hora atual: a linha da hora e o quarto de hora (0 a 3). */
-  agora: { linha: number; quarto: 0 | 1 | 2 | 3 } | null;
-  /** Horas de cada situação, somando as quadras (legenda). */
-  horasPorSituacao: Record<SituacaoDoHorario | "livre", number>;
-  /** Horas de clientes (sem bloqueio) e horas em funcionamento, somando as quadras (anel). */
-  reservadas: number;
-  abertas: number;
-  livresParaReservar: number;
+  blocos: BlocoDaAgenda[];
+  livres: LivreDaAgenda[];
+  /** Linha do quarto de hora atual, quando a data é hoje e a quadra está aberta. */
+  agora: { linha: number } | null;
+  minutosDeAula: number;
+  minutosBloqueados: number;
+  /** Fração do dia ocupada por aulas e bloqueios (0 a 1). */
+  ocupacao: number;
+  /** Horas inteiras livres que ainda não começaram. */
+  livresParaBloquear: number;
 };
 
-/** O bloco não cresce além disso (limite das classes `row-span-*` liberadas na CSP). */
-export const LINHAS_POR_BLOCO = 8;
+const linhaDe = (minuto: number) =>
+  Math.min(LINHAS_DA_AGENDA, Math.max(1, Math.floor((minuto - ABRE) / MINUTOS_POR_LINHA) + 1));
 
-function momentoDoBloco(
-  data: string,
-  hoje: string,
-  minutoAtual: number,
-  horaInicio: number,
-  horaFim: number,
-): MomentoDoBloco {
+function linhasEntre(inicio: number, fim: number) {
+  const primeira = linhaDe(inicio);
+  const ultima = Math.min(
+    LINHAS_DA_AGENDA,
+    Math.ceil((Math.min(fim, FECHA) - ABRE) / MINUTOS_POR_LINHA),
+  );
+  return Math.max(1, ultima - primeira + 1);
+}
+
+function momentoDe(data: string, hoje: string, minutoAtual: number, inicio: number, fim: number) {
   if (data !== hoje) return data < hoje ? "passou" : "depois";
-  if (minutoAtual >= horaFim * 60) return "passou";
-  if (minutoAtual >= horaInicio * 60) return "agora";
+  if (minutoAtual >= fim) return "passou";
+  if (minutoAtual >= inicio) return "agora";
   return "depois";
 }
 
+/** Descrição curta do bloco para leitores de tela e listas. */
+export function descreverBloco(bloco: BlocoDaAgenda): string {
+  const horario = faixaDeMinutos(bloco.inicio, bloco.fim);
+  if (bloco.tipo === "bloqueio") return `Bloqueado: ${bloco.bloqueio.motivo}, ${horario}`;
+  const a = bloco.aula;
+  return `Aula ${a.nome}, ${horario}, com ${a.professor.nome}, ${a.ocupadas} de ${a.vagas} alunos`;
+}
+
 /**
- * VIVO-CA-06: monta a grade do dia como agenda de blocos. Cada hora de funcionamento
- * é uma linha; cada quadra, uma coluna. Uma reserva de várias horas vira um único
- * bloco que começa na linha da primeira hora e ocupa uma linha por hora. Horas fora
- * do funcionamento no meio da reserva (faixa mudada depois) dividem o bloco.
+ * FOCO-CA-05: a agenda do dia da quadra. Cada quarto de hora é uma linha; a aula ou o
+ * bloqueio vira um bloco que ocupa as suas linhas, e cada hora inteira sem nada é uma
+ * célula livre. A aula do professor que está vendo ganha cor própria.
  */
-export function agendaDoDia(grade: Grade, hoje: string, minutoAtual: number): Agenda {
-  const lista = horasDeFuncionamento(grade.faixas);
-  const horaAtual = Math.floor(minutoAtual / 60);
-  const horas = lista.map((hora, i) => ({
-    hora,
-    linha: i + 1,
-    passou: horaPassou(grade.data, hora, hoje, horaAtual),
-    agora: grade.data === hoje && hora === horaAtual,
-  }));
-  const horasPorSituacao = { pago: 0, "a-pagar": 0, fixa: 0, bloqueio: 0, livre: 0 };
-  const colunas = grade.quadras.map((quadra, q): ColunaDaAgenda => {
-    const itens: (BlocoDaAgenda | LivreDaAgenda)[] = [];
-    let aberto: BlocoDaAgenda | null = null;
-    for (const h of horas) {
-      const reserva = quadra.reservas.find((r) => r.horaInicio <= h.hora && h.hora < r.horaFim);
-      if (!reserva) {
-        aberto = null;
-        itens.push({ tipo: "livre", hora: h.hora, linha: h.linha, passou: h.passou });
-        horasPorSituacao.livre += 1;
-        continue;
-      }
-      const situacao = situacaoDaReserva(reserva);
-      horasPorSituacao[situacao] += 1;
-      const continua =
-        aberto !== null &&
-        aberto.reserva.id === reserva.id &&
-        aberto.horaFim === h.hora &&
-        aberto.linhas < LINHAS_POR_BLOCO;
-      if (aberto && continua) {
-        aberto.linhas += 1;
-        aberto.horaFim = h.hora + 1;
-        continue;
-      }
-      aberto = {
-        tipo: "bloco",
-        reserva,
-        situacao,
-        linha: h.linha,
-        linhas: 1,
-        horaInicio: h.hora,
-        horaFim: h.hora + 1,
-        momento: "depois",
-      };
-      itens.push(aberto);
-    }
-    for (const item of itens) {
-      if (item.tipo === "bloco") {
-        item.momento = momentoDoBloco(grade.data, hoje, minutoAtual, item.horaInicio, item.horaFim);
-      }
-    }
-    return {
-      id: quadra.id,
-      nome: quadra.nome,
-      coluna: q + 2,
-      itens,
-      livres: itens.filter((i) => i.tipo === "livre" && !i.passou).length,
-    };
+export function agendaDoDia(
+  grade: Grade,
+  hoje: string,
+  minutoAtual: number,
+  professorId?: string,
+): Agenda {
+  const passou = (minuto: number) =>
+    grade.data < hoje || (grade.data === hoje && minuto <= minutoAtual);
+  const bloco = <T extends object>(inicio: number, fim: number, extra: T) => ({
+    inicio,
+    fim,
+    linha: linhaDe(inicio),
+    linhas: linhasEntre(inicio, fim),
+    momento: momentoDe(grade.data, hoje, minutoAtual, inicio, fim) as MomentoDoBloco,
+    ...extra,
   });
-  const linhaAgora = horas.find((h) => h.agora)?.linha;
+  const blocos: BlocoDaAgenda[] = [
+    ...grade.aulas.map((aula) =>
+      bloco(aula.inicio, aula.fim, {
+        tipo: "aula" as const,
+        aula,
+        situacao: (aula.professor.id === professorId ? "minha" : "aula") as SituacaoDoHorario,
+      }),
+    ),
+    ...grade.bloqueios.map((b) =>
+      bloco(b.horaInicio * 60, b.horaFim * 60, {
+        tipo: "bloqueio" as const,
+        bloqueio: b,
+        situacao: "bloqueio" as SituacaoDoHorario,
+      }),
+    ),
+  ].sort((a, b) => a.inicio - b.inicio);
+
+  const horas: HoraDaAgenda[] = [];
+  const livres: LivreDaAgenda[] = [];
+  for (let hora = HORA_ABRE; hora < HORA_FECHA; hora++) {
+    const linha = linhaDe(hora * 60);
+    horas.push({
+      hora,
+      linha,
+      passou: passou(hora * 60),
+      agora: grade.data === hoje && Math.floor(minutoAtual / 60) === hora,
+    });
+    const ocupada = blocos.some((b) => b.inicio < (hora + 1) * 60 && hora * 60 < b.fim);
+    if (!ocupada) livres.push({ tipo: "livre", hora, linha, passou: passou(hora * 60) });
+  }
+
+  const minutos = (tipo: BlocoDaAgenda["tipo"]) =>
+    blocos.filter((b) => b.tipo === tipo).reduce((t, b) => t + (b.fim - b.inicio), 0);
+  const minutosDeAula = minutos("aula");
+  const minutosBloqueados = minutos("bloqueio");
+  const aberto = grade.data === hoje && minutoAtual >= ABRE && minutoAtual < FECHA;
   return {
     horas,
-    colunas,
-    agora:
-      linhaAgora === undefined
-        ? null
-        : { linha: linhaAgora, quarto: Math.floor((minutoAtual % 60) / 15) as 0 | 1 | 2 | 3 },
-    horasPorSituacao,
-    reservadas: horasPorSituacao.pago + horasPorSituacao["a-pagar"] + horasPorSituacao.fixa,
-    abertas: horas.length * grade.quadras.length,
-    livresParaReservar: colunas.reduce((t, c) => t + c.livres, 0),
+    blocos,
+    livres,
+    agora: aberto ? { linha: linhaDe(minutoAtual) } : null,
+    minutosDeAula,
+    minutosBloqueados,
+    ocupacao: Math.min(1, (minutosDeAula + minutosBloqueados) / (FECHA - ABRE)),
+    livresParaBloquear: livres.filter((l) => !l.passou).length,
   };
 }

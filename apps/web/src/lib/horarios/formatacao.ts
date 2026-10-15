@@ -1,7 +1,13 @@
-import type { ReservaNaGrade } from "./tipos";
-
-export const DURACAO_MAXIMA = 4;
-export const HORAS = Array.from({ length: 24 }, (_, h) => h);
+/** A quadra abre das 05h às 24h, o mesmo limite dos horários de turma (FOCO-CA-05). */
+export const HORA_ABRE = 5;
+export const HORA_FECHA = 24;
+/** Horas em que um bloqueio pode começar (05h a 23h) ou terminar (06h a 24h). */
+export const HORAS_DE_INICIO = Array.from(
+  { length: HORA_FECHA - HORA_ABRE },
+  (_, i) => HORA_ABRE + i,
+);
+export const HORAS_DE_FIM = HORAS_DE_INICIO.map((h) => h + 1);
+export const SEMANAS_MAXIMAS = 26;
 
 /** 19 → "19:00"; 24 → "24:00" (meia-noite do fim do dia). */
 export function rotuloHora(hora: number): string {
@@ -12,34 +18,22 @@ export function faixaDeHoras(inicio: number, fim: number): string {
   return `${rotuloHora(inicio)} às ${rotuloHora(fim)}`;
 }
 
+/** 1110 → "18:30". */
+export function rotuloMinuto(minutos: number): string {
+  return `${String(Math.floor(minutos / 60)).padStart(2, "0")}:${String(minutos % 60).padStart(2, "0")}`;
+}
+
+export function faixaDeMinutos(inicio: number, fim: number): string {
+  return `${rotuloMinuto(inicio)} às ${rotuloMinuto(fim)}`;
+}
+
 export function somarDias(data: string, dias: number): string {
   const d = new Date(`${data}T12:00:00Z`);
   d.setUTCDate(d.getUTCDate() + dias);
   return d.toISOString().slice(0, 10);
 }
 
-/** HOR-CA-02: as horas em que a quadra funciona no dia, pelas faixas. */
-export function horasDeFuncionamento(faixas: readonly { horaInicio: number; horaFim: number }[]) {
-  const horas = new Set<number>();
-  for (const f of faixas) for (let h = f.horaInicio; h < f.horaFim; h++) horas.add(h);
-  return [...horas].sort((a, b) => a - b);
-}
-
-export type Celula =
-  | { hora: number; tipo: "livre" }
-  | { hora: number; tipo: "ocupada"; reserva: ReservaNaGrade; primeira: boolean };
-
-/** HOR-CA-02: cada hora de funcionamento da quadra, livre ou com a ocupação que a cobre. */
-export function celulasDaQuadra(horas: readonly number[], reservas: readonly ReservaNaGrade[]) {
-  return horas.map((hora): Celula => {
-    const reserva = reservas.find((r) => r.horaInicio <= hora && hora < r.horaFim);
-    return reserva
-      ? { hora, tipo: "ocupada", reserva, primeira: reserva.horaInicio === hora }
-      : { hora, tipo: "livre" };
-  });
-}
-
-/** Hora que já começou no dia de hoje (em São Paulo) não aceita reserva. */
+/** Hora que já começou no dia de hoje (em São Paulo) não aceita bloqueio. */
 export function horaPassou(data: string, hora: number, hoje: string, horaAgora: number) {
   return data < hoje || (data === hoje && hora <= horaAgora);
 }
@@ -54,7 +48,15 @@ export function horaAgoraEmSaoPaulo(agora = new Date()): number {
   );
 }
 
-/** Milissegundos até o início da reserva (negativo se já começou). */
+/** Milissegundos até o início do horário (negativo se já começou). */
 export function tempoAteInicio(inicio: string, agora = new Date()): number {
   return new Date(inicio).getTime() - agora.getTime();
+}
+
+/** Quantas datas do mesmo dia da semana cabem entre início e fim (inclusive). */
+export function semanasDaSerie(dataInicio: string, dataFim: string): number {
+  if (!dataInicio || !dataFim || dataFim < dataInicio) return 0;
+  const dias =
+    (Date.parse(`${dataFim}T12:00:00Z`) - Date.parse(`${dataInicio}T12:00:00Z`)) / 86_400_000;
+  return Math.floor(dias / 7) + 1;
 }

@@ -16,9 +16,6 @@ export const NIVEIS = {
 } as const;
 export type Nivel = keyof typeof NIVEIS;
 
-export const TIPOS_LOCAL = { PARCEIRA: "Quadra parceira", PROPRIA: "Quadra própria" } as const;
-export type TipoLocal = keyof typeof TIPOS_LOCAL;
-
 export type Horario = { diaSemana: number; inicio: number; fim: number };
 
 /** "21998765432" → "(21) 99876-5432". */

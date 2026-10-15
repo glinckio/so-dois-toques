@@ -3,12 +3,10 @@ import { BotaoBusca, BuscaRapida } from "@/components/layout/busca-rapida";
 import { Marca } from "@/components/layout/marca";
 import { AvatarDoTopo, CartaoDaPessoa, MenuDaPessoa } from "@/components/layout/menu-pessoa";
 import { MenuInferior, MenuLateral } from "@/components/layout/menu-principal";
-import { StatusDoCaixa } from "@/components/layout/status-caixa";
 import { Icone } from "@/components/icones";
 import { PERFIS, itensDoMenu } from "@/lib/acesso/areas";
 import { hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { itensDaBusca } from "@/lib/base/busca";
-import { sessaoDoCaixa } from "@/lib/servidor/caixa";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 
 const DATA_CURTA = new Intl.DateTimeFormat("pt-BR", {
@@ -27,8 +25,6 @@ export default async function LayoutSistema({ children }: LayoutProps<"/">) {
   const menu = itensDoMenu(usuario.areas);
   const perfil = PERFIS[usuario.perfil];
   const admin = usuario.perfil === "ADMINISTRADOR";
-  // Quem usa o Caixa vê no rodapé do menu se ele está aberto; os outros, o atalho da busca.
-  const caixa = usuario.areas.includes("caixa") ? await sessaoDoCaixa() : null;
   const hoje = DATA_CURTA.format(new Date(`${hojeEmSaoPaulo()}T12:00:00Z`)).replace(/\./g, "");
 
   return (
@@ -39,24 +35,20 @@ export default async function LayoutSistema({ children }: LayoutProps<"/">) {
         </Link>
         <MenuLateral itens={menu} />
         <div className="mt-auto flex flex-col gap-3">
-          {caixa?.ok ? (
-            <StatusDoCaixa turno={caixa.dados.turno} />
-          ) : (
-            <div className="border-ouro/25 relative overflow-hidden rounded-[1.25rem] border bg-linear-to-br from-[#2b2008] to-transparent p-4">
-              <span
-                className="bg-ouro/25 absolute -top-6 -right-6 size-20 rounded-full blur-2xl"
-                aria-hidden="true"
-              />
-              <p className="text-ouro flex items-center gap-2 text-xs font-bold tracking-[0.14em] uppercase">
-                <Icone nome="estrela" width={14} height={14} />
-                Atalho
-              </p>
-              <p className="text-suave mt-1.5 text-sm">
-                Aperte <kbd className="text-texto font-semibold">Ctrl K</kbd> para buscar ou abrir
-                qualquer área.
-              </p>
-            </div>
-          )}
+          <div className="border-ouro/25 relative overflow-hidden rounded-[1.25rem] border bg-linear-to-br from-[#2b2008] to-transparent p-4">
+            <span
+              className="bg-ouro/25 absolute -top-6 -right-6 size-20 rounded-full blur-2xl"
+              aria-hidden="true"
+            />
+            <p className="text-ouro flex items-center gap-2 text-xs font-bold tracking-[0.14em] uppercase">
+              <Icone nome="estrela" width={14} height={14} />
+              Atalho
+            </p>
+            <p className="text-suave mt-1.5 text-sm">
+              Aperte <kbd className="text-texto font-semibold">Ctrl K</kbd> para buscar ou abrir
+              qualquer área.
+            </p>
+          </div>
           <CartaoDaPessoa nome={usuario.nome} perfil={perfil} />
         </div>
       </aside>
