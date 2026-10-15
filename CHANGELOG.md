@@ -2,6 +2,7 @@
 
 ## Próxima versão
 
+- Etapa 12: foco em aulas. Saem Estoque, Caixa (turnos e avulsos), quadras parceiras e aluguel de quadra. Mensalidades ganham área própria; a agenda da única quadra mostra as aulas das turmas e os bloqueios; turmas não dividem horário; o Contábil fica só com mensalidades e estornos. A migration para sem mexer em nada se encontrar dados das partes que saem.
 - Etapa 10: identidade visual. Tema escuro com as cores do logo (roxo e dourado), menu lateral com ícones, logo no login, no menu e no ícone do site, Início com painel por perfil (resumo do mês, gráfico de 12 meses, caixa, quadras, aulas e estoque) e gráficos no Contábil.
 
 ## 1.0.0 (lançamento)

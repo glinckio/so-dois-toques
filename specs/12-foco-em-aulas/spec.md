@@ -1,6 +1,6 @@
 # Etapa 12: Foco em aulas
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 

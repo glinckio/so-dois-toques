@@ -51,6 +51,8 @@ As Etapas 0 a 8 entregaram as telas. Antes de colocar dinheiro e dados pessoais 
 
 ## Critérios de aceite
 
+> **Etapa 12 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/12-foco-em-aulas/spec.md`.
+
 ### Produção
 
 - **LANC-CA-01**: Com `NODE_ENV=production`, a API recusa iniciar com a `INTERNAL_API_KEY` de exemplo ou com `WEB_ORIGIN` sem https (aceita `localhost` e `127.0.0.1`), e a mensagem cita o nome da variável, nunca o valor.
@@ -65,8 +67,8 @@ As Etapas 0 a 8 entregaram as telas. Antes de colocar dinheiro e dados pessoais 
 
 ### Retenção
 
-- **LANC-CA-07**: O administrador anonimiza os clientes das reservas e séries terminadas há mais de 12 meses: nome "Cliente anonimizado" e telefone vazio; valores, pagamentos e lançamentos não mudam; reservas mais novas não mudam; a ação fica na auditoria com as quantidades.
-- **LANC-CA-08**: Atendente e professor não conseguem ver a prévia nem anonimizar, pela tela nem pela API.
+- **LANC-CA-07** [removido] (ver FOCO-CA-01): O administrador anonimiza os clientes das reservas e séries terminadas há mais de 12 meses: nome "Cliente anonimizado" e telefone vazio; valores, pagamentos e lançamentos não mudam; reservas mais novas não mudam; a ação fica na auditoria com as quantidades.
+- **LANC-CA-08** [removido] (ver FOCO-CA-01): Atendente e professor não conseguem ver a prévia nem anonimizar, pela tela nem pela API.
 
 ### Documentação e revisão
 

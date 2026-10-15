@@ -70,6 +70,8 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 
 ## Critérios de aceite
 
+> **Etapa 12 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/12-foco-em-aulas/spec.md`.
+
 ### Alunos
 
 - **AULAS-CA-01**: Dado um administrador, quando ele cadastra um aluno com nome, telefone, data de nascimento, contato de emergência e consentimento, então o aluno fica salvo com a data do consentimento e quem registrou.
@@ -83,7 +85,7 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 
 ### Locais e turmas
 
-- **AULAS-CA-09**: O administrador cadastra locais (quadra parceira ou própria); nome repetido é recusado, e local inativo não aparece para turma nova.
+- **AULAS-CA-09** [removido] (ver FOCO-CA-04): O administrador cadastra locais (quadra parceira ou própria); nome repetido é recusado, e local inativo não aparece para turma nova.
 - **AULAS-CA-10**: O administrador cadastra uma turma com nível, local, professor, vagas e horários semanais; horário com fim antes do início, fora de 05:00–23:59 ou sem nenhum dia é recusado.
 - **AULAS-CA-11**: Uma turma não pode ter como professor um usuário inativo ou com perfil Atendente.
 - **AULAS-CA-12**: O mesmo professor não pode ter duas turmas ativas com horários sobrepostos no mesmo dia.

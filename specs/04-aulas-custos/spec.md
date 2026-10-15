@@ -1,6 +1,6 @@
 # Etapa 4: Horas e custos das quadras parceiras
 
-**Status:** implementada
+**Status:** substituída pela Etapa 12 (`specs/12-foco-em-aulas/spec.md`): esta parte saiu do sistema.
 
 ## Objetivo
 

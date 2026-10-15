@@ -66,6 +66,8 @@ As mensalidades ficam na área Caixa (Administrador e Atendente), porque é no b
 
 ## Critérios de aceite
 
+> **Etapa 12 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/12-foco-em-aulas/spec.md`.
+
 ### Planos e assinaturas
 
 - **MENS-CA-01**: O administrador cadastra um plano com nome, aulas por semana e valor; nome repetido, valor fora de R$ 1,00 a R$ 10.000,00 ou aulas fora de 1 a 7 são recusados.
@@ -93,7 +95,7 @@ As mensalidades ficam na área Caixa (Administrador e Atendente), porque é no b
 ### Caixa
 
 - **MENS-CA-16**: Lançamentos não podem ser alterados nem apagados, nem por consulta direta ao banco feita pela aplicação; valor zero ou negativo é recusado pelo banco.
-- **MENS-CA-17**: A tela do Caixa mostra os lançamentos de um dia, com o total de entradas, saídas e o saldo por forma de pagamento.
+- **MENS-CA-17** [removido] (ver FOCO-CA-01): A tela do Caixa mostra os lançamentos de um dia, com o total de entradas, saídas e o saldo por forma de pagamento.
 
 ### Permissões e auditoria
 

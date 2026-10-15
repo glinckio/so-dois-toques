@@ -11,55 +11,39 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 
 ## O que cada perfil vê
 
-| Tela                 | Administrador | Atendente         | Professor             |
-| -------------------- | ------------- | ----------------- | --------------------- |
-| Início               | Sim           | Sim               | Sim                   |
-| Aulas                | Tudo          | Não               | Só as próprias turmas |
-| Horários             | Tudo          | Reservas          | Não                   |
-| Estoque              | Tudo          | Vender e comprar  | Não                   |
-| Caixa                | Tudo          | Sim, sem estornos | Não                   |
-| Contábil             | Sim           | Não               | Não                   |
-| Usuários e Auditoria | Sim           | Não               | Não                   |
+| Tela                 | Administrador | Atendente                   | Professor             |
+| -------------------- | ------------- | --------------------------- | --------------------- |
+| Início               | Sim           | Sim                         | Sim                   |
+| Aulas                | Tudo          | Não                         | Só as próprias turmas |
+| Mensalidades         | Tudo          | Ver e receber, sem estornos | Não                   |
+| Horários             | Tudo          | Ver a agenda                | Ver a agenda          |
+| Contábil             | Sim           | Não                         | Não                   |
+| Usuários e Auditoria | Sim           | Não                         | Não                   |
 
 ## Aulas
 
-- **Turmas:** cada turma tem local, professor, nível, vagas e horários da semana. Abra a turma para matricular alunos (respeitando as vagas) e para a **presença**.
+- **Turmas:** cada turma tem professor, nível, vagas e horários da semana, e acontece na quadra. Duas turmas ativas não podem ter aula no mesmo horário, nem com professores diferentes. Abra a turma para matricular alunos (respeitando as vagas) e para a **presença**.
 - **Presença (professor):** abra a turma → Presença, escolha a data da aula e marque presente ou ausente. Dá para corrigir depois.
 - **Alunos (administrador):** cadastro com consentimento obrigatório; menor de 18 anos exige responsável. A busca acha por parte do nome (sem acento) ou do telefone. Na ficha do aluno ficam o plano, a exportação de dados e a anonimização (ver [LGPD](lgpd.md)).
-- **Locais:** quadras parceiras ou próprias, com o valor da hora cobrado pelo parceiro.
 - **Planos:** valor mensal por quantidade de aulas na semana. Na ficha do aluno, escolha o plano, o dia de vencimento e um desconto, se houver.
-- **Custos:** horas pagas às quadras parceiras.
-- **Resultado:** receita, custo de quadra e margem de cada turma e professor no mês.
 
-## Caixa
+## Mensalidades
 
-- **Caixa do dia:** abra o turno com o troco inicial. Registre suprimento, sangria, despesa ou receita avulsa. No fim, feche informando o dinheiro contado; a diferença fica registrada com observação.
 - **Mensalidades:** as do mês são geradas sozinhas. Abra uma para registrar o pagamento (Pix, dinheiro, cartão de débito ou de crédito); o recibo sai na hora.
 - **Inadimplentes:** quem está com mensalidade vencida.
-- **Turnos:** histórico e relatório de cada turno.
-- Nada é apagado: um erro se corrige com **estorno**, que só o administrador faz.
+- Nada é apagado: um pagamento errado se corrige com **estorno**, que só o administrador faz.
 
 ## Horários
 
-- **Grade:** as duas quadras, dia a dia, com horários livres, reservados e bloqueados. Toque num horário livre para reservar.
-- **Nova reserva:** avulsa ou semanal (até 26 semanas), de 1 a 4 horas. O valor vem das faixas de preço.
-- **Reserva:** registrar pagamento, cancelar (com menos de 24 horas, só o administrador) e, se paga, o cancelamento devolve o valor.
-- **Fixas:** reservas semanais; encerrar cancela as próximas que não foram pagas.
-- **Preços e quadras (administrador):** faixas de horário com o preço da hora, por dia da semana; elas também definem quando a quadra funciona. Também renomeia as quadras.
-- **Privacidade (administrador):** apaga nome e telefone de clientes de reservas com mais de 12 meses.
-- **Bloqueio (administrador):** em Nova reserva, escolha "Bloqueio" para reservar horário de aula ou manutenção.
-
-## Estoque
-
-- **Produtos:** itens da lanchonete com estoque atual e mínimo; o que está abaixo do mínimo aparece em destaque.
-- **Vender:** precisa do caixa aberto. Escolha os itens e a forma de pagamento; o estoque baixa e o dinheiro entra no Caixa.
-- **Compra:** entrada de mercadoria com o custo; o custo médio é recalculado.
-- **Ajuste (administrador):** perda, quebra ou contagem.
-- **Vendas do dia:** lista das vendas, com estorno pelo administrador.
+- **Agenda:** a quadra dia a dia, das 05h às 24h. As aulas aparecem sozinhas, pelos horários das turmas; o professor vê as dele em destaque.
+- **Bloquear horário (administrador):** fecha a quadra num dia ou toda semana (até 26 semanas), com motivo, por exemplo manutenção ou evento. Horário com aula de turma não pode ser bloqueado. Na agenda, toque numa hora livre para bloquear.
+- **Bloqueio:** abra o bloqueio na agenda para liberar o horário (com motivo), se ainda não começou.
+- **Bloqueios semanais:** os que se repetem; encerrar libera as datas que ainda não começaram.
+- O nome da quadra muda no fim da agenda, em "Mudar o nome da quadra" (administrador).
 
 ## Contábil (administrador)
 
-Escolha o mês ou um período. O painel mostra receitas por origem (aulas, locação, lanchonete, outras), despesas por tipo, resultado e margem, a conferência com o Caixa, a margem da lanchonete, a ocupação das quadras por turno, o que há a receber e os últimos 12 meses. **Baixar lançamentos (CSV)** gera a planilha para o contador.
+Escolha o mês ou um período. O painel mostra as mensalidades recebidas, os estornos, o resultado, o que há a receber (mensalidades vencidas), os totais por forma de pagamento, a conferência com os lançamentos e os últimos 12 meses. **Baixar lançamentos (CSV)** gera a planilha para o contador.
 
 ## Usuários e Auditoria (administrador)
 

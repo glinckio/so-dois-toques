@@ -1,6 +1,6 @@
 # Etapa 6: Estoque da lanchonete
 
-**Status:** implementada
+**Status:** substituída pela Etapa 12 (`specs/12-foco-em-aulas/spec.md`): esta parte saiu do sistema.
 
 ## Objetivo
 
