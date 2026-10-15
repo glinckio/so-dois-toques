@@ -1,146 +1,151 @@
 import { expect, test } from "@playwright/test";
-import { cadastrarUsuario, confirmar, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
+import {
+  cadastrarUsuario,
+  emailUnico,
+  entrarComoAdmin,
+  horariosUnicos,
+  primeiroAcesso,
+} from "./apoio";
+
+const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+const DIAS_CURTOS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 const diaEmSP = (dias: number) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(
     new Date(Date.now() + dias * 24 * 60 * 60 * 1000),
   );
 
-test("HOR-CA-01, HOR-CA-02, HOR-CA-03, HOR-CA-07, HOR-CA-08 e HOR-CA-09: da faixa de preço à reserva paga e cancelada", async ({
+test("FOCO-CA-05, FOCO-CA-06 e FOCO-CA-07: bloqueio pela agenda, conflito e liberação", async ({
   page,
-  browser,
 }, testInfo) => {
   const marca = Math.random().toString(36).slice(2, 8);
-  // Celular e computador rodam ao mesmo tempo: cada um reserva num dia diferente.
-  const data = diaEmSP(testInfo.project.name === "celular" ? 20 : 40);
+  // Celular e computador rodam ao mesmo tempo e dois bloqueios não se sobrepõem:
+  // cada projeto usa um dia só seu.
+  const data = diaEmSP(testInfo.project.name === "celular" ? 33 : 53);
   const [ano, mes, dia] = data.split("-");
+  const diaSemana = new Date(`${data}T12:00:00Z`).getUTCDay();
   await entrarComoAdmin(page);
 
-  // Funcionamento das 6h às 23h, R$ 80,00 a hora, todos os dias. O outro projeto pode
-  // ter criado antes: aí a faixa se sobrepõe e é recusada.
-  await page.goto("/horarios/faixas");
-  const faixa = page.getByRole("form", { name: "Nova faixa de preço" });
-  for (const d of ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]) {
-    await faixa.getByLabel(d, { exact: true }).check();
-  }
-  await faixa.getByLabel("Das").selectOption({ label: "06:00" });
-  await faixa.getByLabel("Até").selectOption({ label: "23:00" });
-  await faixa.getByLabel("Valor da hora (R$)").fill("80,00");
-  await faixa.getByRole("button", { name: "Criar faixa" }).click();
-  await expect(faixa.getByText(/Faixa de R\$ 80,00 por hora criada\.|se sobrepõe/)).toBeVisible();
-  await page.reload();
-  await expect(page.getByRole("list", { name: "Faixas de preço" })).toContainText(
-    "06:00 às 23:00 · R$ 80,00 por hora",
+  // Faixa de dias: os sete dias da semana, com o dia escolhido marcado.
+  await page.goto(`/horarios?data=${data}`);
+  await expect(page.getByTestId("dia-da-grade")).toContainText(`${dia}/${mes}/${ano}`);
+  const faixaDeDias = page.getByRole("navigation", { name: "Escolher dia" });
+  await expect(faixaDeDias.getByRole("listitem")).toHaveCount(7);
+  await expect(faixaDeDias.locator('[aria-current="date"]')).toHaveAccessibleName(
+    `${DIAS_CURTOS[diaSemana]} ${Number(dia)}`,
   );
 
-  const emailAtendente = emailUnico("atendente-horarios");
+  // Toca na hora livre das 15h e bloqueia até as 18h.
+  const agenda = page.getByRole("list", { name: `Agenda da quadra em ${data}` });
+  await agenda.getByRole("link", { name: "Bloquear às 15:00" }).click();
+  const form = page.getByRole("form", { name: "Bloquear horário" });
+  await expect(form.getByLabel("Das")).toHaveValue("15");
+  await form.getByLabel("Até").selectOption({ label: "18:00" });
+  await form.getByLabel("Motivo do bloqueio").fill(`Manutenção ${marca}`);
+  await form.getByRole("button", { name: "Bloquear horário" }).click();
+  await expect(page.getByText("Horário bloqueado.")).toBeVisible();
+  const urlBloqueio = page.url().split("?")[0] as string;
+
+  // Na agenda, o bloqueio é um bloco só, de 12 quartos de hora.
+  await page.goto(`/horarios?data=${data}`);
+  const nomeDoBloco = new RegExp(`Bloqueado: Manutenção ${marca}`);
+  await expect(agenda.getByRole("link", { name: nomeDoBloco })).toHaveCount(1);
+  // O localizador de dentro do filtro é relativo ao item da lista.
+  const item = agenda
+    .getByRole("listitem")
+    .filter({ has: page.getByRole("link", { name: nomeDoBloco }) });
+  await expect(item).toHaveAttribute("data-linhas", "12");
+  for (const hora of ["15:00", "16:00", "17:00"]) {
+    await expect(agenda.getByRole("link", { name: `Bloquear às ${hora}` })).toHaveCount(0);
+  }
+  await expect(agenda.getByRole("link", { name: "Bloquear às 18:00" })).toBeVisible();
+
+  // O mesmo horário não pode ser bloqueado de novo.
+  await page.goto(`/horarios/bloquear?data=${data}&hora=16`);
+  const outro = page.getByRole("form", { name: "Bloquear horário" });
+  await outro.getByLabel("Até").selectOption({ label: "17:00" });
+  await outro.getByLabel("Motivo do bloqueio").fill("Outro motivo");
+  await outro.getByRole("button", { name: "Bloquear horário" }).click();
+  await expect(page.getByText(`Esse horário já está bloqueado em ${dia}/${mes}.`)).toBeVisible();
+
+  // Liberar com motivo devolve as horas à agenda.
+  await page.goto(urlBloqueio);
+  const liberar = page.getByRole("form", { name: "Liberar horário" });
+  await liberar.getByLabel("Motivo").fill("Manutenção adiada");
+  await liberar.getByRole("button", { name: "Liberar horário" }).click();
+  await expect(page.getByText(/Cancelado em .* Motivo: Manutenção adiada/)).toBeVisible();
+  await page.goto(`/horarios?data=${data}`);
+  await expect(agenda.getByRole("link", { name: "Bloquear às 15:00" })).toBeVisible();
+});
+
+test("FOCO-CA-05 e FOCO-CA-08: a aula da turma aparece na agenda; professor e atendente só veem", async ({
+  page,
+  browser,
+}) => {
+  // Cadastra dois usuários, uma turma e entra com cada um: mais longo que os outros.
+  test.slow();
+  const marca = Math.random().toString(36).slice(2, 8);
+  const hoje = diaEmSP(0);
+  const diaDeHoje = new Date(`${hoje}T12:00:00Z`).getUTCDay();
+  await entrarComoAdmin(page);
+
+  const nomeProfessor = `Professor Agenda ${marca}`;
+  const emailProfessor = emailUnico("prof-agenda");
+  const senhaProfessor = await cadastrarUsuario(page, {
+    nome: nomeProfessor,
+    email: emailProfessor,
+    perfil: "Professor",
+  });
+  const emailAtendente = emailUnico("atendente-agenda");
   const senhaAtendente = await cadastrarUsuario(page, {
-    nome: `Atendente ${marca}`,
+    nome: `Atendente Agenda ${marca}`,
     email: emailAtendente,
     perfil: "Atendente",
   });
 
+  // Turma com aula hoje.
+  await page.goto("/aulas/turmas/nova");
+  const nomeTurma = `Agenda ${marca}`;
+  await page.getByLabel("Nome da turma").fill(nomeTurma);
+  await page.getByLabel("Professor").selectOption({ label: nomeProfessor });
+  await page.getByLabel("Vagas").fill("6");
+  await page.getByLabel("Dia 1").selectOption({ label: DIAS[diaDeHoje]! });
+  await page.getByLabel("Dia 2").selectOption({ label: DIAS[(diaDeHoje + 2) % 7]! });
+  await horariosUnicos(page);
+  await page.getByRole("button", { name: "Salvar turma" }).click();
+  await expect(page.getByText("Turma salva.")).toBeVisible();
+
+  await page.goto(`/horarios?data=${hoje}`);
+  const agenda = page.getByRole("list", { name: `Agenda da quadra em ${hoje}` });
+  await expect(agenda.getByRole("link", { name: new RegExp(`Aula ${nomeTurma}`) })).toHaveCount(1);
+
   const contexto = await browser.newContext();
-  const atendente = await contexto.newPage();
+  const pessoa = await contexto.newPage();
   try {
-    await primeiroAcesso(atendente, emailAtendente, senhaAtendente, "rede-alta-2026-h");
-
-    // Grade do dia: clica no horário livre e reserva duas horas.
-    await atendente.goto(`/horarios?data=${data}`);
-    await expect(atendente.getByTestId("dia-da-grade")).toContainText(`${dia}/${mes}/${ano}`);
-    await atendente.getByRole("link", { name: "Reservar Quadra 1 às 19:00" }).click();
-    const form = atendente.getByRole("form", { name: "Nova reserva" });
-    await expect(form.getByLabel("Início")).toHaveValue("19");
-    await expect(form.getByText("Bloqueio (aula, manutenção)")).toHaveCount(0);
-    // Duração em blocos: toca no bloco "2 horas".
-    await form.getByText("2 horas", { exact: true }).click();
-    await expect(form.getByLabel("2 horas")).toBeChecked();
-    await form.getByLabel("Nome do cliente").fill(`Cliente ${marca}`);
-    await form.getByLabel("Telefone (opcional)").fill("(21) 99876-5432");
-    await form.getByRole("button", { name: "Reservar" }).click();
-
-    await expect(atendente.getByText("Reserva criada.")).toBeVisible();
+    // O professor vê a aula dele em destaque e não bloqueia.
+    await primeiroAcesso(pessoa, emailProfessor, senhaProfessor, "rede-alta-2026-q");
+    await pessoa.goto(`/horarios?data=${hoje}`);
+    const agendaDoProfessor = pessoa.getByRole("list", { name: `Agenda da quadra em ${hoje}` });
     await expect(
-      atendente.getByRole("heading", { name: `Reserva de Cliente ${marca}` }),
-    ).toBeVisible();
-    await expect(atendente.getByText("19:00 às 21:00")).toBeVisible();
-    await expect(atendente.getByText("R$ 160,00 · A pagar")).toBeVisible();
-    await expect(atendente.getByTestId("situacao-pagamento")).toHaveText("A pagar");
-    const urlReserva = atendente.url().split("?")[0] as string;
+      agendaDoProfessor.getByRole("link", { name: new RegExp(`Aula ${nomeTurma}`) }),
+    ).toHaveCount(1);
+    await expect(pessoa.getByRole("list", { name: "Legenda da agenda" })).toContainText("Sua aula");
+    await expect(agendaDoProfessor.getByRole("link", { name: /^Bloquear às/ })).toHaveCount(0);
+    await pessoa.goto("/horarios/bloquear");
+    await expect(pessoa.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
 
-    // Pagamento no Caixa.
-    const pagamento = atendente.getByRole("form", { name: "Receber pagamento" });
-    // Forma de pagamento em blocos: toca no bloco "Pix".
-    await pagamento.getByText("Pix", { exact: true }).click();
-    await expect(pagamento.getByLabel("Pix")).toBeChecked();
-    await pagamento.getByRole("button", { name: "Registrar pagamento" }).click();
-    await expect(atendente.getByTestId("situacao-pagamento")).toHaveText("Pago");
-
-    // A grade mostra o horário ocupado e pago.
-    await atendente.goto(`/horarios?data=${data}`);
-    const grade = atendente.getByRole("table", { name: "Grade do dia" });
+    // A atendente vê a aula, mas não abre a turma nem bloqueia.
+    await contexto.clearCookies();
+    await primeiroAcesso(pessoa, emailAtendente, senhaAtendente, "saque-curto-2026-q");
+    await pessoa.goto(`/horarios?data=${hoje}`);
+    const agendaDaAtendente = pessoa.getByRole("list", { name: `Agenda da quadra em ${hoje}` });
     await expect(
-      grade.getByRole("link", { name: new RegExp(`Cliente ${marca}`) }).first(),
-    ).toContainText("Pago");
-    await expect(grade.getByRole("link", { name: "Reservar Quadra 1 às 20:00" })).toHaveCount(0);
-
-    // O mesmo horário não pode ser reservado de novo.
-    await atendente.goto(`/horarios/nova?data=${data}&hora=20`);
-    const outra = atendente.getByRole("form", { name: "Nova reserva" });
-    await outra.getByLabel("Nome do cliente").fill("Outro cliente");
-    await outra.getByRole("button", { name: "Reservar" }).click();
-    await expect(outra.getByText(/Horário ocupado/)).toBeVisible();
-    await expect(outra.getByLabel("Nome do cliente")).toHaveValue("Outro cliente");
-
-    // Atendente não configura preços nem estorna; cancela com antecedência e o valor volta.
-    await atendente.goto("/horarios/faixas");
-    await expect(atendente.getByRole("form", { name: "Nova faixa de preço" })).toHaveCount(0);
-    await atendente.goto(urlReserva);
-    await expect(atendente.getByText("Estornar pagamento")).toHaveCount(0);
-    await atendente.locator("summary", { hasText: "Cancelar reserva" }).click();
-    const cancelar = atendente.getByRole("form", { name: "Cancelar reserva" });
-    await cancelar.getByLabel("Motivo").fill("Vai chover");
-    await cancelar.getByRole("button", { name: "Cancelar reserva" }).click();
-    await confirmar(atendente);
-    await expect(atendente.getByText(/Cancelada em .* Motivo: Vai chover/)).toBeVisible();
-    await expect(
-      atendente.getByText(/Estornado em .* Motivo: Cancelamento: Vai chover/),
-    ).toBeVisible();
-
-    await atendente.goto(`/horarios?data=${data}`);
-    await expect(atendente.getByRole("link", { name: "Reservar Quadra 1 às 20:00" })).toBeVisible();
+      agendaDaAtendente.getByRole("group", { name: new RegExp(`Aula ${nomeTurma}`) }),
+    ).toHaveCount(1);
+    await expect(agendaDaAtendente.getByRole("link", { name: /^Bloquear às/ })).toHaveCount(0);
+    await pessoa.goto("/horarios/bloquear");
+    await expect(pessoa.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
   } finally {
     await contexto.close();
-  }
-
-  // Administrador bloqueia um horário para aula.
-  await page.goto(`/horarios/nova?data=${data}&hora=8`);
-  const bloqueio = page.getByRole("form", { name: "Nova reserva" });
-  await bloqueio.getByText("Bloqueio (aula, manutenção)").click();
-  await bloqueio.getByLabel("Motivo do bloqueio").fill(`Aula ${marca}`);
-  await bloqueio.getByRole("button", { name: "Bloquear horário" }).click();
-  await expect(page.getByText("Horário bloqueado.")).toBeVisible();
-  await page.goto(`/horarios?data=${data}`);
-  await expect(page.getByRole("table", { name: "Grade do dia" })).toContainText(
-    `Bloqueado: Aula ${marca}`,
-  );
-
-  // Professor não acessa os horários.
-  const emailProfessor = emailUnico("prof-horarios");
-  const senhaProfessor = await cadastrarUsuario(page, {
-    nome: `Professor ${marca}`,
-    email: emailProfessor,
-    perfil: "Professor",
-  });
-  const contextoProfessor = await browser.newContext();
-  const professor = await contextoProfessor.newPage();
-  try {
-    await primeiroAcesso(professor, emailProfessor, senhaProfessor, "rede-alta-2026-p");
-    for (const rota of ["/horarios", "/horarios/nova", "/horarios/faixas"]) {
-      await professor.goto(rota);
-      await expect(professor.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
-    }
-  } finally {
-    await contextoProfessor.close();
   }
 });

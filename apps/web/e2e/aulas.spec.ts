@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
+import {
+  cadastrarUsuario,
+  emailUnico,
+  entrarComoAdmin,
+  horariosUnicos,
+  primeiroAcesso,
+} from "./apoio";
 
 const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const hojeSP = () =>
@@ -21,18 +27,10 @@ test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma
     perfil: "Professor",
   });
 
-  // Local.
-  await page.goto("/aulas/locais");
-  const nomeLocal = `Arena ${marca}`;
-  await page.getByLabel("Nome do local").fill(nomeLocal);
-  await page.getByRole("button", { name: "Cadastrar" }).click();
-  await expect(page.getByText(`Local ${nomeLocal} cadastrado.`)).toBeVisible();
-
   // Turma com aula hoje.
   await page.goto("/aulas/turmas/nova");
   const nomeTurma = `Iniciantes ${marca}`;
   await page.getByLabel("Nome da turma").fill(nomeTurma);
-  await page.getByLabel("Local").selectOption({ label: nomeLocal });
   await page.getByLabel("Professor").selectOption({ label: nomeProfessor });
   await page.getByLabel("Vagas").fill("2");
   const hoje = hojeSP();
@@ -42,6 +40,7 @@ test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma
   await page
     .getByLabel("Dia 2")
     .selectOption({ label: DIAS[(new Date(`${hoje}T12:00:00Z`).getUTCDay() + 3) % 7]! });
+  await horariosUnicos(page);
   await page.getByRole("button", { name: "Salvar turma" }).click();
   await expect(page.getByText("Turma salva.")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: nomeTurma })).toBeVisible();
@@ -95,8 +94,6 @@ test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma
     await expect(lista).toContainText(`Marcado por ${nomeProfessor}`);
 
     // Cadastros são só do administrador.
-    await professor.goto("/aulas/locais");
-    await expect(professor.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
     await professor.goto("/aulas/alunos/novo");
     await expect(professor.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
   } finally {

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
 
-test("CONT-CA-01, CONT-CA-02, CONT-CA-03, CONT-CA-09 e CONT-CA-10: painel do mês, período, planilha e acesso só do administrador", async ({
+test("FOCO-CA-09, CONT-CA-03, CONT-CA-09 e CONT-CA-10: painel das mensalidades, período, planilha e acesso só do administrador", async ({
   page,
   browser,
 }) => {
@@ -10,18 +10,15 @@ test("CONT-CA-01, CONT-CA-02, CONT-CA-03, CONT-CA-09 e CONT-CA-10: painel do mê
   await entrarComoAdmin(page);
   await page.goto("/contabil");
   await expect(page.getByRole("heading", { level: 1, name: "Contábil" })).toBeVisible();
-  for (const indicador of ["Receitas", "Despesas", "Resultado", "Margem"]) {
+  for (const indicador of ["Recebido", "Estornos", "Resultado", "A-receber"]) {
     await expect(page.getByTestId(`indicador-${indicador}`)).toBeVisible();
   }
-  await expect(page.getByTestId("conferencia")).toContainText("Confere com o Caixa");
-  for (const tabela of [
-    "Receitas por origem",
-    "Despesas por tipo",
-    "Ocupação das quadras",
-    "Formas de pagamento",
-    "Comparativo mensal",
-  ]) {
+  await expect(page.getByTestId("conferencia")).toContainText("Confere com os lançamentos");
+  for (const tabela of ["Formas de pagamento", "Comparativo mensal"]) {
     await expect(page.getByRole("table", { name: tabela })).toBeVisible();
+  }
+  for (const fora of ["Receitas por origem", "Despesas por tipo", "Ocupação das quadras"]) {
+    await expect(page.getByRole("table", { name: fora })).toHaveCount(0);
   }
   await expect(
     page.getByRole("table", { name: "Comparativo mensal" }).getByRole("row"),

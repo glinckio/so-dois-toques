@@ -32,7 +32,11 @@ export function AgendaDaQuadra({
   linkDaTurma: boolean;
 }) {
   return (
-    <div className="relative grid auto-rows-[0.95rem] grid-cols-[3.25rem_minmax(0,1fr)] bg-[repeating-linear-gradient(to_bottom,rgb(44_35_84_/_0.75)_0_1px,transparent_1px_3.8rem)]">
+    <div
+      role="list"
+      aria-label={`Agenda da quadra em ${data}`}
+      className="relative grid auto-rows-[0.95rem] grid-cols-[3.25rem_minmax(0,1fr)] bg-[repeating-linear-gradient(to_bottom,rgb(44_35_84_/_0.75)_0_1px,transparent_1px_3.8rem)]"
+    >
       {agenda.horas.map((h) => (
         <span
           key={h.hora}
@@ -44,25 +48,21 @@ export function AgendaDaQuadra({
           {rotuloHora(h.hora)}
         </span>
       ))}
-      <ol className="contents" aria-label={`Agenda da quadra em ${data}`}>
-        {[...agenda.blocos, ...agenda.livres]
-          .sort((a, b) => a.linha - b.linha)
-          .map((item) =>
-            item.tipo === "livre" ? (
-              <CelulaLivre key={`livre-${item.hora}`} livre={item} data={data} admin={admin} />
-            ) : (
-              <Bloco
-                key={
-                  item.tipo === "aula"
-                    ? `aula-${item.aula.turmaId}-${item.inicio}`
-                    : item.bloqueio.id
-                }
-                bloco={item}
-                linkDaTurma={linkDaTurma}
-              />
-            ),
-          )}
-      </ol>
+      {[...agenda.blocos, ...agenda.livres]
+        .sort((a, b) => a.linha - b.linha)
+        .map((item) =>
+          item.tipo === "livre" ? (
+            <CelulaLivre key={`livre-${item.hora}`} livre={item} data={data} admin={admin} />
+          ) : (
+            <Bloco
+              key={
+                item.tipo === "aula" ? `aula-${item.aula.turmaId}-${item.inicio}` : item.bloqueio.id
+              }
+              bloco={item}
+              linkDaTurma={linkDaTurma}
+            />
+          ),
+        )}
       {agenda.agora && (
         <div
           aria-hidden="true"
@@ -90,7 +90,7 @@ function CelulaLivre({
   const classe = `row-start-${livre.linha} row-span-4 col-start-2 p-1`;
   if (livre.passou || !admin) {
     return (
-      <li className={classe}>
+      <div role="listitem" className={classe}>
         <span
           className={`flex h-full items-center justify-center rounded-2xl border border-dashed text-xs ${
             livre.passou ? "border-borda/45 text-apagado/50" : "border-borda text-apagado"
@@ -98,11 +98,11 @@ function CelulaLivre({
         >
           Livre<span className="sr-only">, {rotuloHora(livre.hora)}</span>
         </span>
-      </li>
+      </div>
     );
   }
   return (
-    <li className={classe}>
+    <div role="listitem" className={classe}>
       <Link
         href={`/horarios/bloquear?data=${data}&hora=${livre.hora}`}
         aria-label={`Bloquear às ${rotuloHora(livre.hora)}`}
@@ -116,7 +116,7 @@ function CelulaLivre({
         />
         Livre · bloquear
       </Link>
-    </li>
+    </div>
   );
 }
 
@@ -170,7 +170,8 @@ function Bloco({ bloco, linkDaTurma }: { bloco: BlocoDaAgenda; linkDaTurma: bool
         : ""
   }`;
   return (
-    <li
+    <div
+      role="listitem"
       data-linhas={bloco.linhas}
       className={`row-start-${bloco.linha} row-span-${bloco.linhas} animate-surgir relative col-start-2 min-h-0 p-0.5 atraso-${Math.min(24, Math.floor(bloco.linha / 4) + 2)}`}
     >
@@ -187,6 +188,6 @@ function Bloco({ bloco, linkDaTurma }: { bloco: BlocoDaAgenda; linkDaTurma: bool
           {conteudo}
         </span>
       )}
-    </li>
+    </div>
   );
 }

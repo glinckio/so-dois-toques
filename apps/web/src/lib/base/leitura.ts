@@ -27,7 +27,9 @@ export function leituraDoMes(d: DadosDaLeitura): string[] {
     if (anterior && mudanca !== null && mudanca !== 0) {
       const sentido = mudanca > 0 ? "subiu" : "caiu";
       const pct = Math.abs(mudanca).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
-      frases.push(`O resultado ${sentido} ${pct}% em relação a ${mesSemAno(anterior.competencia)}.`);
+      frases.push(
+        `O resultado ${sentido} ${pct}% em relação a ${mesSemAno(anterior.competencia)}.`,
+      );
     } else {
       frases.push(`Já entraram ${formatarReais(d.resultado)} de mensalidades neste mês.`);
     }

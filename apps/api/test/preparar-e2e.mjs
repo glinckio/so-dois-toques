@@ -23,5 +23,9 @@ try {
   await cliente.end();
 }
 
-execFileSync("pnpm", ["exec", "prisma", "migrate", "deploy"], { stdio: "inherit" });
+// No Windows o pnpm é um .cmd, que só roda por um shell.
+execFileSync("pnpm", ["exec", "prisma", "migrate", "deploy"], {
+  stdio: "inherit",
+  shell: process.platform === "win32",
+});
 execFileSync("node", ["dist/cli/criar-admin.js"], { stdio: "inherit" });

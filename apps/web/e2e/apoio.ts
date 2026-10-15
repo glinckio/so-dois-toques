@@ -65,3 +65,21 @@ export async function primeiroAcesso(
   await page.getByRole("button", { name: "Salvar nova senha" }).click();
   await expect(page).toHaveURL("/?senha=trocada");
 }
+
+const hhmm = (minutos: number) =>
+  `${String(Math.floor(minutos / 60)).padStart(2, "0")}:${String(minutos % 60).padStart(2, "0")}`;
+
+/**
+ * A quadra é uma só (FOCO-CA-04): duas turmas ativas não dividem horário, e os testes
+ * rodam ao mesmo tempo no celular e no computador. Cada turma criada pela tela ganha
+ * aulas de um minuto num horário sorteado entre 05:00 e 23:58.
+ */
+export async function horariosUnicos(page: Page, linhas = 2) {
+  for (let i = 0; i < linhas; i++) {
+    const inicio = 5 * 60 + Math.floor(Math.random() * (19 * 60 - 1));
+    // Cada linha de horário tem dois campos de hora: início e fim.
+    const horas = page.locator('input[type="time"]');
+    await horas.nth(2 * i).fill(hhmm(inicio));
+    await horas.nth(2 * i + 1).fill(hhmm(inicio + 1));
+  }
+}

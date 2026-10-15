@@ -73,7 +73,7 @@ test("MENS-CA-01, MENS-CA-02, MENS-CA-05, MENS-CA-09, MENS-CA-11, MENS-CA-12, ME
   await expect(page.getByText("R$ 130,00 por mês · vence todo dia 28")).toBeVisible();
 
   // Geração do mês.
-  await page.goto("/caixa/mensalidades");
+  await page.goto("/mensalidades");
   await expect(
     page.getByRole("heading", { level: 1, name: `Mensalidades de ${mes}` }),
   ).toBeVisible();
@@ -112,14 +112,9 @@ test("MENS-CA-01, MENS-CA-02, MENS-CA-05, MENS-CA-09, MENS-CA-11, MENS-CA-12, ME
     await atendente.goto("/aulas/planos");
     await expect(atendente.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
 
-    await atendente.goto("/caixa");
-    await expect(atendente.getByRole("heading", { level: 1, name: "Caixa do dia" })).toBeVisible();
-    await expect(
-      atendente
-        .getByRole("list", { name: "Lançamentos" })
-        .getByText(`Mensalidade de ${mes}`)
-        .first(),
-    ).toBeVisible();
+    // A área Mensalidades está no menu da atendente (FOCO-CA-02).
+    await atendente.goto("/mensalidades/inadimplentes");
+    await expect(atendente.getByRole("heading", { name: "Acesso negado" })).toHaveCount(0);
   } finally {
     await contexto.close();
   }
@@ -137,7 +132,7 @@ test("MENS-CA-01, MENS-CA-02, MENS-CA-05, MENS-CA-09, MENS-CA-11, MENS-CA-12, ME
   await expect(page.getByRole("button", { name: "Registrar pagamento" })).toBeVisible();
 });
 
-test("MENS-CA-19: professor não entra no Caixa nem em Planos", async ({ page, browser }) => {
+test("MENS-CA-19: professor não entra em Mensalidades nem em Planos", async ({ page, browser }) => {
   await entrarComoAdmin(page);
   const email = emailUnico("prof-caixa");
   const senhaTemporaria = await cadastrarUsuario(page, {
@@ -149,7 +144,7 @@ test("MENS-CA-19: professor não entra no Caixa nem em Planos", async ({ page, b
   const professor = await contexto.newPage();
   try {
     await primeiroAcesso(professor, email, senhaTemporaria, "rede-alta-2026-w");
-    for (const rota of ["/caixa", "/caixa/mensalidades", "/caixa/inadimplentes", "/aulas/planos"]) {
+    for (const rota of ["/mensalidades", "/mensalidades/inadimplentes", "/aulas/planos"]) {
       await professor.goto(rota);
       await expect(professor.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
     }

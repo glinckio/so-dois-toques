@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrarComoAdmin } from "./apoio";
+import { cadastrarUsuario, emailUnico, entrarComoAdmin, horariosUnicos } from "./apoio";
 
 const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const hojeSP = () =>
@@ -38,21 +38,15 @@ test("VIVO-CA-09: na presença, o contador e o anel acompanham cada marcação",
     perfil: "Professor",
   });
 
-  // Local e turma com aula hoje; a presença é marcada pelo administrador.
-  await page.goto("/aulas/locais");
-  const nomeLocal = `Arena Viva ${marca}`;
-  await page.getByLabel("Nome do local").fill(nomeLocal);
-  await page.getByRole("button", { name: "Cadastrar" }).click();
-  await expect(page.getByText(`Local ${nomeLocal} cadastrado.`)).toBeVisible();
-
+  // Turma com aula hoje; a presença é marcada pelo administrador.
   await page.goto("/aulas/turmas/nova");
   const nomeTurma = `Presença Viva ${marca}`;
   await page.getByLabel("Nome da turma").fill(nomeTurma);
-  await page.getByLabel("Local").selectOption({ label: nomeLocal });
   await page.getByLabel("Professor").selectOption({ label: nomeProfessor });
   await page.getByLabel("Vagas").fill("4");
   await page.getByLabel("Dia 1").selectOption({ label: DIAS[diaDeHoje]! });
   await page.getByLabel("Dia 2").selectOption({ label: DIAS[(diaDeHoje + 3) % 7]! });
+  await horariosUnicos(page);
   await page.getByRole("button", { name: "Salvar turma" }).click();
   await expect(page.getByText("Turma salva.")).toBeVisible();
   const urlTurma = page.url().replace(/\?.*$/, "");
