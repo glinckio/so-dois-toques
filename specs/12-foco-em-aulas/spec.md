@@ -1,6 +1,6 @@
 # Etapa 12: Foco em aulas
 
-**Status:** rascunho
+**Status:** aprovada
 
 ## Objetivo
 
@@ -52,12 +52,13 @@ O sistema ainda não tem dados reais dessas partes, então as tabelas podem ser 
 ### Início e menu
 
 - O Início deixa de mostrar caixa e estoque. Mostra as aulas de hoje, as mensalidades atrasadas e o recebido no mês (este último só para o administrador).
-- Menu: Início, Aulas, Horários, Contábil, Usuários e Auditoria. A busca rápida perde "Registrar venda", "Lançar no caixa" e "Nova reserva" e ganha "Bloquear horário" para o administrador.
+- As telas de mensalidades, inadimplentes e recibos, que ficavam dentro do Caixa, viram a área Mensalidades (`/mensalidades`), com os mesmos perfis de antes: administrador e atendente.
+- Menu: Início, Aulas, Mensalidades, Horários, Contábil, Usuários e Auditoria. A busca rápida perde "Registrar venda", "Lançar no caixa" e "Nova reserva" e ganha "Bloquear horário" para o administrador.
 
 ### Banco de dados
 
 - Uma migração apaga as tabelas, colunas e valores de enum das partes que saem.
-- A migração para sem mexer em nada se encontrar algum produto, venda, compra, turno de caixa, lançamento que não seja de mensalidade ou estorno de mensalidade, pagamento a quadra parceira, reserva de cliente, local parceiro ou turma em local diferente do primeiro local próprio. A mensagem diz o que foi encontrado. Assim um banco com dados reais nunca perde nada em silêncio.
+- A migração para sem mexer em nada se encontrar algum produto, venda, compra, turno de caixa, lançamento que não seja de mensalidade ou estorno de mensalidade, pagamento a quadra parceira, reserva de cliente, local parceiro, turma em local diferente do primeiro local próprio ou duas turmas ativas com horários sobrepostos. A mensagem diz o que foi encontrado. Assim um banco com dados reais nunca perde nada em silêncio.
 
 ### Specs antigas
 
@@ -80,7 +81,7 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 ## Critérios de aceite
 
 - **FOCO-CA-01**: As rotas da API de estoque, caixa, custos de quadras parceiras, faixas de preço, reservas, séries de reserva e anonimização de clientes de reservas não existem mais (respondem 404), e as telas correspondentes do web também.
-- **FOCO-CA-02**: O menu, a barra do celular e a busca rápida de cada perfil não mostram Estoque, Caixa nem ações de venda, caixa ou reserva.
+- **FOCO-CA-02**: O menu, a barra do celular e a busca rápida de cada perfil não mostram Estoque, Caixa nem ações de venda, caixa ou reserva; administrador e atendente veem Mensalidades e o professor vê Horários.
 - **FOCO-CA-03**: Pagar uma mensalidade cria o lançamento de entrada sem turno; estornar cria o lançamento de saída ligado ao original; o livro-razão continua recusando alteração e exclusão.
 - **FOCO-CA-04**: A turma é cadastrada sem local; duas turmas ativas com horários sobrepostos no mesmo dia da semana são recusadas, mesmo com professores diferentes, inclusive ao alterar os horários de uma turma.
 - **FOCO-CA-05**: A grade de um dia mostra os horários das turmas ativas naquele dia, só entre o início e o encerramento de cada turma, e os bloqueios não cancelados.
@@ -109,4 +110,5 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
   - Na quadra não há aluguel para clientes: a agenda tem só aulas e bloqueios.
   - Não há mais aulas em quadras parceiras.
   - O banco de produção não tem dados reais de caixa nem de estoque; as tabelas podem ser apagadas.
+- 15/10/2026, na aprovação: mensalidades, inadimplentes e recibos ganham área própria (Mensalidades), porque a área Caixa sai e o atendente continua recebendo mensalidades; o professor passa a ver a grade da quadra.
 - Grade das 05h às 24h, o mesmo limite dos horários de turma, em vez de configurar horário de funcionamento.
