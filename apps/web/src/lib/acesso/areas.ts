@@ -5,6 +5,7 @@ export const AREAS = [
   "mensalidades",
   "horarios",
   "contabil",
+  "feedback",
   "usuarios",
   "auditoria",
 ] as const;
@@ -16,6 +17,7 @@ export const MENU: Record<Area, { rotulo: string; href: string }> = {
   mensalidades: { rotulo: "Mensalidades", href: "/mensalidades" },
   horarios: { rotulo: "Horários", href: "/horarios" },
   contabil: { rotulo: "Contábil", href: "/contabil" },
+  feedback: { rotulo: "Feedback", href: "/feedback" },
   usuarios: { rotulo: "Usuários", href: "/usuarios" },
   auditoria: { rotulo: "Auditoria", href: "/auditoria" },
 };
@@ -51,7 +53,7 @@ export function linkAtivo(caminho: string, hrefs: readonly string[]): string | u
 export const GRUPOS_DO_MENU: { rotulo: string; areas: readonly Area[] }[] = [
   { rotulo: "Visão geral", areas: ["inicio"] },
   { rotulo: "Operação", areas: ["aulas", "mensalidades", "horarios"] },
-  { rotulo: "Gestão", areas: ["contabil", "usuarios", "auditoria"] },
+  { rotulo: "Gestão", areas: ["contabil", "feedback", "usuarios", "auditoria"] },
 ];
 
 /** Ordem das áreas na barra do celular: o que a equipe usa mais na quadra vem primeiro. */
@@ -61,6 +63,7 @@ const PRIORIDADE_NO_CELULAR: readonly Area[] = [
   "mensalidades",
   "horarios",
   "contabil",
+  "feedback",
   "usuarios",
   "auditoria",
 ];

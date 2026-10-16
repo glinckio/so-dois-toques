@@ -15,7 +15,7 @@ export function opcoesCookieSessao(producao: boolean) {
   };
 }
 
-/** Rotas que abrem sem sessão. */
+/** Rotas que abrem sem sessão: o login e o formulário de feedback (FEED-CA-01). */
 export function rotaPublica(caminho: string): boolean {
-  return caminho === "/login";
+  return caminho === "/login" || caminho === "/avaliar";
 }

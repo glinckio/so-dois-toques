@@ -39,9 +39,18 @@ describe("cookie de sessão", () => {
     expect(opcoesCookieSessao(false).secure).toBe(false);
   });
 
-  it("ACESSO-CA-05: só o login abre sem sessão", () => {
+  it("ACESSO-CA-05 e FEED-CA-01: só o login e o formulário de feedback abrem sem sessão", () => {
     expect(rotaPublica("/login")).toBe(true);
-    for (const rota of ["/", "/usuarios", "/aulas", "/trocar-senha", "/login/x"]) {
+    expect(rotaPublica("/avaliar")).toBe(true);
+    for (const rota of [
+      "/",
+      "/usuarios",
+      "/aulas",
+      "/trocar-senha",
+      "/login/x",
+      "/feedback",
+      "/avaliar/x",
+    ]) {
       expect(rotaPublica(rota), rota).toBe(false);
     }
   });
@@ -162,12 +171,13 @@ describe("VIVO-CA-02: menu agrupado e barra do celular", () => {
       "mensalidades",
       "horarios",
       "contabil",
+      "feedback",
       "usuarios",
       "auditoria",
     ]);
     const { barra, mais } = separarMenuDoCelular(admin);
     expect(barra.map((i) => i.rotulo)).toEqual(["Início", "Aulas", "Mensalidades", "Horários"]);
-    expect(mais.map((i) => i.rotulo)).toEqual(["Contábil", "Usuários", "Auditoria"]);
+    expect(mais.map((i) => i.rotulo)).toEqual(["Contábil", "Feedback", "Usuários", "Auditoria"]);
   });
 });
 
