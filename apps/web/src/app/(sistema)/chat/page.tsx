@@ -91,18 +91,24 @@ export default async function PaginaChat({ searchParams }: PageProps<"/chat">) {
       ? chamarApi<PaginaDeMensagens>(`/chat/conversas/${numeroInicial}/mensagens`)
       : null,
   ]);
+  // CHAT-CA-15: com o número conectado, o Chat ocupa a tela toda, sem o título.
+  if (!conversas.ok) {
+    return (
+      <>
+        {cabecalho}
+        <Aviso tipo="erro">{conversas.mensagem}</Aviso>
+      </>
+    );
+  }
   return (
     <>
-      {cabecalho}
-      {conversas.ok ? (
-        <Chat
-          key={numeroInicial ?? ""}
-          conversasIniciais={conversas.dados}
-          inicial={inicial?.ok ? inicial.dados : null}
-        />
-      ) : (
-        <Aviso tipo="erro">{conversas.mensagem}</Aviso>
-      )}
+      <h1 className="sr-only">Chat do WhatsApp</h1>
+      <Chat
+        key={numeroInicial ?? ""}
+        conversasIniciais={conversas.dados}
+        inicial={inicial?.ok ? inicial.dados : null}
+        admin={admin}
+      />
     </>
   );
 }

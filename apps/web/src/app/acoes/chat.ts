@@ -95,3 +95,30 @@ export async function desconectarWhatsapp(): Promise<EstadoFormulario> {
   refresh();
   return { sucesso: "WhatsApp desconectado do sistema." };
 }
+
+export type ContatosDaBusca = {
+  alunos: { id: string; nome: string; numero: string }[];
+  salvos: { numero: string; nome: string }[];
+  whatsapp: { numero: string; nome: string | null }[];
+};
+
+/** CHAT-CA-14: alunos, contatos salvos e contatos do WhatsApp para a nova conversa. */
+export async function buscarContatos(busca: string): Promise<Resultado<ContatosDaBusca>> {
+  const termo = busca.trim().slice(0, 60);
+  return resultado(
+    await chamarApi<ContatosDaBusca>(`/chat/contatos?busca=${encodeURIComponent(termo)}`),
+  );
+}
+
+/** CHAT-CA-14: contato adicionado na hora (só se o número tiver WhatsApp). */
+export async function salvarContato(
+  nome: string,
+  numeroDigitado: string,
+): Promise<Resultado<{ numero: string; nome: string }>> {
+  return resultado(
+    await chamarApi<{ numero: string; nome: string }>("/chat/contatos", {
+      metodo: "POST",
+      corpo: { nome, numero: numeroDigitado },
+    }),
+  );
+}

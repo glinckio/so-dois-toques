@@ -51,6 +51,8 @@ export type Conexao = {
 export type PaginaDeMensagens = {
   numero: string;
   aluno: { id: string; nome: string } | null;
+  /** Nome do contato salvo pela nova conversa (CHAT-CA-14). */
+  contato: string | null;
   pagina: number;
   temMais: boolean;
   mensagens: Mensagem[];

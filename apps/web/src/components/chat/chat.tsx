@@ -8,7 +8,6 @@ import {
   enviarTexto,
   marcarComoLidas,
   reagir,
-  verificarNumero,
 } from "@/app/acoes/chat";
 import { Avatar } from "@/components/base/avatar";
 import { Carregando } from "@/components/base/bola";
@@ -31,6 +30,7 @@ import {
 } from "@/lib/chat/conversa";
 import { Bolha } from "./bolha";
 import { Compositor, type EnvioDeArquivo } from "./compositor";
+import { NovaConversa } from "./nova-conversa";
 
 /** CHAT-CA-08: sem eventos ao vivo, a tela consulta de novo a cada tantos segundos. */
 const CONSULTA_SEM_EVENTOS_MS = 4_000;
@@ -58,79 +58,6 @@ function FotoOuIniciais({ conversa }: { conversa: Conversa }) {
   );
 }
 
-/** CHAT-CA-11: abrir conversa nova por número com DDD. */
-function NovaConversa({ aoAbrir }: { aoAbrir: (numero: string) => void }) {
-  const [aberta, setAberta] = useState(false);
-  const [numero, setNumero] = useState("");
-  const [aviso, setAviso] = useState<string | null>(null);
-  const [verificando, setVerificando] = useState(false);
-  if (!aberta) {
-    return (
-      <button
-        type="button"
-        className={`${classeBotaoSecundario} !min-h-10 text-sm`}
-        onClick={() => setAberta(true)}
-      >
-        <Icone nome="mais" width={16} height={16} />
-        Nova conversa
-      </button>
-    );
-  }
-  return (
-    <form
-      aria-label="Nova conversa"
-      className="flex flex-col gap-2"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setAviso(null);
-        setVerificando(true);
-        const r = await verificarNumero(numero);
-        setVerificando(false);
-        if (!r.ok) return setAviso(r.mensagem);
-        if (!r.dados.existe) return setAviso("Este número não tem WhatsApp.");
-        setAberta(false);
-        setNumero("");
-        aoAbrir(r.dados.numero);
-      }}
-    >
-      <div className="flex gap-2">
-        <label htmlFor="nova-conversa" className="sr-only">
-          Número com DDD
-        </label>
-        <input
-          id="nova-conversa"
-          inputMode="tel"
-          autoFocus
-          placeholder="(51) 99999-8888"
-          value={numero}
-          onChange={(e) => setNumero(e.currentTarget.value)}
-          className={`${classeCampo} !min-h-10 text-sm`}
-        />
-        <button
-          type="submit"
-          className={`${classeBotaoSecundario} !min-h-10 shrink-0 text-sm`}
-          disabled={verificando}
-        >
-          {verificando ? <Carregando /> : "Abrir"}
-        </button>
-        <button
-          type="button"
-          className={`${classeBotaoIcone} !size-10`}
-          aria-label="Fechar"
-          onClick={() => setAberta(false)}
-        >
-          <Icone nome="fechar" width={16} height={16} />
-        </button>
-      </div>
-      {aviso && (
-        <p role="alert" className="text-perigo text-sm">
-          {aviso}
-        </p>
-      )}
-    </form>
-  );
-}
-
 /**
  * CHAT-CA-04 a 11: o chat do WhatsApp. Lista de conversas à esquerda e a conversa aberta
  * à direita (no celular, uma de cada vez). Mensagens novas chegam pelos eventos ao vivo;
@@ -139,8 +66,11 @@ function NovaConversa({ aoAbrir }: { aoAbrir: (numero: string) => void }) {
 export function Chat({
   conversasIniciais,
   inicial,
+  admin,
 }: {
   conversasIniciais: Conversa[];
+  /** O administrador vê o atalho para a conexão do número. */
+  admin: boolean;
   /** Conversa pedida no endereço (?numero=), já carregada pelo servidor. */
   inicial: PaginaDeMensagens | null;
 }) {
@@ -153,6 +83,7 @@ export function Chat({
   const [aberta, setAberta] = useState<string | null>(inicial?.numero ?? null);
   const [mensagens, setMensagens] = useState<Mensagem[]>(inicial?.mensagens ?? []);
   const [aluno, setAluno] = useState<{ id: string; nome: string } | null>(inicial?.aluno ?? null);
+  const [contato, setContato] = useState<string | null>(inicial?.contato ?? null);
   const [pagina, setPagina] = useState(1);
   const [temMais, setTemMais] = useState(inicial?.temMais ?? false);
   const [carregando, setCarregando] = useState(false);
@@ -173,8 +104,10 @@ export function Chat({
   const rolarParaOFim = () =>
     requestAnimationFrame(() => fim.current?.scrollIntoView({ block: "end" }));
 
-  async function abrir(numero: string) {
+  async function abrir(numero: string, nome?: string | null) {
     mudarAberta(numero);
+    setAluno(null);
+    setContato(nome ?? null);
     setMensagens([]);
     setCitada(null);
     setErro(null);
@@ -186,6 +119,7 @@ export function Chat({
     if (!r.ok) return setErro(r.mensagem);
     setMensagens(r.dados.mensagens);
     setAluno(r.dados.aluno);
+    setContato(r.dados.contato ?? nome ?? null);
     setPagina(1);
     setTemMais(r.dados.temMais);
     rolarParaOFim();
@@ -361,11 +295,13 @@ export function Chat({
   const conversaAberta = conversas.find((c) => c.numero === aberta) ?? null;
   const { linha, reacoes } = useMemo(() => separarReacoes(mensagens), [mensagens]);
   const titulo = aberta
-    ? (aluno?.nome ?? (conversaAberta ? nomeDaConversa(conversaAberta) : formatarNumero(aberta)))
+    ? (aluno?.nome ??
+      contato ??
+      (conversaAberta ? nomeDaConversa(conversaAberta) : formatarNumero(aberta)))
     : null;
 
   return (
-    <div className="superficie grid h-[calc(100dvh-22rem)] min-h-[28rem] grid-cols-1 overflow-hidden rounded-[1.75rem] lg:h-[calc(100dvh-19rem)] lg:grid-cols-[22rem_minmax(0,1fr)]">
+    <div className="superficie grid h-[calc(100dvh-10rem)] min-h-[24rem] grid-cols-1 overflow-hidden rounded-[1.75rem] lg:h-full lg:min-h-0 lg:grid-cols-[22rem_minmax(0,1fr)]">
       {/* Lista de conversas */}
       <section
         aria-label="Conversas"
@@ -382,7 +318,19 @@ export function Chat({
                 role="img"
               />
             </h2>
-            <NovaConversa aoAbrir={(n) => void abrir(n)} />
+            <div className="flex items-center gap-1.5">
+              <NovaConversa aoAbrir={(e) => void abrir(e.numero, e.nome)} />
+              {admin && (
+                <Link
+                  href="/chat/conexao"
+                  className={`${classeBotaoIcone} !size-10`}
+                  aria-label="Conexão do número"
+                  title="Conexão do número"
+                >
+                  <Icone nome="whatsapp" width={18} height={18} />
+                </Link>
+              )}
+            </div>
           </div>
           <label htmlFor="busca-conversa" className="sr-only">
             Buscar conversa

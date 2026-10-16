@@ -18,7 +18,7 @@ async function receber(page: Page, numero: string, texto: string, nome?: string)
 
 // O número da escola é um só para o servidor de testes inteiro: o fluxo roda no desktop,
 // de ponta a ponta, e no fim confere o layout do celular.
-test("CHAT-CA-03, CHAT-CA-04, CHAT-CA-06, CHAT-CA-08 e CHAT-CA-11: conecta, conversa, recebe ao vivo e sem tempo real", async ({
+test("CHAT-CA-03, CHAT-CA-04, CHAT-CA-06, CHAT-CA-08, CHAT-CA-11 e CHAT-CA-14: conecta, conversa, recebe ao vivo e sem tempo real", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "um número só por servidor de testes");
@@ -47,6 +47,8 @@ test("CHAT-CA-03, CHAT-CA-04, CHAT-CA-06, CHAT-CA-08 e CHAT-CA-11: conecta, conv
 
   // CHAT-CA-04: a conversa aparece na lista e abre.
   await page.goto("/chat");
+  // CHAT-CA-15: tela cheia, sem a busca rápida e a data do topo.
+  await expect(page.getByRole("button", { name: /Buscar ou ir para/ })).toBeHidden();
   const conversa = page.getByTestId("conversa").filter({ hasText: "Interessada E2E" });
   await expect(conversa).toBeVisible();
   await conversa.click();
@@ -91,11 +93,27 @@ test("CHAT-CA-03, CHAT-CA-04, CHAT-CA-06, CHAT-CA-08 e CHAT-CA-11: conecta, conv
   await recebida.getByRole("button", { name: "Reagir com ❤️" }).click();
   await expect(recebida.getByLabel("Reações: ❤️")).toBeVisible();
 
-  // CHAT-CA-11: número sem WhatsApp é avisado.
+  // CHAT-CA-14: nova conversa numa janela, com contato existente ou adicionado na hora.
   await page.getByRole("button", { name: "Nova conversa" }).click();
-  await page.getByLabel("Número com DDD").fill("(51) 99999-0000");
-  await page.getByRole("button", { name: "Abrir", exact: true }).click();
-  await expect(page.getByText("Este número não tem WhatsApp.")).toBeVisible();
+  const janela = page.getByRole("dialog", { name: "Nova conversa" });
+  await janela.getByLabel("Buscar contato").fill("zeca");
+  await janela.getByTestId("contato").filter({ hasText: "Zeca da Agenda" }).click();
+  await expect(janela).toBeHidden();
+  await expect(page.getByTestId("titulo-conversa")).toHaveText("Zeca da Agenda");
+
+  await page.getByRole("button", { name: "Nova conversa" }).click();
+  await janela.getByRole("button", { name: "Adicionar contato" }).click();
+  await janela.getByLabel("Nome").fill("Sem Zap");
+  // CHAT-CA-11: número sem WhatsApp é avisado e não abre.
+  await janela.getByLabel("WhatsApp com DDD").fill("(51) 99999-0000");
+  await janela.getByRole("button", { name: "Salvar e conversar" }).click();
+  await expect(janela.getByText("Este número não tem WhatsApp.")).toBeVisible();
+  const novoNumero = `5199${String(Date.now()).slice(-7)}`;
+  await janela.getByLabel("Nome").fill("Contato Novo E2E");
+  await janela.getByLabel("WhatsApp com DDD").fill(novoNumero);
+  await janela.getByRole("button", { name: "Salvar e conversar" }).click();
+  await expect(janela).toBeHidden();
+  await expect(page.getByTestId("titulo-conversa")).toHaveText("Contato Novo E2E");
 
   // CHAT-CA-08: sem os eventos ao vivo, a tela atualiza sozinha.
   await page.route("**/chat/eventos", (rota) => rota.abort());
