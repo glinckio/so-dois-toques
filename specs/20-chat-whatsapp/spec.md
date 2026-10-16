@@ -31,7 +31,9 @@ Em 16/10/2026 o dono pediu "uma tela de chat interno no sistema" para "mandar á
 - Lista de conversas individuais (grupos ficam de fora), da mais recente para a mais antiga, com foto, nome, trecho da última mensagem, horário e quantidade de não lidas.
 - Se o número é de um **aluno cadastrado** (telefone igual, com DDD), a conversa mostra o nome do aluno e um link para a ficha; senão, o nome do contato no WhatsApp ou o número.
 - Busca por nome ou número.
-- **Nova conversa**: por número (com DDD) ou pelo botão **Conversar no WhatsApp** na ficha do aluno. Número que não tem WhatsApp é avisado antes de abrir.
+- A tela do Chat ocupa a área toda ao lado do menu: sem a busca rápida, a data e o título da página no topo.
+- **Nova conversa** abre uma janela para escolher um **contato existente** (alunos cadastrados, contatos salvos e contatos do WhatsApp, com busca por nome ou número) ou **adicionar um contato na hora** (número com DDD e nome opcional). O contato novo fica salvo e o nome dele aparece nas conversas. Também abre pelo botão **Conversar no sistema** da ficha do aluno. Número que não tem WhatsApp é avisado e não é salvo.
+- Nome mostrado na conversa: o do aluno cadastrado; senão, o do contato salvo; senão, o do perfil do WhatsApp; senão, o número.
 - Mensagens novas aparecem na lista e na conversa aberta em até 5 segundos, sem recarregar; se a conexão em tempo real cair, a tela continua atualizando sozinha.
 
 ## Dentro da conversa
@@ -81,6 +83,8 @@ Em 16/10/2026 o dono pediu "uma tela de chat interno no sistema" para "mandar á
 - **CHAT-CA-10**: Mídia recebida só é entregue a usuário logado com acesso ao Chat; sem sessão, é recusada.
 - **CHAT-CA-11**: Nova conversa por número com DDD ou pela ficha do aluno; número sem WhatsApp é avisado.
 - **CHAT-CA-12**: Sem o WhatsApp configurado, a API e o web sobem normalmente e o Chat mostra "WhatsApp não configurado".
+- **CHAT-CA-14**: Nova conversa lista alunos (ativos, não anonimizados, com telefone), contatos salvos e contatos do WhatsApp, com busca por nome ou número; adicionar contato salva o nome e o número (número sem WhatsApp é recusado e não é salvo); na lista de conversas vale o nome do aluno, depois o do contato salvo, depois o do WhatsApp.
+- **CHAT-CA-15** [manual]: A tela do Chat ocupa toda a área ao lado do menu, sem a busca rápida, a data e o título no topo, no computador e no celular.
 - **CHAT-CA-13** [manual]: Com um número real conectado, enviar e receber texto, emoji, áudio, imagem, vídeo, documento e figurinha funciona no celular e no computador.
 
 ## Fora do escopo
@@ -94,4 +98,5 @@ Em 16/10/2026 o dono pediu "uma tela de chat interno no sistema" para "mandar á
 ## Decisões registradas
 
 - 16/10/2026, respostas do dono: administrador e atendente usam o chat, só o administrador conecta o número; o chat fala com qualquer número (não só alunos); o fix de LID entra como patch sobre a v2.3.7 oficial.
+- 16/10/2026, pedido do dono depois da implementação: Chat em tela cheia (sem busca e data no topo) e **Nova conversa** numa janela para escolher contato existente ou adicionar um na hora.
 - Padrões propostos nesta spec (o dono pode mudar na aprovação): um número só; grupos de fora; arquivos até 10 MB; as conversas ficam no Evolution e o banco do sistema guarda só o autor de cada envio.

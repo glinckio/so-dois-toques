@@ -10,6 +10,8 @@
 
 - `MensagemEnviada`: identificador da mensagem no WhatsApp (único), número, usuário e data. É o que mostra "quem da equipe enviou" (CHAT-CA-09).
 
+- `ContatoChat` (migration `20261017140000_contatos_do_chat`): número (chave), nome, quem salvou e datas. Contato adicionado na hora pela janela de nova conversa (CHAT-CA-14).
+
 ## Regras puras (`apps/api/src/chat/regras.ts`)
 
 - Números: `jidDoNumero` (DDD + número vira `55…@s.whatsapp.net`), `numeroDoJid` (só conversas individuais; grupo, status e broadcast ficam de fora) e `telefonesParecidos` (com e sem o nono dígito, para achar o aluno).
