@@ -70,8 +70,9 @@ describe("validação de entrada de Aulas", () => {
     );
   });
 
-  it("TURMA-CA-01 e TURMA-CA-08: turma só com dia, início, fim, nível, categoria e vagas", () => {
+  it("TURMA-CA-01, TURMA-CA-08 e GASTO-CA-02: turma com quadra, dia, início, fim, nível, categoria e vagas", () => {
     const turma = {
+      quadraId: "7f3c2a10-5b1e-4c8d-9a2f-1e2d3c4b5a69",
       diaSemana: 2,
       horaInicio: 19 * 60,
       horaFim: 20 * 60,
@@ -90,6 +91,8 @@ describe("validação de entrada de Aulas", () => {
       { nivel: "PRO" },
       { categoria: "INFANTIL" },
       { categoria: undefined },
+      { quadraId: undefined },
+      { quadraId: "quadra-1" },
     ]) {
       expect(turmaSchema.safeParse({ ...turma, ...errado }).success, JSON.stringify(errado)).toBe(
         false,

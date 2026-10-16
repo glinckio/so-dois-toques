@@ -13,16 +13,21 @@ const horaFim = inteiro("Hora inválida.")
   .max(HORA_FECHA, FORA);
 const motivo = z.string().trim().min(3, "Informe o motivo do bloqueio.").max(200);
 
-export const quadraSchema = z.object({
-  nome: z.string().trim().min(2, "Informe o nome da quadra.").max(40),
-});
+const nomeDaQuadra = z.string().trim().min(2, "Informe o nome da quadra.").max(40);
+
+/** GASTO-CA-01: quadra nova e alteração (nome e se está ativa). */
+export const quadraSchema = z.object({ nome: nomeDaQuadra });
+export const alterarQuadraSchema = z.object({ nome: nomeDaQuadra, ativa: z.boolean() });
+
+const quadraId = z.uuid("Escolha a quadra.");
 
 /** FOCO-CA-06: bloqueio avulso (data) ou semanal (dataInicio e dataFim). */
 export const bloqueioSchema = z
   .discriminatedUnion("repeticao", [
-    z.object({ repeticao: z.literal("AVULSO"), data, horaInicio, horaFim, motivo }),
+    z.object({ repeticao: z.literal("AVULSO"), quadraId, data, horaInicio, horaFim, motivo }),
     z.object({
       repeticao: z.literal("SEMANAL"),
+      quadraId,
       dataInicio: data,
       dataFim: data,
       horaInicio,
@@ -35,4 +40,4 @@ export const bloqueioSchema = z
     path: ["horaFim"],
   });
 
-export const consultaGradeSchema = z.object({ data: data.optional() });
+export const consultaGradeSchema = z.object({ data: data.optional(), quadra: quadraId.optional() });

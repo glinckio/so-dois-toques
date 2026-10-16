@@ -82,7 +82,15 @@ export function horarioDaTurma(t: TurmaComHorario): Horario {
   return { diaSemana: t.diaSemana, inicio: t.horaInicio, fim: t.horaFim };
 }
 
-const DIAS_DA_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+export const DIAS_DA_SEMANA = [
+  "Domingo",
+  "Segunda",
+  "Terça",
+  "Quarta",
+  "Quinta",
+  "Sexta",
+  "Sábado",
+];
 const NOMES_DOS_NIVEIS: Record<Nivel, string> = {
   INICIANTE: "Iniciante",
   INTERMEDIARIO: "Intermediário",

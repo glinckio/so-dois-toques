@@ -2,7 +2,14 @@ import type { INestApplication } from "@nestjs/common";
 import { hojeEmSaoPaulo, paraDataDoBanco } from "../src/aulas/regras.js";
 import { PrismaService } from "../src/prisma/prisma.service.js";
 import { criarApp } from "./apoio.js";
-import { criarAluno, criarTurma, diaDeHoje, horarioUnico, logado } from "./apoio-aulas.js";
+import {
+  criarAluno,
+  criarTurma,
+  diaDeHoje,
+  horarioUnico,
+  logado,
+  quadraPadrao,
+} from "./apoio-aulas.js";
 
 /** Data de N dias atrás no calendário de São Paulo. */
 function diasAtras(n: number): string {
@@ -24,7 +31,13 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
 
   it("TURMA-CA-01 e TURMA-CA-08: turma só com dia, início, fim, nível, categoria e vagas; dados inválidos recusados", async () => {
     const { api, token } = await logado(app, "ADMINISTRADOR");
-    const base = { ...horarioUnico(2), nivel: "INICIANTE", categoria: "FEMININO", vagas: 12 };
+    const base = {
+      quadraId: await quadraPadrao(),
+      ...horarioUnico(2),
+      nivel: "INICIANTE",
+      categoria: "FEMININO",
+      vagas: 12,
+    };
     const criada = await api.post("/turmas", base, token).expect(201);
     const turma = await api.get(`/turmas/${criada.body.id}`, token).expect(200);
     expect(turma.body).toMatchObject({
@@ -58,7 +71,13 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
       horaInicio: 18 * 60,
       horaFim: 19 * 60,
     });
-    const base = { diaSemana: 3, nivel: "AVANCADO", categoria: "MASCULINO", vagas: 5 };
+    const base = {
+      quadraId: await quadraPadrao(),
+      diaSemana: 3,
+      nivel: "AVANCADO",
+      categoria: "MASCULINO",
+      vagas: 5,
+    };
     const conflito = await api
       .post("/turmas", { ...base, horaInicio: 18 * 60 + 30, horaFim: 20 * 60 }, token)
       .expect(409);
@@ -194,7 +213,12 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
         .post(`/turmas/${turmaId}/matriculas`, { alunoId: await criarAluno(api, token) }, token)
         .expect(201);
     }
-    const base = { ...horario, nivel: "INTERMEDIARIO", categoria: "FEMININO" };
+    const base = {
+      quadraId: await quadraPadrao(),
+      ...horario,
+      nivel: "INTERMEDIARIO",
+      categoria: "FEMININO",
+    };
     const menos = await api.patch(`/turmas/${turmaId}`, { ...base, vagas: 1 }, token).expect(409);
     await api.patch(`/turmas/${turmaId}`, { ...horario, vagas: 3 }, token).expect(400);
     expect(menos.body.message).toBe(

@@ -8,6 +8,7 @@ import {
   primeiroDia,
   resumoDoCaixa,
 } from "../mensalidades/regras.js";
+import { GastosService } from "../gastos/gastos.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import type { ConsultaContabil } from "./esquemas.js";
 import {
@@ -30,6 +31,7 @@ export class ContabilService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditoria: AuditoriaService,
+    private readonly gastos: GastosService,
   ) {}
 
   /** CONT-CA-03 */
@@ -57,7 +59,10 @@ export class ContabilService {
     return linhas;
   }
 
-  /** FOCO-CA-09: recebido, estornos, resultado, formas, a receber e 12 meses. */
+  /**
+   * FOCO-CA-09 e GASTO-CA-08: recebido, estornos, gastos por tipo, resultado, formas,
+   * a receber, saldo em caixa e 12 meses.
+   */
   async painel(consulta: ConsultaContabil) {
     const periodo = this.periodo(consulta);
     const hoje = hojeEmSaoPaulo(new Date());
@@ -75,7 +80,13 @@ export class ContabilService {
       const r = resumoFinanceiro(
         doComparativo.filter((l) => competenciaDe(deDataDoBanco(l.data)) === competencia),
       );
-      return { competencia, recebido: r.recebido, estornos: r.estornos, resultado: r.resultado };
+      return {
+        competencia,
+        recebido: r.recebido,
+        estornos: r.estornos,
+        gastos: r.totalGastos,
+        resultado: r.resultado,
+      };
     });
 
     const atrasadas = await this.prisma.mensalidade.aggregate({
@@ -87,6 +98,7 @@ export class ContabilService {
     return {
       periodo,
       ...resumo,
+      caixa: await this.gastos.saldo(),
       porForma,
       comparativo,
       aReceber: {

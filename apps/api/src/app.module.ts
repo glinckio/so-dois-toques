@@ -12,6 +12,9 @@ import { AuditoriaService } from "./auditoria/auditoria.service.js";
 import { ConfigModule } from "./config.module.js";
 import { ContabilController } from "./contabil/contabil.controller.js";
 import { ContabilService } from "./contabil/contabil.service.js";
+import { GastosController } from "./gastos/gastos.controller.js";
+import { GastosService } from "./gastos/gastos.service.js";
+import { LancamentoMensalService } from "./gastos/lancamento-mensal.service.js";
 import { HorariosController } from "./horarios/horarios.controller.js";
 import { HorariosService } from "./horarios/horarios.service.js";
 import { HealthController } from "./health/health.controller.js";
@@ -30,6 +33,7 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     HealthController,
     HorariosController,
     ContabilController,
+    GastosController,
     AuthController,
     UsuariosController,
     AuditoriaController,
@@ -49,6 +53,8 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     PlanosService,
     MensalidadesService,
     GeracaoAutomaticaService,
+    GastosService,
+    LancamentoMensalService,
     // A ordem importa: chave interna, depois sessão, depois perfil.
     { provide: APP_GUARD, useClass: ChaveInternaGuard },
     { provide: APP_GUARD, useClass: SessaoGuard },

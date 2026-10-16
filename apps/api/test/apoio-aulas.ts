@@ -1,5 +1,6 @@
 import type { INestApplication } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
+import pg from "pg";
 import { cliente, criarUsuario, SENHA_BOA } from "./apoio.js";
 
 export type Api = ReturnType<typeof cliente>;
@@ -30,6 +31,23 @@ export async function criarAluno(api: Api, token: string, extra: Record<string, 
   return resposta.body.id as string;
 }
 
+let quadra: Promise<string> | undefined;
+
+/** A quadra que já existia antes da Etapa 17 (a mais antiga): onde ficam as turmas dos testes. */
+export function quadraPadrao(): Promise<string> {
+  quadra ??= (async () => {
+    const c = new pg.Client({ connectionString: process.env["DATABASE_URL"] });
+    await c.connect();
+    try {
+      const linha = await c.query(`SELECT id FROM "Quadra" ORDER BY "criadaEm" LIMIT 1`);
+      return linha.rows[0].id as string;
+    } finally {
+      await c.end();
+    }
+  })();
+  return quadra;
+}
+
 let proximoMinuto = 0;
 
 /** Dia da semana de hoje em São Paulo (0 = domingo). */
@@ -42,7 +60,7 @@ export function diaDeHoje() {
 
 /**
  * Horário de turma só desta chamada: um minuto a partir das 21h, no dia de hoje (para a
- * presença de hoje funcionar). A quadra é uma só e duas turmas ativas não dividem horário
+ * presença de hoje funcionar). Duas turmas ativas não dividem horário na mesma quadra
  * (TURMA-CA-02); a agenda é zerada no começo de cada arquivo (limpar-agenda.ts).
  */
 export function horarioUnico(diaSemana = diaDeHoje()) {
@@ -55,6 +73,7 @@ export async function criarTurma(
   api: Api,
   token: string,
   dados: {
+    quadraId?: string;
     diaSemana?: number;
     horaInicio?: number;
     horaFim?: number;
@@ -66,6 +85,7 @@ export async function criarTurma(
   const resposta = await api.post(
     "/turmas",
     {
+      quadraId: await quadraPadrao(),
       ...horarioUnico(dados.diaSemana),
       nivel: "INICIANTE",
       categoria: "MISTO",

@@ -65,6 +65,14 @@ export const ACOES = [
   // não são mais gravadas, mas continuam aqui para filtrar o histórico.
   "BLOQUEIO_CRIADO",
   "BLOQUEIO_CANCELADO",
+  // Etapa 17
+  "QUADRA_CRIADA",
+  "QUADRA_ALTERADA",
+  "CONTRATO_REGISTRADO",
+  "CONTRATO_ENCERRADO",
+  "GASTO_REGISTRADO",
+  "LANCAMENTO_ESTORNADO",
+  "SALDO_INICIAL_REGISTRADO",
 ] as const;
 export type Acao = (typeof ACOES)[number];
 
