@@ -4,6 +4,7 @@ import {
   csvDosLancamentos,
   descreverPeriodo,
   formatarPorcentagem,
+  nomeDaCategoria,
 } from "./formatacao";
 
 describe("CONT-CA-03: período na tela", () => {
@@ -25,6 +26,17 @@ describe("CONT-CA-03: período na tela", () => {
     expect(formatarPorcentagem(72.2)).toBe("72,2%");
     expect(formatarPorcentagem(100)).toBe("100%");
     expect(formatarPorcentagem(null)).toBe("—");
+  });
+});
+
+describe("GASTO-CA-08: categorias novas na planilha", () => {
+  it("dá nome em português ao saldo inicial e a cada tipo de gasto", () => {
+    expect(nomeDaCategoria("SALDO_INICIAL")).toBe("Saldo inicial");
+    expect(nomeDaCategoria("ALUGUEL_MENSAL")).toBe("Aluguel mensal de quadra");
+    expect(nomeDaCategoria("LOCACAO_AVULSA")).toBe("Locação avulsa de quadra");
+    expect(nomeDaCategoria("EQUIPAMENTO")).toBe("Equipamento");
+    expect(nomeDaCategoria("INVESTIMENTO")).toBe("Investimento");
+    expect(nomeDaCategoria("OUTRO_GASTO")).toBe("Outro gasto");
   });
 });
 

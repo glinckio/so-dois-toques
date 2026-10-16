@@ -85,6 +85,9 @@ export default async function PaginaTurma({
           <div className="flex flex-wrap items-center gap-2">
             <SeloNivel nivel={turma.nivel} />
             <SeloCategoria categoria={turma.categoria} />
+            <Selo tom="areia" semPonto>
+              {turma.quadra.nome}
+            </Selo>
             {!turma.ativa && <Selo tom="neutro">Turma encerrada</Selo>}
             {temAulaHoje && (
               <Selo tom="ouro" pulsar>

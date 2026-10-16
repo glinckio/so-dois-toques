@@ -1,4 +1,6 @@
-export type Quadra = { id: string; nome: string };
+/** GASTO-CA-01: as quadras alugadas; a desativada fica só no histórico. */
+export type Quadra = { id: string; nome: string; ativa: boolean };
+export type QuadraResumo = { id: string; nome: string };
 
 export type Nivel = "INICIANTE" | "INTERMEDIARIO" | "AVANCADO";
 export type Categoria = "MASCULINO" | "MISTO" | "FEMININO";
@@ -34,6 +36,7 @@ export type Grade = {
 
 export type BloqueioDetalhe = {
   id: string;
+  quadra: QuadraResumo;
   data: string;
   horaInicio: number;
   horaFim: number;
@@ -49,6 +52,7 @@ export type BloqueioDetalhe = {
 
 export type SerieBloqueio = {
   id: string;
+  quadra: QuadraResumo;
   diaSemana: number;
   horaInicio: number;
   horaFim: number;

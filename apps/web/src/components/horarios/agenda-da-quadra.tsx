@@ -20,11 +20,13 @@ import { FILETE_DA_SITUACAO, FUNDO_DA_SITUACAO } from "./estilos";
  */
 export function AgendaDaQuadra({
   agenda,
+  quadraId,
   data,
   admin,
   linkDaTurma,
 }: {
   agenda: Agenda;
+  quadraId: string;
   data: string;
   admin: boolean;
   /** Quem acessa Aulas abre a turma pelo bloco; os outros só veem. */
@@ -51,7 +53,13 @@ export function AgendaDaQuadra({
         .sort((a, b) => a.linha - b.linha)
         .map((item) =>
           item.tipo === "livre" ? (
-            <CelulaLivre key={`livre-${item.hora}`} livre={item} data={data} admin={admin} />
+            <CelulaLivre
+              key={`livre-${item.hora}`}
+              livre={item}
+              quadraId={quadraId}
+              data={data}
+              admin={admin}
+            />
           ) : (
             <Bloco
               key={
@@ -79,10 +87,12 @@ export function AgendaDaQuadra({
 /** Hora inteira livre: célula tracejada; o administrador toca para bloquear. */
 function CelulaLivre({
   livre,
+  quadraId,
   data,
   admin,
 }: {
   livre: LivreDaAgenda;
+  quadraId: string;
   data: string;
   admin: boolean;
 }) {
@@ -103,7 +113,7 @@ function CelulaLivre({
   return (
     <div role="listitem" className={classe}>
       <Link
-        href={`/horarios/bloquear?data=${data}&hora=${livre.hora}`}
+        href={`/horarios/bloquear?data=${data}&hora=${livre.hora}&quadra=${quadraId}`}
         aria-label={`Bloquear às ${rotuloHora(livre.hora)}`}
         className="group border-borda text-apagado hover:border-roxo/60 hover:bg-roxo/10 hover:text-roxo-claro flex h-full items-center justify-center gap-1.5 rounded-2xl border border-dashed text-sm font-semibold transition duration-200 active:scale-[0.97]"
       >

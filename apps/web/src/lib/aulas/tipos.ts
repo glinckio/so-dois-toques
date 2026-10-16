@@ -3,6 +3,9 @@ import type { Categoria, Nivel } from "./formatacao";
 /** Etapa 16: a turma é um dia e um horário (minutos), com nível e vagas; não tem nome. */
 export type TurmaResumo = {
   id: string;
+  /** GASTO-CA-02: a quadra onde a turma acontece. */
+  quadraId: string;
+  quadra: { id: string; nome: string };
   diaSemana: number;
   horaInicio: number;
   horaFim: number;

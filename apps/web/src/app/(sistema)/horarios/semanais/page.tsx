@@ -82,6 +82,7 @@ export default async function PaginaSemanais() {
                 </span>
                 <div className="flex min-w-0 flex-col gap-1">
                   <p className="truncate font-bold">{s.motivo}</p>
+                  <p className="text-suave text-xs font-semibold">{s.quadra.nome}</p>
                   <p className="text-apagado text-sm">
                     {DIAS_SEMANA[s.diaSemana]}s · {faixaDeHoras(s.horaInicio, s.horaFim)} · de{" "}
                     {formatarData(s.dataInicio)} a {formatarData(s.dataFim)}

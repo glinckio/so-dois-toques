@@ -13,6 +13,8 @@ import {
 
 const turma = (dados: Partial<TurmaResumo>): TurmaResumo => ({
   id: "t",
+  quadraId: "q",
+  quadra: { id: "q", nome: "Quadra" },
   diaSemana: 6,
   horaInicio: 480,
   horaFim: 540,

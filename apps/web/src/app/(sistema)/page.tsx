@@ -160,7 +160,14 @@ function Financeiro({ resposta }: { resposta: RespostaApi<Painel> }) {
           </h2>
           <LinkDoCartao href="/contabil">Ver o Contábil</LinkDoCartao>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <CartaoNumero
+            rotulo="Saldo em caixa"
+            icone="dinheiro"
+            tom="sucesso"
+            valor={p.caixa.saldoCentavos}
+            nota="Hoje, com o saldo inicial, as entradas e as saídas"
+          />
           <CartaoNumero
             rotulo="Recebido"
             icone="subir"
@@ -204,7 +211,7 @@ function Financeiro({ resposta }: { resposta: RespostaApi<Painel> }) {
         <CabecalhoCartao
           id="titulo-12-meses"
           icone="contabil"
-          titulo="Recebido e estornos"
+          titulo="Recebido e saídas"
           descricao="Últimos 12 meses, regime de caixa"
         />
         <BarrasMensais meses={meses} nomes={NOMES_DO_GRAFICO} />

@@ -8,7 +8,9 @@ import { OpcoesEmBlocos } from "@/components/base/opcoes";
 import { Selo } from "@/components/base/selo";
 import { Icone, type NomeIcone } from "@/components/icones";
 import { Aviso, Campo, classeBotao, classeCampo, classeRotulo } from "@/components/ui";
+import { SeletorDeQuadra } from "./seletor-de-quadra";
 import { DIAS_SEMANA, formatarData } from "@/lib/aulas/formatacao";
+import type { Quadra } from "@/lib/horarios/tipos";
 import {
   faixaDeHoras,
   HORAS_DE_FIM,
@@ -21,6 +23,7 @@ import {
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 
 type Escolha = {
+  quadraId: string;
   repeticao: string;
   data: string;
   dataFim: string;
@@ -33,6 +36,7 @@ function lerEscolha(form: HTMLFormElement): Escolha {
   const dados = new FormData(form);
   const campo = (nome: string) => String(dados.get(nome) ?? "");
   return {
+    quadraId: campo("quadraId"),
     repeticao: campo("repeticao") || "AVULSO",
     data: campo("data"),
     dataFim: campo("dataFim"),
@@ -48,15 +52,19 @@ function lerEscolha(form: HTMLFormElement): Escolha {
  */
 export function FormBloqueio({
   hoje,
+  quadras,
   inicial,
 }: {
   hoje: string;
-  inicial: { data: string; horaInicio: string };
+  quadras: readonly Quadra[];
+  inicial: { quadraId?: string; data: string; horaInicio: string };
 }) {
   const [estado, acao, enviando] = useActionState(bloquear, ESTADO_INICIAL);
   const valor = (campo: string, padrao = "") => estado.valores?.[campo] ?? padrao;
   const horaFimPadrao = inicial.horaInicio ? String(Number(inicial.horaInicio) + 1) : "";
+  const quadraPadrao = inicial.quadraId ?? quadras[0]?.id ?? "";
   const [escolha, setEscolha] = useState<Escolha>(() => ({
+    quadraId: valor("quadraId", quadraPadrao),
     repeticao: valor("repeticao", "AVULSO"),
     data: valor("data", inicial.data),
     dataFim: valor("dataFim"),
@@ -76,6 +84,7 @@ export function FormBloqueio({
     >
       <div className="superficie flex flex-col gap-7 rounded-[1.75rem] p-5 sm:p-6">
         {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
+        <SeletorDeQuadra quadras={quadras} padrao={valor("quadraId", quadraPadrao)} />
         <OpcoesEmBlocos
           nome="repeticao"
           legenda="Repetição"
@@ -135,7 +144,12 @@ export function FormBloqueio({
         />
       </div>
 
-      <ResumoDoBloqueio escolha={escolha} semanal={semanal} enviando={enviando} />
+      <ResumoDoBloqueio
+        escolha={escolha}
+        quadra={quadras.find((q) => q.id === escolha.quadraId)?.nome}
+        semanal={semanal}
+        enviando={enviando}
+      />
     </form>
   );
 }
@@ -179,10 +193,12 @@ function SeletorDeHora({
 /** O bloqueio que vai ser criado, com o botão de enviar. */
 function ResumoDoBloqueio({
   escolha,
+  quadra,
   semanal,
   enviando,
 }: {
   escolha: Escolha;
+  quadra: string | undefined;
   semanal: boolean;
   enviando: boolean;
 }) {
@@ -200,6 +216,9 @@ function ResumoDoBloqueio({
         <Selo tom={semanal ? "roxo" : "areia"}>{semanal ? "Toda semana" : "Só um dia"}</Selo>
       </div>
       <ul className="flex flex-col gap-3 text-sm">
+        <ItemDoResumo icone="areia" vazio={!quadra}>
+          {quadra ?? "Escolha a quadra"}
+        </ItemDoResumo>
         <ItemDoResumo icone="calendario" vazio={!diaValido}>
           {diaValido
             ? `${DIAS_SEMANA[new Date(`${escolha.data}T12:00:00Z`).getUTCDay()]}, ${formatarData(escolha.data)}`
