@@ -1,6 +1,6 @@
 # Etapa 19: Feedback dos alunos
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
