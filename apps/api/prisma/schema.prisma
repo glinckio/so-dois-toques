@@ -163,6 +163,7 @@ model Turma {
 
   matriculas Matricula[]
   presencas  Presenca[]
+  feedbacks  RespostaFeedback[]
 
   @@index([quadraId, diaSemana, ativa])
 }
@@ -428,4 +429,40 @@ model Bloqueio {
 
   @@index([quadraId, data])
   @@index([serieId])
+}
+
+// Etapa 19: feedback dos alunos (formulário público, sem login)
+
+/// Resposta do formulário público. Pode ser removida (spam ou ofensa); não guarda o IP.
+model RespostaFeedback {
+  id         String    @id @default(uuid()) @db.Uuid
+  /// De 1 a 5.
+  nota       Int       @db.SmallInt
+  comentario String?   @db.VarChar(1000)
+  melhoria   String?   @db.VarChar(1000)
+  turmaId    String?   @db.Uuid
+  turma      Turma?    @relation(fields: [turmaId], references: [id], onDelete: SetNull)
+  /// Vazio = anônimo.
+  nome       String?   @db.VarChar(120)
+  lidaEm     DateTime? @db.Timestamptz(3)
+  criadaEm   DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([criadaEm])
+  @@index([lidaEm])
+}
+
+/// Só para o limite de envios por hora: o hash do IP, sem ligação com a resposta.
+model EnvioFeedback {
+  id       BigInt   @id @default(autoincrement())
+  ipHash   String   @db.Char(64)
+  criadoEm DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([ipHash, criadoEm])
+}
+
+/// Uma linha só (id = 1): o formulário está pausado ou não.
+model FormularioFeedback {
+  id         Int      @id @default(1)
+  pausado    Boolean  @default(false)
+  alteradoEm DateTime @default(now()) @updatedAt @db.Timestamptz(3)
 }

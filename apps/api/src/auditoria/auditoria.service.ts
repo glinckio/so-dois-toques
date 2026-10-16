@@ -73,6 +73,10 @@ export const ACOES = [
   "GASTO_REGISTRADO",
   "LANCAMENTO_ESTORNADO",
   "SALDO_INICIAL_REGISTRADO",
+  // Etapa 19
+  "FEEDBACK_REMOVIDO",
+  "FEEDBACK_PAUSADO",
+  "FEEDBACK_RETOMADO",
 ] as const;
 export type Acao = (typeof ACOES)[number];
 

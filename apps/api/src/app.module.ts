@@ -15,6 +15,8 @@ import { ContabilService } from "./contabil/contabil.service.js";
 import { GastosController } from "./gastos/gastos.controller.js";
 import { GastosService } from "./gastos/gastos.service.js";
 import { LancamentoMensalService } from "./gastos/lancamento-mensal.service.js";
+import { FeedbackController, FeedbackPublicoController } from "./feedback/feedback.controller.js";
+import { FeedbackService } from "./feedback/feedback.service.js";
 import { HorariosController } from "./horarios/horarios.controller.js";
 import { HorariosService } from "./horarios/horarios.service.js";
 import { HealthController } from "./health/health.controller.js";
@@ -41,6 +43,8 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     TurmasController,
     PlanosController,
     MensalidadesController,
+    FeedbackPublicoController,
+    FeedbackController,
   ],
   providers: [
     AuditoriaService,
@@ -55,6 +59,7 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     GeracaoAutomaticaService,
     GastosService,
     LancamentoMensalService,
+    FeedbackService,
     // A ordem importa: chave interna, depois sessão, depois perfil.
     { provide: APP_GUARD, useClass: ChaveInternaGuard },
     { provide: APP_GUARD, useClass: SessaoGuard },

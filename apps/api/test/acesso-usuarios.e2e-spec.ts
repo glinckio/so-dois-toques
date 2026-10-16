@@ -65,6 +65,7 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
         "mensalidades",
         "horarios",
         "contabil",
+        "feedback",
         "usuarios",
         "auditoria",
       ],
