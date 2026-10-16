@@ -47,12 +47,21 @@ export const telefoneOpcional = z
 
 const data = z.string().refine(dataValida, "Data inválida.");
 
-export const alunoSchema = z.object({
+const camposDoAluno = z.object({
   nome: z.string().trim().min(2, "Informe o nome do aluno.").max(120),
   telefone,
-  nascimento: data.refine((d) => d >= "1900-01-01" && d <= new Date().toISOString().slice(0, 10), {
-    message: "Data de nascimento inválida.",
-  }),
+  // ALU-CA-01: a data de nascimento é opcional; vazia vira null.
+  nascimento: z
+    .string()
+    .trim()
+    .nullish()
+    .transform((v) => (v ? v : null))
+    .refine(
+      (d) =>
+        d === null ||
+        (dataValida(d) && d >= "1900-01-01" && d <= new Date().toISOString().slice(0, 10)),
+      "Data de nascimento inválida.",
+    ),
   email: z
     .string()
     .trim()
@@ -62,18 +71,33 @@ export const alunoSchema = z.object({
     .transform((v) => (v ? v : null))
     .refine((v) => v === null || z.email().safeParse(v).success, "E-mail inválido."),
   observacoes: textoOpcional(500),
-  emergenciaNome: z.string().trim().min(2, "Informe o contato de emergência.").max(120),
-  emergenciaTelefone: telefone,
+  // ALU-CA-02: o contato de emergência é opcional, mas nome e telefone andam juntos.
+  emergenciaNome: textoOpcional(120),
+  emergenciaTelefone: telefoneOpcional,
   responsavelNome: textoOpcional(120),
   responsavelTelefone: telefoneOpcional,
 });
+/** ALU-CA-02: contato de emergência pela metade (só nome ou só telefone) é recusado. */
+const emergenciaCompleta = (a: {
+  emergenciaNome: string | null;
+  emergenciaTelefone: string | null;
+}) => (a.emergenciaNome === null) === (a.emergenciaTelefone === null);
+const MENSAGEM_EMERGENCIA =
+  "Informe o nome e o telefone do contato de emergência, ou deixe os dois em branco.";
+
+export const alunoSchema = camposDoAluno.refine(emergenciaCompleta, {
+  message: MENSAGEM_EMERGENCIA,
+  path: ["emergenciaNome"],
+});
 
 /** AULAS-CA-02: o cadastro exige o consentimento marcado. */
-export const novoAlunoSchema = alunoSchema.extend({
-  consentimento: z.literal(true, {
-    error: "Registre o consentimento do aluno (ou do responsável) para salvar o cadastro.",
-  }),
-});
+export const novoAlunoSchema = camposDoAluno
+  .extend({
+    consentimento: z.literal(true, {
+      error: "Registre o consentimento do aluno (ou do responsável) para salvar o cadastro.",
+    }),
+  })
+  .refine(emergenciaCompleta, { message: MENSAGEM_EMERGENCIA, path: ["emergenciaNome"] });
 
 export const consultaAlunosSchema = z.object({
   busca: z.string().max(120).optional(),

@@ -21,11 +21,11 @@ import {
 export type DadosAluno = {
   nome: string;
   telefone: string;
-  nascimento: string;
+  nascimento: string | null;
   email: string | null;
   observacoes: string | null;
-  emergenciaNome: string;
-  emergenciaTelefone: string;
+  emergenciaNome: string | null;
+  emergenciaTelefone: string | null;
   responsavelNome: string | null;
   responsavelTelefone: string | null;
 };
@@ -158,7 +158,7 @@ export class AlunosService {
       nome: dados.nome,
       nomeBusca: normalizarBusca(dados.nome),
       telefone: dados.telefone,
-      nascimento: paraDataDoBanco(dados.nascimento),
+      nascimento: dados.nascimento ? paraDataDoBanco(dados.nascimento) : null,
       email: dados.email,
       observacoes: dados.observacoes,
       emergenciaNome: dados.emergenciaNome,

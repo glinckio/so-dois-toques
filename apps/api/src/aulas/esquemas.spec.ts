@@ -44,6 +44,27 @@ describe("validação de entrada de Aulas", () => {
     expect(alunoSchema.safeParse({ ...aluno, nascimento: "1850-01-01" }).success).toBe(false);
   });
 
+  it("ALU-CA-01: data de nascimento é opcional; vazia vira null", () => {
+    for (const nascimento of ["", "  ", null, undefined]) {
+      const dados = alunoSchema.parse({ ...aluno, nascimento });
+      expect(dados.nascimento).toBeNull();
+    }
+  });
+
+  it("ALU-CA-02: contato de emergência é opcional, mas nome e telefone andam juntos", () => {
+    const sem = alunoSchema.parse({ ...aluno, emergenciaNome: "", emergenciaTelefone: "" });
+    expect(sem).toMatchObject({ emergenciaNome: null, emergenciaTelefone: null });
+    for (const metade of [
+      { emergenciaNome: "Maria", emergenciaTelefone: "" },
+      { emergenciaNome: "", emergenciaTelefone: "2134567890" },
+    ]) {
+      const recusado = novoAlunoSchema.safeParse({ ...aluno, ...metade, consentimento: true });
+      expect(recusado.error?.issues[0]?.message).toBe(
+        "Informe o nome e o telefone do contato de emergência, ou deixe os dois em branco.",
+      );
+    }
+  });
+
   it("AULAS-CA-02: o cadastro novo exige consentimento verdadeiro", () => {
     expect(novoAlunoSchema.safeParse({ ...aluno, consentimento: true }).success).toBe(true);
     const recusado = novoAlunoSchema.safeParse({ ...aluno, consentimento: false });
