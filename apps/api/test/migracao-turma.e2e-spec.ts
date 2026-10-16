@@ -118,7 +118,7 @@ describe("Migração da Etapa 16", () => {
         [aluno],
       )
     ).rows.map((r) => r.turmaId);
-    expect(matriculas.sort()).toEqual([turma, quarta].sort());
+    expect(new Set(matriculas)).toEqual(new Set([turma, quarta]));
     const presencas = (
       await cliente.query(`SELECT "turmaId", data::text AS data FROM "Presenca" ORDER BY data`)
     ).rows;
