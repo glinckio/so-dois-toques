@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   ServiceUnavailableException,
 } from "@nestjs/common";
 import { ENV } from "../config.module.js";
@@ -30,6 +31,8 @@ type Metodo = "GET" | "POST" | "PUT" | "DELETE";
  */
 @Injectable()
 export class EvolutionCliente {
+  private readonly logger = new Logger(EvolutionCliente.name);
+
   constructor(@Inject(ENV) private readonly env: Env) {}
 
   /** CHAT-CA-12 */
@@ -70,7 +73,11 @@ export class EvolutionCliente {
         body: opcoes.corpo === undefined ? undefined : JSON.stringify(opcoes.corpo),
         signal: AbortSignal.timeout(opcoes.tempoMs ?? 30_000),
       });
-    } catch {
+    } catch (erro) {
+      // Microserviço fora do ar ou demorando: o motivo vai para o log, sem dados da conversa.
+      this.logger.warn(
+        `Microserviço do WhatsApp não respondeu: ${metodo} ${caminho} (${(erro as Error).name})`,
+      );
       throw new BadGatewayException(MENSAGEM_FORA);
     }
     const texto = await resposta.text();
@@ -81,6 +88,9 @@ export class EvolutionCliente {
       corpo = undefined;
     }
     if (!resposta.ok) {
+      this.logger.warn(
+        `Microserviço do WhatsApp respondeu ${resposta.status}: ${metodo} ${caminho}`,
+      );
       // O conteúdo do erro do Evolution não vai para a tela: pode ter dados da conversa.
       throw new ErroDoEvolution(resposta.status, MENSAGEM_FORA);
     }
