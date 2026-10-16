@@ -74,7 +74,7 @@ test("ACESSO-CA-12, ACESSO-CA-13, ACESSO-CA-11 e ACESSO-CA-10: novo professor tr
     await expect(professor.getByText("Senha alterada com sucesso.")).toBeVisible();
 
     const menu = professor.getByRole("navigation", { name: "Menu principal" });
-    await expect(menu.getByRole("link")).toHaveText(["Início", "Aulas"]);
+    await expect(menu.getByRole("link")).toHaveText(["Início", "Aulas", "Horários"]);
 
     await professor.goto("/usuarios");
     await expect(professor.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
@@ -87,7 +87,7 @@ test("ACESSO-CA-12, ACESSO-CA-13, ACESSO-CA-11 e ACESSO-CA-10: novo professor tr
   }
 });
 
-test("ACESSO-CA-11 e LANCH-CA-02: atendente vê Horários e Caixa no menu, sem Estoque", async ({
+test("ACESSO-CA-11 e FOCO-CA-02: atendente vê Mensalidades e Horários, sem Estoque nem Caixa", async ({
   page,
   browser,
 }) => {
@@ -108,7 +108,11 @@ test("ACESSO-CA-11 e LANCH-CA-02: atendente vê Horários e Caixa no menu, sem E
     await atendente.getByLabel("Confirme a nova senha").fill("copa-gelada-2026");
     await atendente.getByRole("button", { name: "Salvar nova senha" }).click();
     const menu = atendente.getByRole("navigation", { name: "Menu principal" });
-    await expect(menu.getByRole("link")).toHaveText(["Início", "Horários", "Caixa"]);
+    await expect(menu.getByRole("link")).toHaveText(["Início", "Mensalidades", "Horários"]);
+    for (const rota of ["/caixa", "/estoque", "/aulas/locais", "/horarios/faixas"]) {
+      const resposta = await atendente.goto(rota);
+      expect(resposta?.status(), rota).toBe(404);
+    }
   } finally {
     await contexto.close();
   }

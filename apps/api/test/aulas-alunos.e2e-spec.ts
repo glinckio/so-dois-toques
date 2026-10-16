@@ -1,7 +1,7 @@
 import type { INestApplication } from "@nestjs/common";
 import { PrismaService } from "../src/prisma/prisma.service.js";
 import { criarApp } from "./apoio.js";
-import { criarAluno, criarLocal, criarTurma, dadosAluno, logado, unico } from "./apoio-aulas.js";
+import { criarAluno, criarTurma, dadosAluno, logado, unico } from "./apoio-aulas.js";
 
 describe("Etapa 2: alunos", () => {
   let app: INestApplication;
@@ -108,8 +108,7 @@ describe("Etapa 2: alunos", () => {
 
   it("AULAS-CA-06: inativar encerra matrículas e aluno inativo não é matriculado", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
-    const turmaId = await criarTurma(api, token, { localId, professorId: usuario.id });
+    const turmaId = await criarTurma(api, token, { professorId: usuario.id });
     const alunoId = await criarAluno(api, token);
     await api.post(`/turmas/${turmaId}/matriculas`, { alunoId }, token).expect(201);
 
@@ -126,8 +125,7 @@ describe("Etapa 2: alunos", () => {
 
   it("AULAS-CA-07: exportação em JSON com cadastro, consentimento, matrículas e presenças, auditada", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
-    const turmaId = await criarTurma(api, token, { localId, professorId: usuario.id });
+    const turmaId = await criarTurma(api, token, { professorId: usuario.id });
     const alunoId = await criarAluno(api, token, { nome: "Exportado da Silva" });
     await api.post(`/turmas/${turmaId}/matriculas`, { alunoId }, token).expect(201);
     const hoje = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(
@@ -155,8 +153,7 @@ describe("Etapa 2: alunos", () => {
 
   it("AULAS-CA-08: anonimização apaga dados pessoais, encerra matrículas e mantém presenças", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
-    const turmaId = await criarTurma(api, token, { localId, professorId: usuario.id });
+    const turmaId = await criarTurma(api, token, { professorId: usuario.id });
     const nome = unico("Anônimo Futuro");
     const alunoId = await criarAluno(api, token, { nome, email: "privado@exemplo.com" });
     await api.post(`/turmas/${turmaId}/matriculas`, { alunoId }, token).expect(201);

@@ -2,8 +2,8 @@
 export const AREAS = [
   "inicio",
   "aulas",
+  "mensalidades",
   "horarios",
-  "caixa",
   "contabil",
   "usuarios",
   "auditoria",
@@ -13,8 +13,8 @@ export type Area = (typeof AREAS)[number];
 export const MENU: Record<Area, { rotulo: string; href: string }> = {
   inicio: { rotulo: "Início", href: "/" },
   aulas: { rotulo: "Aulas", href: "/aulas" },
+  mensalidades: { rotulo: "Mensalidades", href: "/mensalidades" },
   horarios: { rotulo: "Horários", href: "/horarios" },
-  caixa: { rotulo: "Caixa", href: "/caixa" },
   contabil: { rotulo: "Contábil", href: "/contabil" },
   usuarios: { rotulo: "Usuários", href: "/usuarios" },
   auditoria: { rotulo: "Auditoria", href: "/auditoria" },
@@ -51,7 +51,7 @@ export function linkAtivo(caminho: string, hrefs: readonly string[]): string | u
 /** VIVO-CA-02: grupos do menu lateral. */
 export const GRUPOS_DO_MENU: { rotulo: string; areas: readonly Area[] }[] = [
   { rotulo: "Visão geral", areas: ["inicio"] },
-  { rotulo: "Operação", areas: ["aulas", "horarios", "caixa"] },
+  { rotulo: "Operação", areas: ["aulas", "mensalidades", "horarios"] },
   { rotulo: "Gestão", areas: ["contabil", "usuarios", "auditoria"] },
 ];
 
@@ -59,8 +59,8 @@ export const GRUPOS_DO_MENU: { rotulo: string; areas: readonly Area[] }[] = [
 const PRIORIDADE_NO_CELULAR: readonly Area[] = [
   "inicio",
   "aulas",
+  "mensalidades",
   "horarios",
-  "caixa",
   "contabil",
   "usuarios",
   "auditoria",

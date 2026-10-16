@@ -139,6 +139,8 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
 
 ## Critérios de aceite
 
+> **Etapa 14 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/14-foco-em-aulas/spec.md`.
+
 - **VIVO-CA-01**: Com "reduzir movimento" ligado no sistema, as animações e transições ficam desligadas.
 - **VIVO-CA-02**: Menu:
   - No computador, o menu lateral agrupa as áreas em "Visão geral", "Operação" e "Gestão".
@@ -150,9 +152,9 @@ Ele mandou quatro referências de painel. Duas são escuras (faturas com destaqu
   - "Buscar alunos" leva à lista de alunos filtrada.
 - **VIVO-CA-04**: As confirmações usam a janela do sistema: "Cancelar" (ou Esc) não executa a ação e "Confirmar" executa.
 - **VIVO-CA-05**: O menu da pessoa (avatar) mostra nome e perfil e leva a "Trocar senha" e "Sair".
-- **VIVO-CA-06**: Na grade de Horários, a faixa de dias mostra sete dias com o dia escolhido marcado, e uma reserva de várias horas é um único bloco que ocupa essas horas.
-- **VIVO-CA-07** [removido na Etapa 13]: Na venda, os botões + e − mudam a quantidade sem passar do saldo, e o total acompanha.
-- **VIVO-CA-08**: Com o caixa aberto, o painel mostra há quanto tempo ele está aberto.
+- **VIVO-CA-06** [removido] (ver FOCO-CA-05): Na grade de Horários, a faixa de dias mostra sete dias com o dia escolhido marcado, e uma reserva de várias horas é um único bloco que ocupa essas horas.
+- **VIVO-CA-07** [removido] (ver FOCO-CA-01): Na venda, os botões + e − mudam a quantidade sem passar do saldo, e o total acompanha.
+- **VIVO-CA-08** [removido] (ver FOCO-CA-01): Com o caixa aberto, o painel mostra há quanto tempo ele está aberto.
 - **VIVO-CA-09**: Na presença, o contador e o anel acompanham as marcações.
 - **VIVO-CA-10**: O login tem "Mostrar senha", e a troca de senha mostra a força da senha nova e se a confirmação bate.
 - **VIVO-CA-11**: Nenhuma tela das áreas tem erro de CSP no navegador nem passa da largura da tela (sem rolagem para o lado), no celular e no computador.

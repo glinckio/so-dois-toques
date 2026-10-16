@@ -1,26 +1,30 @@
 import { Anel } from "@/components/base/anel";
 import type { Agenda, SituacaoDoHorario } from "@/lib/horarios/agenda";
 import { ROTULOS_DA_SITUACAO } from "@/lib/horarios/agenda";
-import type { Grade } from "@/lib/horarios/tipos";
 import { AMOSTRA_DA_SITUACAO } from "./estilos";
 
-const ORDEM: (SituacaoDoHorario | "livre")[] = ["pago", "a-pagar", "fixa", "bloqueio", "livre"];
+const horas = (minutos: number) =>
+  `${(minutos / 60).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} h`;
 
 /**
- * Resumo do dia, o destaque da grade: a ocupação das quadras em anel (horas de
- * clientes sobre as horas abertas) e a legenda dos tipos de horário, com as horas de
- * cada um. A legenda usa o mesmo desenho dos blocos.
+ * Resumo do dia, o destaque da agenda: quanto da quadra está ocupado (aulas e
+ * bloqueios sobre as 19 horas abertas) e a legenda, com o mesmo desenho dos blocos.
  */
-export function ResumoDoDia({ agenda, grade }: { agenda: Agenda; grade: Grade }) {
-  const fracao = agenda.abertas > 0 ? agenda.reservadas / agenda.abertas : 0;
-  const todas = grade.quadras.flatMap((q) => q.reservas);
-  const reservas = todas.filter((r) => r.tipo === "RESERVA").length;
-  const bloqueios = todas.length - reservas;
-  const aindaAberto = agenda.horas.some((h) => !h.passou);
-  const partes = [
-    `${reservas} ${reservas === 1 ? "reserva" : "reservas"}`,
-    ...(bloqueios > 0 ? [`${bloqueios} ${bloqueios === 1 ? "bloqueio" : "bloqueios"}`] : []),
+export function ResumoDoDia({ agenda, professor }: { agenda: Agenda; professor: boolean }) {
+  const aulas = agenda.blocos.filter((b) => b.tipo === "aula").length;
+  const bloqueios = agenda.blocos.length - aulas;
+  const ordem: (SituacaoDoHorario | "livre")[] = [
+    "aula",
+    ...(professor ? (["minha"] as const) : []),
+    "bloqueio",
+    "livre",
   ];
+  const legenda: Record<SituacaoDoHorario | "livre", string> = {
+    aula: horas(agenda.minutosDeAula),
+    minha: "",
+    bloqueio: horas(agenda.minutosBloqueados),
+    livre: `${agenda.livres.length} h`,
+  };
   return (
     <section
       aria-labelledby="titulo-resumo-do-dia"
@@ -32,13 +36,15 @@ export function ResumoDoDia({ agenda, grade }: { agenda: Agenda; grade: Grade })
       />
       <div className="relative flex items-center gap-4 sm:gap-5">
         <Anel
-          fracao={fracao}
+          fracao={agenda.ocupacao}
           tom="areia"
           tamanho={92}
           espessura={9}
-          rotulo={`Ocupação: ${agenda.reservadas} de ${agenda.abertas} horas reservadas`}
+          rotulo={`Quadra ocupada em ${Math.round(agenda.ocupacao * 100)}% do dia`}
         >
-          <span className="text-lg font-extrabold tabular-nums">{Math.round(fracao * 100)}%</span>
+          <span className="text-lg font-extrabold tabular-nums">
+            {Math.round(agenda.ocupacao * 100)}%
+          </span>
         </Anel>
         <div className="flex min-w-0 flex-col gap-1">
           <h2
@@ -48,24 +54,21 @@ export function ResumoDoDia({ agenda, grade }: { agenda: Agenda; grade: Grade })
             Resumo do dia
           </h2>
           <p className="text-suave text-sm">
-            <span className="text-texto text-3xl font-extrabold tabular-nums">
-              {agenda.reservadas}
-            </span>{" "}
-            de {agenda.abertas} horas reservadas
+            <span className="text-texto text-3xl font-extrabold tabular-nums">{aulas}</span>{" "}
+            {aulas === 1 ? "aula" : "aulas"}
           </p>
           <p className="text-apagado text-xs">
-            {partes.join(" · ")}
-            {aindaAberto &&
-              ` · ${agenda.livresParaReservar} ${agenda.livresParaReservar === 1 ? "horário livre" : "horários livres"} para reservar`}
+            {bloqueios} {bloqueios === 1 ? "bloqueio" : "bloqueios"} · {agenda.livres.length}{" "}
+            {agenda.livres.length === 1 ? "hora livre" : "horas livres"}
           </p>
         </div>
       </div>
       <ul
         id="legenda-da-grade"
-        aria-label="Legenda da grade"
+        aria-label="Legenda da agenda"
         className="relative flex flex-wrap gap-1.5"
       >
-        {ORDEM.map((situacao) => (
+        {ordem.map((situacao) => (
           <li
             key={situacao}
             className="bg-noite/35 flex min-h-8 items-center gap-1.5 rounded-full border border-white/5 py-1 pr-3 pl-1.5 text-xs"
@@ -75,7 +78,9 @@ export function ResumoDoDia({ agenda, grade }: { agenda: Agenda; grade: Grade })
               className={`size-5 shrink-0 rounded-full border ${AMOSTRA_DA_SITUACAO[situacao]}`}
             />
             <span className="font-semibold">{ROTULOS_DA_SITUACAO[situacao]}</span>
-            <span className="text-apagado tabular-nums">{agenda.horasPorSituacao[situacao]} h</span>
+            {legenda[situacao] && (
+              <span className="text-apagado tabular-nums">{legenda[situacao]}</span>
+            )}
           </li>
         ))}
       </ul>

@@ -6,21 +6,25 @@ import { Vazio } from "@/components/base/vazio";
 import { Icone } from "@/components/icones";
 import { Aviso } from "@/components/ui";
 import { horaDe, NIVEIS } from "@/lib/aulas/formatacao";
-import { momentoDe, type TurmaDeHoje } from "@/lib/painel/inicio";
+import type { AulaNaGrade } from "@/lib/horarios/tipos";
+import { momentoDe } from "@/lib/painel/inicio";
 
 /**
- * Aulas de hoje em linha do tempo: o ponto da aula em andamento pulsa em dourado,
- * as que já passaram ficam apagadas com um "check" e cada turma mostra o quanto
- * das vagas está ocupado.
+ * FOCO-CA-10: aulas de hoje na quadra em linha do tempo. O ponto da aula em andamento
+ * pulsa em dourado, as que já passaram ficam apagadas com um "check" e cada turma
+ * mostra o professor e o quanto das vagas está ocupado.
  */
 export function AulasDeHoje({
   aulas,
   erro,
   minutoAtual,
+  linkDaTurma,
 }: {
-  aulas: readonly TurmaDeHoje[];
+  aulas: readonly AulaNaGrade[];
   erro?: string;
   minutoAtual: number;
+  /** Quem acessa Aulas abre a turma; os outros vão para a agenda. */
+  linkDaTurma: boolean;
 }) {
   return (
     <Cartao aria-labelledby="titulo-aulas-hoje" className="flex flex-col gap-5">
@@ -35,7 +39,11 @@ export function AulasDeHoje({
               ? "Dia livre de aulas"
               : `${aulas.length} ${aulas.length === 1 ? "aula" : "aulas"} na agenda`
         }
-        acao={<LinkDoCartao href="/aulas">Ver as turmas</LinkDoCartao>}
+        acao={
+          <LinkDoCartao href={linkDaTurma ? "/aulas" : "/horarios"}>
+            {linkDaTurma ? "Ver as turmas" : "Ver a agenda"}
+          </LinkDoCartao>
+        }
       />
       {erro ? (
         <Aviso tipo="erro">{erro}</Aviso>
@@ -45,12 +53,13 @@ export function AulasDeHoje({
         </Vazio>
       ) : (
         <ol className="relative flex flex-col" aria-label="Aulas de hoje">
-          {aulas.map(({ turma, inicio, fim }, i) => {
+          {aulas.map((turma, i) => {
+            const { inicio, fim } = turma;
             const momento = momentoDe(inicio, fim, minutoAtual);
             const ultima = i === aulas.length - 1;
             return (
               <li
-                key={`${turma.id}-${inicio}`}
+                key={`${turma.turmaId}-${inicio}`}
                 className={`animate-entrar grid grid-cols-[3.25rem_1.5rem_minmax(0,1fr)] gap-x-2 atraso-${Math.min(24, i * 2 + 2)}`}
               >
                 <span
@@ -76,7 +85,7 @@ export function AulasDeHoje({
                   </span>
                 </span>
                 <Link
-                  href={`/aulas/turmas/${turma.id}`}
+                  href={linkDaTurma ? `/aulas/turmas/${turma.turmaId}` : "/horarios"}
                   className={`hover:bg-elevado/60 mb-1 flex items-center gap-3 rounded-2xl p-2.5 transition-colors ${
                     momento === "agora" ? "bg-ouro/8 ring-ouro/30 ring-1" : ""
                   }`}
@@ -96,8 +105,8 @@ export function AulasDeHoje({
                     </span>
                     <span className="text-apagado mt-0.5 flex flex-wrap items-center gap-x-2 text-xs">
                       <span className="inline-flex items-center gap-1">
-                        <Icone nome="local" width={12} height={12} />
-                        {turma.local.nome}
+                        <Icone nome="pessoa" width={12} height={12} />
+                        {turma.professor.nome}
                       </span>
                       <span>{NIVEIS[turma.nivel]}</span>
                     </span>

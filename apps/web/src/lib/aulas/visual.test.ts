@@ -20,7 +20,6 @@ const turma = (dados: Partial<TurmaResumo>): TurmaResumo => ({
   livres: 10,
   ativa: true,
   inicio: "2026-01-01",
-  local: { id: "l", nome: "Arena" },
   professor: { id: "p", nome: "Paula" },
   horarios: [],
   ...dados,

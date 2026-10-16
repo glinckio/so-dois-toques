@@ -2,79 +2,44 @@ import { describe, expect, it } from "vitest";
 import {
   datasDoPeriodo,
   mesesAte,
-  ocupacaoPorTurno,
   periodoDoMes,
   porcentagem,
   problemaDePeriodo,
   resumoFinanceiro,
-  turnoDaHora,
   type LancamentoContabil,
 } from "./regras.js";
 
-const entrada = (categoria: string, valor: number, categoriaOriginal?: string) =>
-  ({ tipo: "ENTRADA", categoria, valorCentavos: valor, categoriaOriginal }) as LancamentoContabil;
-const saida = (categoria: string, valor: number, categoriaOriginal?: string) =>
-  ({ tipo: "SAIDA", categoria, valorCentavos: valor, categoriaOriginal }) as LancamentoContabil;
+const entrada = (categoria: string, valor: number) =>
+  ({ tipo: "ENTRADA", categoria, valorCentavos: valor }) as LancamentoContabil;
+const saida = (categoria: string, valor: number) =>
+  ({ tipo: "SAIDA", categoria, valorCentavos: valor }) as LancamentoContabil;
 
-describe("CONT-CA-01 e CONT-CA-02: receitas, despesas e conferência", () => {
-  const lancamentos = [
-    entrada("MENSALIDADE", 15000),
-    entrada("MENSALIDADE", 15000),
-    saida("ESTORNO", 15000, "MENSALIDADE"),
-    entrada("ALUGUEL_QUADRA", 16000),
-    entrada("VENDA", 2000),
-    entrada("RECEITA_AVULSA", 500),
-    saida("COMPRA_ESTOQUE", 1200),
-    entrada("ESTORNO", 200, "COMPRA_ESTOQUE"),
-    saida("QUADRA_PARCEIRA", 8000),
-    saida("DESPESA", 300),
-    entrada("SUPRIMENTO", 5000),
-    saida("SANGRIA", 2000),
-    entrada("ESTORNO", 2000, "SANGRIA"),
-  ];
-
-  it("LANCH-CA-03: vendas e compras de estoque antigas contam como outras receitas e despesas", () => {
+describe("FOCO-CA-09: recebido, estornos e conferência", () => {
+  it("soma mensalidades recebidas e estornos, e o resultado confere com o livro-razão", () => {
     const r = resumoFinanceiro([
-      entrada("VENDA", 2000),
-      saida("ESTORNO", 500, "VENDA"),
-      saida("COMPRA_ESTOQUE", 1200),
-      entrada("ESTORNO", 200, "COMPRA_ESTOQUE"),
+      entrada("MENSALIDADE", 15000),
+      entrada("MENSALIDADE", 15000),
+      saida("ESTORNO", 15000),
     ]);
-    expect(r.receitas).toEqual({ AULAS: 0, LOCACAO: 0, OUTRAS: 1500 });
-    expect(r.despesas).toEqual({ QUADRAS_PARCEIRAS: 0, OUTRAS: 1000 });
-    expect(r.resultado).toBe(500);
-    expect(r.naoClassificado).toBe(0);
+    expect(r).toEqual({
+      recebido: 30000,
+      estornos: 15000,
+      resultado: 15000,
+      naoClassificado: 0,
+      entradas: 30000,
+      saidas: 15000,
+      confere: true,
+    });
+  });
+
+  it("guarda lançamento desconhecido à parte, sem perder a conferência", () => {
+    const r = resumoFinanceiro([entrada("NOVA", 100), saida("OUTRA", 30)]);
+    expect(r.naoClassificado).toBe(70);
+    expect(r.resultado).toBe(0);
     expect(r.confere).toBe(true);
   });
 
-  it("soma por origem e tipo, descontando estornos da origem do original", () => {
-    const r = resumoFinanceiro(lancamentos);
-    expect(r.receitas).toEqual({ AULAS: 15000, LOCACAO: 16000, OUTRAS: 2500 });
-    expect(r.despesas).toEqual({ QUADRAS_PARCEIRAS: 8000, OUTRAS: 1300 });
-    expect(r.totalReceitas).toBe(33500);
-    expect(r.totalDespesas).toBe(9300);
-    expect(r.resultado).toBe(24200);
-    expect(r.margemPercentual).toBe(72.2);
-  });
-
-  it("deixa suprimento e sangria fora do resultado e confere com o Caixa", () => {
-    const r = resumoFinanceiro(lancamentos);
-    expect(r.gaveta).toBe(5000);
-    expect(r.entradas).toBe(55700);
-    expect(r.saidas).toBe(26500);
-    expect(r.resultado + r.gaveta).toBe(r.entradas - r.saidas);
-    expect(r.confere).toBe(true);
-  });
-
-  it("guarda categoria desconhecida à parte, sem perder a conferência", () => {
-    const r = resumoFinanceiro([entrada("NOVA", 100), saida("ESTORNO", 50, null as never)]);
-    expect(r.naoClassificado).toBe(50);
-    expect(r.totalReceitas).toBe(0);
-    expect(r.confere).toBe(true);
-  });
-
-  it("sem receita não há margem", () => {
-    expect(resumoFinanceiro([saida("DESPESA", 100)]).margemPercentual).toBeNull();
+  it("porcentagem com uma casa e sem base", () => {
     expect(porcentagem(1, 3)).toBe(33.3);
     expect(porcentagem(1, 0)).toBeNull();
   });
@@ -109,48 +74,5 @@ describe("CONT-CA-04: comparativo mensal", () => {
     expect(meses[0]).toBe("2025-04");
     expect(meses.at(-1)).toBe("2026-03");
     expect(mesesAte("2026-01-31", 3)).toEqual(["2025-11", "2025-12", "2026-01"]);
-  });
-});
-
-describe("CONT-CA-06: ocupação por turno", () => {
-  it("separa os turnos pelas horas", () => {
-    expect([6, 11, 12, 17, 18, 23].map(turnoDaHora)).toEqual([
-      "MANHA",
-      "MANHA",
-      "TARDE",
-      "TARDE",
-      "NOITE",
-      "NOITE",
-    ]);
-  });
-
-  it("calcula horas abertas pelas faixas, menos bloqueios, e a ocupação", () => {
-    // 2026-10-05 é segunda (1) e 2026-10-06 é terça (2).
-    const faixas = [
-      { diaSemana: 1, horaInicio: 8, horaFim: 22 },
-      { diaSemana: 2, horaInicio: 17, horaFim: 22 },
-    ];
-    const ocupacao = ocupacaoPorTurno(["q1", "q2"], ["2026-10-05", "2026-10-06"], faixas, [
-      { quadraId: "q1", data: "2026-10-05", tipo: "RESERVA", horaInicio: 18, horaFim: 20 },
-      { quadraId: "q1", data: "2026-10-06", tipo: "RESERVA", horaInicio: 19, horaFim: 20 },
-      { quadraId: "q1", data: "2026-10-05", tipo: "BLOQUEIO", horaInicio: 8, horaFim: 10 },
-      { quadraId: "q2", data: "2026-10-05", tipo: "RESERVA", horaInicio: 9, horaFim: 10 },
-    ]);
-    expect(ocupacao.get("q1")).toEqual({
-      MANHA: { abertas: 4, bloqueadas: 2, reservadas: 0, ocupacaoPercentual: 0 },
-      TARDE: { abertas: 7, bloqueadas: 0, reservadas: 0, ocupacaoPercentual: 0 },
-      NOITE: { abertas: 8, bloqueadas: 0, reservadas: 3, ocupacaoPercentual: 37.5 },
-    });
-    expect(ocupacao.get("q2")?.MANHA).toEqual({
-      abertas: 4,
-      bloqueadas: 0,
-      reservadas: 1,
-      ocupacaoPercentual: 25,
-    });
-  });
-
-  it("sem horas disponíveis não há ocupação", () => {
-    const ocupacao = ocupacaoPorTurno(["q1"], ["2026-10-05"], [], []);
-    expect(ocupacao.get("q1")?.NOITE.ocupacaoPercentual).toBeNull();
   });
 });

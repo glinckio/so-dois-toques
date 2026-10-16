@@ -17,19 +17,12 @@ import { ipDoCliente } from "./ip";
 describe("menu", () => {
   it("ACESSO-CA-11: mostra só as áreas liberadas, na ordem do menu", () => {
     expect(itensDoMenu(["aulas", "inicio"]).map((i) => i.rotulo)).toEqual(["Início", "Aulas"]);
-    expect(itensDoMenu(["inicio", "horarios", "caixa"]).map((i) => i.href)).toEqual([
+    expect(itensDoMenu(["horarios", "inicio", "mensalidades"]).map((i) => i.href)).toEqual([
       "/",
+      "/mensalidades",
       "/horarios",
-      "/caixa",
     ]);
     expect(itensDoMenu(["area-desconhecida"])).toEqual([]);
-  });
-
-  it("LANCH-CA-02: o menu não tem mais o Estoque, nem se a área vier da API", () => {
-    expect(itensDoMenu(["inicio", "estoque", "caixa"]).map((i) => i.rotulo)).toEqual([
-      "Início",
-      "Caixa",
-    ]);
   });
 });
 
@@ -152,24 +145,28 @@ describe("VIVO-CA-02: menu agrupado e barra do celular", () => {
   });
 
   it("perfis com até cinco áreas veem tudo na barra", () => {
-    const atendente = itensDoMenu(["inicio", "horarios", "caixa"]);
+    const atendente = itensDoMenu(["inicio", "mensalidades", "horarios"]);
     expect(separarMenuDoCelular(atendente)).toEqual({ barra: atendente, mais: [] });
-    const professor = itensDoMenu(["inicio", "aulas"]);
-    expect(separarMenuDoCelular(professor).barra.map((i) => i.rotulo)).toEqual(["Início", "Aulas"]);
+    const professor = itensDoMenu(["inicio", "aulas", "horarios"]);
+    expect(separarMenuDoCelular(professor).barra.map((i) => i.rotulo)).toEqual([
+      "Início",
+      "Aulas",
+      "Horários",
+    ]);
   });
 
-  it("o administrador vê quatro áreas na barra e o resto em Mais", () => {
+  it("FOCO-CA-02: o administrador vê quatro áreas na barra e o resto em Mais, sem Estoque nem Caixa", () => {
     const admin = itensDoMenu([
       "inicio",
       "aulas",
+      "mensalidades",
       "horarios",
-      "caixa",
       "contabil",
       "usuarios",
       "auditoria",
     ]);
     const { barra, mais } = separarMenuDoCelular(admin);
-    expect(barra.map((i) => i.rotulo)).toEqual(["Início", "Aulas", "Horários", "Caixa"]);
+    expect(barra.map((i) => i.rotulo)).toEqual(["Início", "Aulas", "Mensalidades", "Horários"]);
     expect(mais.map((i) => i.rotulo)).toEqual(["Contábil", "Usuários", "Auditoria"]);
   });
 });
@@ -208,9 +205,9 @@ describe("VIVO-CA-14: linha do tempo da auditoria", () => {
       icone: "estorno",
       tom: "areia",
     });
-    expect(eventoDaAuditoria("CAIXA_ABERTO")).toMatchObject({ icone: "caixa", tom: "ouro" });
+    expect(eventoDaAuditoria("CAIXA_ABERTO")).toMatchObject({ icone: "mensalidades", tom: "ouro" });
+    expect(eventoDaAuditoria("BLOQUEIO_CRIADO")).toMatchObject({ assunto: "Horários" });
     expect(eventoDaAuditoria("RESERVA_CRIADA")).toMatchObject({ assunto: "Horários" });
-    // LANCH-CA-04: eventos antigos da lanchonete continuam legíveis na auditoria.
     expect(eventoDaAuditoria("PRODUTO_CRIADO")).toMatchObject({ assunto: "Estoque" });
     expect(eventoDaAuditoria("PRESENCA_REGISTRADA")).toMatchObject({ assunto: "Aulas" });
   });

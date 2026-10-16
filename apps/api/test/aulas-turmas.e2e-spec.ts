@@ -2,14 +2,14 @@ import type { INestApplication } from "@nestjs/common";
 import { hojeEmSaoPaulo, paraDataDoBanco } from "../src/aulas/regras.js";
 import { PrismaService } from "../src/prisma/prisma.service.js";
 import { criarApp } from "./apoio.js";
-import { criarAluno, criarLocal, criarTurma, logado, todosOsDias, unico } from "./apoio-aulas.js";
+import { criarAluno, criarTurma, logado, todosOsDias } from "./apoio-aulas.js";
 
 /** Data de N dias atrás no calendário de São Paulo. */
 function diasAtras(n: number): string {
   return hojeEmSaoPaulo(new Date(Date.now() - n * 24 * 60 * 60 * 1000));
 }
 
-describe("Etapa 2: locais, turmas, matrículas e presença", () => {
+describe("Etapa 2: turmas, matrículas e presença", () => {
   let app: INestApplication;
   let prisma: PrismaService;
 
@@ -22,44 +22,11 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
     await app.close();
   });
 
-  it("AULAS-CA-09: locais com nome único; local inativo não recebe turma nova", async () => {
+  it("AULAS-CA-10 e FOCO-CA-04: turma sem local, com nível, professor, vagas e horários; horários inválidos recusados", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const nome = unico("Arena Copacabana");
-    const local = await api
-      .post("/locais", { nome, tipo: "PARCEIRA", endereco: "Av. Atlântica" }, token)
-      .expect(201);
-    expect(local.body).toMatchObject({ nome, tipo: "PARCEIRA", ativo: true });
-    const repetido = await api.post("/locais", { nome, tipo: "PROPRIA" }, token).expect(409);
-    expect(repetido.body.message).toBe("Já existe um local com esse nome.");
-
-    await api
-      .patch(`/locais/${local.body.id}`, { nome, tipo: "PARCEIRA", ativo: false }, token)
-      .expect(200);
-    const turma = await api.post(
-      "/turmas",
-      {
-        nome: "Turma",
-        nivel: "INICIANTE",
-        localId: local.body.id,
-        professorId: usuario.id,
-        vagas: 8,
-        horarios: todosOsDias(),
-      },
-      token,
-    );
-    expect(turma.status).toBe(400);
-    expect(turma.body.message).toBe("Escolha um local ativo.");
-    const lista = await api.get("/locais", token).expect(200);
-    expect(lista.body.find((l: { id: string }) => l.id === local.body.id).ativo).toBe(false);
-  });
-
-  it("AULAS-CA-10: turma com nível, local, professor, vagas e horários; horários inválidos recusados", async () => {
-    const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
     const base = {
       nome: "Iniciantes manhã",
       nivel: "INICIANTE",
-      localId,
       professorId: usuario.id,
       vagas: 12,
     };
@@ -76,7 +43,6 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
       ocupadas: 0,
       livres: 12,
       professor: { id: usuario.id },
-      local: { id: localId },
       horarios,
     });
 
@@ -100,7 +66,6 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
 
   it("AULAS-CA-11: professor da turma não pode ser inativo nem atendente", async () => {
     const { api, token } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
     const { usuario: atendente } = await logado(app, "ATENDENTE");
     const { usuario: inativo } = await logado(app, "PROFESSOR");
     await prisma.usuario.update({ where: { id: inativo.id }, data: { ativo: false } });
@@ -110,7 +75,6 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
         {
           nome: "Avançados",
           nivel: "AVANCADO",
-          localId,
           professorId,
           vagas: 5,
           horarios: todosOsDias(),
@@ -131,9 +95,7 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
   it("AULAS-CA-12: o mesmo professor não tem duas turmas ativas no mesmo horário", async () => {
     const { api, token } = await logado(app, "ADMINISTRADOR");
     const { usuario: professor } = await logado(app, "PROFESSOR");
-    const localId = await criarLocal(api, token);
     const primeira = await criarTurma(api, token, {
-      localId,
       professorId: professor.id,
       horarios: [{ diaSemana: 1, inicio: 18 * 60, fim: 19 * 60 }],
     });
@@ -142,7 +104,6 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
       {
         nome: "Conflitante",
         nivel: "INICIANTE",
-        localId,
         professorId: professor.id,
         vagas: 5,
         horarios: [{ diaSemana: 1, inicio: 18 * 60 + 30, fim: 19 * 60 + 30 }],
@@ -156,23 +117,67 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
 
     // Logo em seguida, no mesmo dia, pode.
     await criarTurma(api, token, {
-      localId,
       professorId: professor.id,
       horarios: [{ diaSemana: 1, inicio: 19 * 60, fim: 20 * 60 }],
     });
     // Com a primeira encerrada, o horário fica livre.
     await api.post(`/turmas/${primeira}/encerrar`, {}, token).expect(200);
     await criarTurma(api, token, {
-      localId,
       professorId: professor.id,
       horarios: [{ diaSemana: 1, inicio: 18 * 60 + 30, fim: 19 * 60 }],
     });
   });
 
+  it("FOCO-CA-04: duas turmas ativas não dividem a quadra, mesmo com professores diferentes", async () => {
+    const { api, token } = await logado(app, "ADMINISTRADOR");
+    const { usuario: ana } = await logado(app, "PROFESSOR");
+    const { usuario: bia } = await logado(app, "PROFESSOR");
+    const primeira = await criarTurma(api, token, {
+      professorId: ana.id,
+      horarios: [{ diaSemana: 3, inicio: 18 * 60, fim: 19 * 60 }],
+    });
+    const base = { nome: "Outra", nivel: "INICIANTE", professorId: bia.id, vagas: 5 };
+    const conflito = await api
+      .post(
+        "/turmas",
+        { ...base, horarios: [{ diaSemana: 3, inicio: 18 * 60 + 30, fim: 20 * 60 }] },
+        token,
+      )
+      .expect(409);
+    expect(conflito.body.message).toMatch(/^A quadra já tem a turma ".+" na quarta 18:00–19:00\.$/);
+
+    // Em outro horário pode; mudar a turma para cima da primeira, não.
+    const segunda = await criarTurma(api, token, {
+      professorId: bia.id,
+      horarios: [{ diaSemana: 3, inicio: 19 * 60, fim: 20 * 60 }],
+    });
+    await api
+      .patch(
+        `/turmas/${segunda}`,
+        { ...base, horarios: [{ diaSemana: 3, inicio: 17 * 60 + 30, fim: 18 * 60 + 30 }] },
+        token,
+      )
+      .expect(409);
+    // Mudar a própria turma sem sair do seu horário é aceito.
+    await api
+      .patch(
+        `/turmas/${segunda}`,
+        { ...base, horarios: [{ diaSemana: 3, inicio: 19 * 60, fim: 20 * 60 + 30 }] },
+        token,
+      )
+      .expect(200);
+
+    // Encerrada a primeira, o horário fica livre para a outra professora.
+    await api.post(`/turmas/${primeira}/encerrar`, {}, token).expect(200);
+    await criarTurma(api, token, {
+      professorId: bia.id,
+      horarios: [{ diaSemana: 3, inicio: 18 * 60, fim: 19 * 60 }],
+    });
+  });
+
   it("AULAS-CA-13: encerrar turma encerra matrículas e bloqueia matrícula e presença nova", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
-    const turmaId = await criarTurma(api, token, { localId, professorId: usuario.id });
+    const turmaId = await criarTurma(api, token, { professorId: usuario.id });
     const alunoId = await criarAluno(api, token);
     await api.post(`/turmas/${turmaId}/matriculas`, { alunoId }, token).expect(201);
 
@@ -196,8 +201,7 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
 
   it("AULAS-CA-14: turma cheia recusa matrícula, inclusive com pedidos simultâneos para a última vaga", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
-    const turmaId = await criarTurma(api, token, { localId, professorId: usuario.id, vagas: 2 });
+    const turmaId = await criarTurma(api, token, { professorId: usuario.id, vagas: 2 });
     const [a, b, c] = [
       await criarAluno(api, token),
       await criarAluno(api, token),
@@ -216,15 +220,12 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
 
   it("AULAS-CA-15: aluno em várias turmas, mas não duas vezes na mesma; vagas ocupadas e livres", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
     const t1 = await criarTurma(api, token, {
-      localId,
       professorId: usuario.id,
       vagas: 5,
       horarios: todosOsDias(6 * 60, 7 * 60),
     });
     const t2 = await criarTurma(api, token, {
-      localId,
       professorId: usuario.id,
       vagas: 5,
       horarios: todosOsDias(9 * 60, 10 * 60),
@@ -250,8 +251,7 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
 
   it("AULAS-CA-16: vagas não podem ficar abaixo dos matriculados", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
-    const turmaId = await criarTurma(api, token, { localId, professorId: usuario.id, vagas: 3 });
+    const turmaId = await criarTurma(api, token, { professorId: usuario.id, vagas: 3 });
     for (let i = 0; i < 2; i++) {
       await api
         .post(`/turmas/${turmaId}/matriculas`, { alunoId: await criarAluno(api, token) }, token)
@@ -260,7 +260,6 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
     const base = {
       nome: "Turma ajustada",
       nivel: "INTERMEDIARIO",
-      localId,
       professorId: usuario.id,
       horarios: todosOsDias(),
     };
@@ -279,8 +278,7 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
   it("AULAS-CA-17: professor registra a presença com os alunos matriculados na data", async () => {
     const { api: adminApi, token: adminToken } = await logado(app, "ADMINISTRADOR");
     const { api, token, usuario: professor } = await logado(app, "PROFESSOR");
-    const localId = await criarLocal(adminApi, adminToken);
-    const turmaId = await criarTurma(adminApi, adminToken, { localId, professorId: professor.id });
+    const turmaId = await criarTurma(adminApi, adminToken, { professorId: professor.id });
     const [a, b, c] = [
       await criarAluno(adminApi, adminToken, { nome: "Ana Areia" }),
       await criarAluno(adminApi, adminToken, { nome: "Bruno Bola" }),
@@ -340,13 +338,11 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
 
   it("AULAS-CA-18: presença em data futura, sem aula ou antes da turma é recusada", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
     const hoje = hojeEmSaoPaulo(new Date());
     const diaDeHoje = new Date(`${hoje}T12:00:00Z`).getUTCDay();
     const turmaId = await criarTurma(api, token, {
-      localId,
       professorId: usuario.id,
-      horarios: [{ diaSemana: diaDeHoje, inicio: 6 * 60, fim: 7 * 60 }],
+      horarios: [{ diaSemana: diaDeHoje, inicio: 5 * 60, fim: 5 * 60 + 30 }],
     });
     const amanha = hojeEmSaoPaulo(new Date(Date.now() + 24 * 60 * 60 * 1000));
     const futura = await api.get(`/turmas/${turmaId}/presencas/${amanha}`, token).expect(400);
@@ -369,8 +365,7 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
   it("AULAS-CA-19: presença corrigida guarda quem marcou e aparece na auditoria", async () => {
     const { api, token, usuario: admin } = await logado(app, "ADMINISTRADOR");
     const { api: profApi, token: profToken, usuario: professor } = await logado(app, "PROFESSOR");
-    const localId = await criarLocal(api, token);
-    const turmaId = await criarTurma(api, token, { localId, professorId: professor.id });
+    const turmaId = await criarTurma(api, token, { professorId: professor.id });
     const alunoId = await criarAluno(api, token);
     await api.post(`/turmas/${turmaId}/matriculas`, { alunoId }, token).expect(201);
     const hoje = hojeEmSaoPaulo(new Date());
@@ -416,10 +411,8 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
     const { api: adminApi, token: adminToken } = await logado(app, "ADMINISTRADOR");
     const { api, token, usuario: professor } = await logado(app, "PROFESSOR");
     const { usuario: outroProfessor } = await logado(app, "PROFESSOR");
-    const localId = await criarLocal(adminApi, adminToken);
-    const minha = await criarTurma(adminApi, adminToken, { localId, professorId: professor.id });
+    const minha = await criarTurma(adminApi, adminToken, { professorId: professor.id });
     const alheia = await criarTurma(adminApi, adminToken, {
-      localId,
       professorId: outroProfessor.id,
     });
     const meuAluno = await criarAluno(adminApi, adminToken);
@@ -466,8 +459,7 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
 
   it("AULAS-CA-21: professor e atendente não fazem cadastros nem LGPD", async () => {
     const { api: adminApi, token: adminToken, usuario: admin } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(adminApi, adminToken);
-    const turmaId = await criarTurma(adminApi, adminToken, { localId, professorId: admin.id });
+    const turmaId = await criarTurma(adminApi, adminToken, { professorId: admin.id });
     const alunoId = await criarAluno(adminApi, adminToken);
 
     for (const perfil of ["PROFESSOR", "ATENDENTE"] as const) {
@@ -478,8 +470,6 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
         api.post(`/alunos/${alunoId}/inativar`, {}, token),
         api.get(`/alunos/${alunoId}/exportacao`, token),
         api.post(`/alunos/${alunoId}/anonimizar`, {}, token),
-        api.get("/locais", token),
-        api.post("/locais", { nome: "x", tipo: "PARCEIRA" }, token),
         api.post("/turmas", { nome: "x" }, token),
         api.patch(`/turmas/${turmaId}`, { nome: "x" }, token),
         api.post(`/turmas/${turmaId}/encerrar`, {}, token),
@@ -499,10 +489,9 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
     await api.get("/alunos", token).expect(403);
   });
 
-  it("AULAS-CA-22: cadastros de local, turma e matrícula ficam na auditoria com autor e IP", async () => {
+  it("AULAS-CA-22: cadastros de turma e matrícula ficam na auditoria com autor e IP", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const localId = await criarLocal(api, token);
-    const turmaId = await criarTurma(api, token, { localId, professorId: usuario.id });
+    const turmaId = await criarTurma(api, token, { professorId: usuario.id });
     const alunoId = await criarAluno(api, token);
     const matricula = await api
       .post(`/turmas/${turmaId}/matriculas`, { alunoId }, token)
@@ -517,7 +506,6 @@ describe("Etapa 2: locais, turmas, matrículas e presença", () => {
     });
     expect(registros.map((r) => r.acao)).toEqual([
       "LOGIN_SUCESSO",
-      "LOCAL_CRIADO",
       "TURMA_CRIADA",
       "ALUNO_CRIADO",
       "MATRICULA_CRIADA",

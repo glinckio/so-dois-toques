@@ -5,8 +5,7 @@ import { MetadataScanner, ModulesContainer, Reflector } from "@nestjs/core";
 import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { AREA, PUBLICO, SEM_CHAVE_INTERNA } from "../src/comum/decoradores.js";
-import { criarApp } from "./apoio.js";
-import { logado } from "./apoio-aulas.js";
+import { cliente, criarApp, criarUsuario, SENHA_BOA } from "./apoio.js";
 
 type Rota = {
   metodo: string;
@@ -85,20 +84,10 @@ describe("Inventário de rotas da API (LANC-CA-03)", () => {
   });
 
   it("LANC-CA-03: o inventário encontra as rotas de todos os módulos", () => {
-    expect(rotas.length).toBeGreaterThan(50);
-    for (const prefixo of ["/alunos", "/caixa", "/contabil", "/horarios", "/usuarios"]) {
+    expect(rotas.length).toBeGreaterThan(40);
+    for (const prefixo of ["/alunos", "/mensalidades", "/contabil", "/horarios", "/usuarios"]) {
       expect(rotas.some((r) => r.caminho.startsWith(prefixo))).toBe(true);
     }
-  });
-
-  it("LANCH-CA-01: não há mais rotas de produtos, estoque ou vendas", async () => {
-    expect(rotas.filter((r) => /^\/(produtos|estoque)(\/|$)/.test(r.caminho)).map(chave)).toEqual(
-      [],
-    );
-    const { api, token } = await logado(app, "ADMINISTRADOR");
-    await api.get("/produtos", token).expect(404);
-    await api.get("/estoque/vendas", token).expect(404);
-    await api.post("/estoque/vendas", { itens: [], forma: "PIX" }, token).expect(404);
   });
 
   it("LANC-CA-03: só as rotas da lista fixa dispensam chave, sessão ou área", () => {
@@ -134,6 +123,46 @@ describe("Inventário de rotas da API (LANC-CA-03)", () => {
         rota: chave(rota),
         status: 401,
       });
+    }
+  });
+
+  it("FOCO-CA-01: as rotas de estoque, caixa, quadras parceiras e aluguel de quadra não existem mais", async () => {
+    const removidas = [
+      "GET /caixa/sessao",
+      "POST /caixa/sessoes",
+      "POST /caixa/avulsos",
+      "GET /caixa/lancamentos",
+      "GET /produtos",
+      "POST /estoque/vendas",
+      "POST /estoque/compras",
+      "GET /locais",
+      "POST /locais",
+      "GET /custos",
+      "POST /custos/pagamentos",
+      "GET /horarios/faixas",
+      "POST /horarios/reservas",
+      "GET /horarios/quadras",
+      "GET /horarios/clientes/anonimizaveis",
+      "POST /horarios/clientes/anonimizar",
+    ];
+    const existentes = new Set(rotas.map(chave));
+    for (const rota of removidas) expect(existentes.has(rota), rota).toBe(false);
+    for (const prefixo of ["/caixa", "/produtos", "/estoque", "/locais", "/custos"]) {
+      expect(
+        rotas.some((r) => r.caminho.startsWith(prefixo)),
+        prefixo,
+      ).toBe(false);
+    }
+
+    // Com sessão de administrador, elas respondem 404.
+    const admin = await criarUsuario(app, "ADMINISTRADOR");
+    const api = cliente(app);
+    const token = await api.entrar(admin.email, SENHA_BOA);
+    for (const rota of removidas) {
+      const [metodo, caminho] = rota.split(" ") as [string, string];
+      const resposta =
+        metodo === "GET" ? await api.get(caminho, token) : await api.post(caminho, {}, token);
+      expect({ rota, status: resposta.status }).toEqual({ rota, status: 404 });
     }
   });
 });

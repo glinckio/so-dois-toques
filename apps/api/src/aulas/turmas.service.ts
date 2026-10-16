@@ -6,6 +6,8 @@ import {
 } from "@nestjs/common";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
 import { Prisma } from "../generated/prisma/client.js";
+import { travarAgenda } from "../horarios/agenda.js";
+import { datasDeBloqueioSobreHorarios, formatarData } from "../horarios/regras.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { ehAdmin, negarForaDoEscopo, type Ator } from "./comum.js";
 import {
@@ -20,16 +22,13 @@ import {
   validarDataDePresenca,
   type Horario,
   type Nivel,
-  type TipoLocal,
 } from "./regras.js";
 
 type Tx = Prisma.TransactionClient;
 
-export type DadosLocal = { nome: string; tipo: TipoLocal; endereco: string | null; ativo: boolean };
 export type DadosTurma = {
   nome: string;
   nivel: Nivel;
-  localId: string;
   professorId: string;
   vagas: number;
   horarios: Horario[];
@@ -48,70 +47,6 @@ export class TurmasService {
     private readonly prisma: PrismaService,
     private readonly auditoria: AuditoriaService,
   ) {}
-
-  // ---------- Locais (AULAS-CA-09) ----------
-
-  listarLocais() {
-    return this.prisma.local.findMany({ orderBy: [{ ativo: "desc" }, { nome: "asc" }] });
-  }
-
-  async criarLocal(ator: Ator, dados: DadosLocal) {
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        const local = await tx.local.create({ data: dados });
-        await this.auditoria.registrar(
-          {
-            acao: "LOCAL_CRIADO",
-            atorId: ator.id,
-            ip: ator.ip,
-            alvoTipo: "Local",
-            alvoId: local.id,
-            detalhes: { nome: local.nome, tipo: local.tipo },
-          },
-          tx,
-        );
-        return local;
-      });
-    } catch (erro) {
-      throw this.traduzirNomeRepetido(erro);
-    }
-  }
-
-  async alterarLocal(ator: Ator, id: string, dados: DadosLocal) {
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        const atual = await tx.local.findUnique({ where: { id } });
-        if (!atual) throw new NotFoundException("Local não encontrado.");
-        // Local próprio não tem valor de hora (Etapa 4).
-        const valorHora = dados.tipo === "PROPRIA" ? { valorHoraCentavos: null } : {};
-        const local = await tx.local.update({ where: { id }, data: { ...dados, ...valorHora } });
-        await this.auditoria.registrar(
-          {
-            acao: "LOCAL_ALTERADO",
-            atorId: ator.id,
-            ip: ator.ip,
-            alvoTipo: "Local",
-            alvoId: id,
-            detalhes: {
-              de: { nome: atual.nome, tipo: atual.tipo, ativo: atual.ativo },
-              para: dados,
-            },
-          },
-          tx,
-        );
-        return local;
-      });
-    } catch (erro) {
-      throw this.traduzirNomeRepetido(erro);
-    }
-  }
-
-  private traduzirNomeRepetido(erro: unknown) {
-    if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === "P2002") {
-      return new ConflictException("Já existe um local com esse nome.");
-    }
-    return erro;
-  }
 
   /** Quem pode dar aula: usuários ativos com perfil Professor ou Administrador (AULAS-CA-11). */
   listarProfessores() {
@@ -140,7 +75,6 @@ export class TurmasService {
         ...(situacao === "todas" ? {} : { ativa: situacao === "ativas" }),
       },
       include: {
-        local: { select: { id: true, nome: true } },
         professor: { select: { id: true, nome: true } },
         horarios: { orderBy: [{ diaSemana: "asc" }, { inicio: "asc" }] },
       },
@@ -156,7 +90,6 @@ export class TurmasService {
   private resumo(
     t: Prisma.TurmaGetPayload<{
       include: {
-        local: { select: { id: true; nome: true } };
         professor: { select: { id: true; nome: true } };
         horarios: true;
       };
@@ -172,7 +105,6 @@ export class TurmasService {
       livres: Math.max(0, t.vagas - ocupadas),
       ativa: t.ativa,
       inicio: deDataDoBanco(t.inicio),
-      local: t.local,
       professor: t.professor,
       horarios: t.horarios.map((h) => ({ diaSemana: h.diaSemana, inicio: h.inicio, fim: h.fim })),
     };
@@ -183,7 +115,6 @@ export class TurmasService {
     const turma = await this.prisma.turma.findUnique({
       where: { id },
       include: {
-        local: { select: { id: true, nome: true } },
         professor: { select: { id: true, nome: true } },
         horarios: { orderBy: [{ diaSemana: "asc" }, { inicio: "asc" }] },
       },
@@ -212,21 +143,15 @@ export class TurmasService {
     };
   }
 
-  /** AULAS-CA-10 a 12: local ativo, professor válido e horários sem conflito. */
-  private async validarTurma(
-    tx: Tx,
-    dados: DadosTurma,
-    turmaId: string | null,
-    localAtual: string | null,
-  ) {
+  /**
+   * AULAS-CA-10 a 12, FOCO-CA-04 e 06: professor válido, horários sem conflito com outra
+   * turma ativa (a quadra é uma só) nem com bloqueios a partir de hoje.
+   */
+  private async validarTurma(tx: Tx, dados: DadosTurma, turmaId: string | null) {
     if (dados.horarios.length === 0)
       throw new BadRequestException("Informe pelo menos um horário.");
     if (temSobreposicaoInterna(dados.horarios)) {
       throw new BadRequestException("Os horários da turma se sobrepõem.");
-    }
-    const local = await tx.local.findUnique({ where: { id: dados.localId } });
-    if (!local || (!local.ativo && local.id !== localAtual)) {
-      throw new BadRequestException("Escolha um local ativo.");
     }
     const professor = await tx.usuario.findUnique({ where: { id: dados.professorId } });
     if (!professor || !professor.ativo || professor.perfil === "ATENDENTE") {
@@ -234,34 +159,43 @@ export class TurmasService {
         "O professor precisa ser um usuário ativo com perfil Professor ou Administrador.",
       );
     }
-    // Serializa as mudanças de turmas do mesmo professor para a checagem de conflito.
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`turmas-professor:${dados.professorId}`}))`;
+    await travarAgenda(tx);
     const existentes = await tx.horarioTurma.findMany({
-      where: {
-        turma: {
-          professorId: dados.professorId,
-          ativa: true,
-          ...(turmaId ? { id: { not: turmaId } } : {}),
-        },
-      },
-      include: { turma: { select: { nome: true } } },
+      where: { turma: { ativa: true, ...(turmaId ? { id: { not: turmaId } } : {}) } },
+      include: { turma: { select: { nome: true, professorId: true } } },
     });
-    const conflito = conflitosDeHorario(dados.horarios, existentes)[0];
+    const conflitos = conflitosDeHorario(dados.horarios, existentes);
+    const conflito =
+      conflitos.find((c) => c.turma.professorId === dados.professorId) ?? conflitos[0];
     if (conflito) {
       throw new ConflictException(
-        `O professor já tem a turma "${conflito.turma.nome}" na ${descreverHorario(conflito)}.`,
+        conflito.turma.professorId === dados.professorId
+          ? `O professor já tem a turma "${conflito.turma.nome}" na ${descreverHorario(conflito)}.`
+          : `A quadra já tem a turma "${conflito.turma.nome}" na ${descreverHorario(conflito)}.`,
+      );
+    }
+    const bloqueios = await tx.bloqueio.findMany({
+      where: { canceladoEm: null, data: { gte: paraDataDoBanco(hojeEmSaoPaulo(new Date())) } },
+      select: { data: true, horaInicio: true, horaFim: true },
+    });
+    const datas = datasDeBloqueioSobreHorarios(
+      dados.horarios,
+      bloqueios.map((b) => ({ ...b, data: deDataDoBanco(b.data) })),
+    );
+    if (datas.length > 0) {
+      throw new ConflictException(
+        `A quadra está bloqueada nesse horário em ${datas.map(formatarData).join(", ")}.`,
       );
     }
   }
 
   async criar(ator: Ator, dados: DadosTurma) {
     return this.prisma.$transaction(async (tx) => {
-      await this.validarTurma(tx, dados, null, null);
+      await this.validarTurma(tx, dados, null);
       const turma = await tx.turma.create({
         data: {
           nome: dados.nome,
           nivel: dados.nivel,
-          localId: dados.localId,
           professorId: dados.professorId,
           vagas: dados.vagas,
           inicio: paraDataDoBanco(hojeEmSaoPaulo(new Date())),
@@ -295,7 +229,7 @@ export class TurmasService {
     return this.prisma.$transaction(async (tx) => {
       const atual = await this.travarTurma(tx, id);
       if (!atual.ativa) throw new ConflictException(MENSAGEM_TURMA_ENCERRADA);
-      await this.validarTurma(tx, dados, id, atual.localId);
+      await this.validarTurma(tx, dados, id);
       const ocupadas = (await this.ocupadas(tx, [id])).get(id) ?? 0;
       if (dados.vagas < ocupadas) {
         throw new ConflictException(
@@ -308,7 +242,6 @@ export class TurmasService {
         data: {
           nome: dados.nome,
           nivel: dados.nivel,
-          localId: dados.localId,
           professorId: dados.professorId,
           vagas: dados.vagas,
           horarios: { create: dados.horarios },
@@ -326,13 +259,11 @@ export class TurmasService {
               nome: atual.nome,
               professorId: atual.professorId,
               vagas: atual.vagas,
-              localId: atual.localId,
             },
             para: {
               nome: dados.nome,
               professorId: dados.professorId,
               vagas: dados.vagas,
-              localId: dados.localId,
             },
           },
         },

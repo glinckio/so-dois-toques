@@ -1,6 +1,8 @@
 # Etapa 13: Sem lanchonete
 
-**Status:** implementada
+**Status:** removida
+
+> A [Etapa 14](../14-foco-em-aulas/spec.md) foi além desta: caixa, quadras parceiras e aluguel de quadra também saíram, e as tabelas da lanchonete saíram do banco. Esta spec fica como histórico.
 
 ## Objetivo
 

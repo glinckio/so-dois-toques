@@ -33,21 +33,25 @@ export async function criarAluno(api: Api, token: string, extra: Record<string, 
   return resposta.body.id as string;
 }
 
-export async function criarLocal(api: Api, token: string) {
-  const resposta = await api.post("/locais", { nome: unico("Arena"), tipo: "PARCEIRA" }, token);
-  if (resposta.status !== 201) throw new Error(`local: ${resposta.status} ${resposta.text}`);
-  return resposta.body.id as string;
-}
+let proximoMinuto = 0;
 
-/** Turma com aula em todos os dias, num horário único por professor para não conflitar. */
-export function todosOsDias(inicio = 7 * 60, fim = 8 * 60) {
-  return [0, 1, 2, 3, 4, 5, 6].map((diaSemana) => ({ diaSemana, inicio, fim }));
+/**
+ * Turma com aula em todos os dias. Sem horário pedido, cada chamada recebe um minuto
+ * só dela a partir das 21h: a quadra é uma só e duas turmas ativas não dividem horário
+ * (FOCO-CA-04). A agenda é zerada no começo de cada arquivo (limpar-agenda.ts).
+ */
+export function todosOsDias(inicio?: number, fim?: number) {
+  if (inicio === undefined) {
+    inicio = 21 * 60 + proximoMinuto++;
+    fim = inicio + 1;
+  }
+  const ate = fim ?? inicio + 60;
+  return [0, 1, 2, 3, 4, 5, 6].map((diaSemana) => ({ diaSemana, inicio, fim: ate }));
 }
-
 export async function criarTurma(
   api: Api,
   token: string,
-  dados: { localId: string; professorId: string; vagas?: number; horarios?: unknown[] },
+  dados: { professorId: string; vagas?: number; horarios?: unknown[] },
 ) {
   const resposta = await api.post(
     "/turmas",

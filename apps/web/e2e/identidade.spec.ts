@@ -47,25 +47,25 @@ test("VIS-CA-04: o Início do administrador mostra o mês e o gráfico de 12 mes
 }) => {
   const erros = errosDoConsole(page);
   await entrarComoAdmin(page);
-  for (const kpi of ["Receitas", "Despesas", "Resultado", "A receber"]) {
+  for (const kpi of ["Recebido", "Estornos", "Resultado", "A receber"]) {
     await expect(page.getByTestId(`kpi-${kpi}`)).toHaveText(/^-?R\$\s/);
   }
   const grafico = page.getByTestId("grafico-mensal");
   await expect(grafico).toBeVisible();
-  await expect(grafico.getByText("Receitas", { exact: true })).toBeVisible();
-  await expect(grafico.getByText("Despesas", { exact: true })).toBeVisible();
+  await expect(grafico.getByText("Recebido", { exact: true })).toBeVisible();
+  await expect(grafico.getByText("Estornos", { exact: true })).toBeVisible();
 
   await page.getByText("Ver em tabela").click();
   const tabela = page.getByRole("table", { name: "Comparativo mensal" });
   await expect(tabela).toBeVisible();
   await expect(tabela.getByRole("row")).toHaveCount(13);
-  for (const secao of ["Caixa de hoje", "Quadras hoje", "Aulas de hoje"]) {
+  for (const secao of ["Aulas de hoje", "Mensalidades em atraso"]) {
     await expect(page.getByRole("region", { name: secao })).toBeVisible();
   }
   expect(erros).toEqual([]);
 });
 
-test("VIS-CA-05: atendente e professor veem só o resumo das suas áreas", async ({
+test("VIS-CA-05 e FOCO-CA-10: atendente e professor veem só o resumo das suas áreas", async ({
   page,
   browser,
 }) => {
@@ -87,22 +87,18 @@ test("VIS-CA-05: atendente e professor veem só o resumo das suas áreas", async
   const pessoa = await contexto.newPage();
   try {
     await primeiroAcesso(pessoa, emailAtendente, senhaAtendente, "saque-curto-2026-a");
-    for (const secao of ["Caixa de hoje", "Quadras hoje"]) {
+    for (const secao of ["Aulas de hoje", "Mensalidades em atraso"]) {
       await expect(pessoa.getByRole("region", { name: secao })).toBeVisible();
     }
-    await expect(pessoa.getByTestId("situacao-caixa")).toBeVisible();
-    await expect(pessoa.getByRole("region", { name: "Aulas de hoje" })).toHaveCount(0);
-    await expect(pessoa.getByTestId("kpi-Receitas")).toHaveCount(0);
+    await expect(pessoa.getByTestId("kpi-Recebido")).toHaveCount(0);
     await expect(pessoa.getByTestId("grafico-mensal")).toHaveCount(0);
 
     await sair(pessoa);
     await expect(pessoa).toHaveURL("/login");
     await primeiroAcesso(pessoa, emailProfessor, senhaProfessor, "manchete-baixa-2026-p");
     await expect(pessoa.getByRole("region", { name: "Aulas de hoje" })).toBeVisible();
-    for (const secao of ["Caixa de hoje", "Quadras hoje"]) {
-      await expect(pessoa.getByRole("region", { name: secao })).toHaveCount(0);
-    }
-    await expect(pessoa.getByTestId("kpi-Receitas")).toHaveCount(0);
+    await expect(pessoa.getByRole("region", { name: "Mensalidades em atraso" })).toHaveCount(0);
+    await expect(pessoa.getByTestId("kpi-Recebido")).toHaveCount(0);
   } finally {
     await contexto.close();
   }
@@ -116,12 +112,9 @@ test("VIS-CA-06: o Contábil mostra gráficos com legenda e tabela, sem erros de
   await page.goto("/contabil");
   const grafico = page.getByTestId("grafico-mensal");
   await expect(grafico).toBeVisible();
-  await expect(grafico.getByText("Receitas", { exact: true })).toBeVisible();
+  await expect(grafico.getByText("Recebido", { exact: true })).toBeVisible();
   await expect(page.getByRole("table", { name: "Comparativo mensal" })).toBeVisible();
-  for (const barras of ["Receitas por origem", "Despesas por tipo"]) {
-    await expect(page.getByTestId(`grafico-${barras}`)).toBeVisible();
-    await expect(page.getByRole("table", { name: barras })).toBeVisible();
-  }
+  await expect(page.getByRole("table", { name: "Formas de pagamento" })).toBeVisible();
   expect(erros).toEqual([]);
 });
 
@@ -132,5 +125,5 @@ test("VIS-CA-04: o detalhe do mês aparece ao tocar ou passar o mouse no gráfic
   const grafico = page.getByTestId("grafico-mensal").locator("svg[role=img]:visible");
   const caixa = (await grafico.boundingBox())!;
   await grafico.click({ position: { x: caixa.width - 20, y: caixa.height / 2 } });
-  await expect(page.getByTestId("dica-grafico").locator("visible=true")).toContainText("Receitas");
+  await expect(page.getByTestId("dica-grafico").locator("visible=true")).toContainText("Recebido");
 });

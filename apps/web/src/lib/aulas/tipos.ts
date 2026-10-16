@@ -1,12 +1,5 @@
-import type { Horario, Nivel, TipoLocal } from "./formatacao";
+import type { Horario, Nivel } from "./formatacao";
 
-export type Local = {
-  id: string;
-  nome: string;
-  tipo: TipoLocal;
-  endereco: string | null;
-  ativo: boolean;
-};
 export type Professor = { id: string; nome: string; perfil: string };
 
 export type TurmaResumo = {
@@ -18,7 +11,6 @@ export type TurmaResumo = {
   livres: number;
   ativa: boolean;
   inicio: string;
-  local: { id: string; nome: string };
   professor: { id: string; nome: string };
   horarios: Horario[];
 };

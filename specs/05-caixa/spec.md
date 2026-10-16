@@ -1,6 +1,8 @@
 # Etapa 5: Caixa (abertura, fechamento e lançamentos avulsos)
 
-**Status:** implementada
+**Status:** removida
+
+> Esta etapa saiu do sistema na [Etapa 14](../14-foco-em-aulas/spec.md). A spec fica como histórico.
 
 ## Objetivo
 

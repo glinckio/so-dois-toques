@@ -104,7 +104,7 @@ O `pnpm db:backup` e o `pnpm db:restaurar` continuam valendo da sua máquina; pa
 - [ ] `/health` da API responde ok pelo endereço final.
 - [ ] Login funcionando pelo domínio, com https.
 - [ ] Primeiro administrador criado; equipe cadastrada com o perfil certo.
-- [ ] Faixas de preço das quadras, locais e planos cadastrados.
+- [ ] Nome da quadra, planos e turmas cadastrados.
 - [ ] Um backup feito e restaurado com conferência igual.
 - [ ] Conferência manual das telas no celular e no computador.
 - [ ] Tag `v1.0.0` criada no commit que foi para produção:
@@ -116,3 +116,7 @@ git tag -a v1.0.0 -m "Só Dois Toques 1.0.0" && git push origin v1.0.0
 ## Atualizações
 
 Cada PR aprovado na `main` pode ir para produção. A Vercel publica o site sozinha a cada merge; na API, o comando de antes de subir aplica as migrations novas. Faça um `pnpm db:backup` antes de publicar uma versão com migration.
+
+### Etapa 14 (foco em aulas)
+
+A migration `20261015120000_foco_em_aulas` apaga as tabelas de estoque, caixa, quadras parceiras e reservas de cliente. Antes de mexer em qualquer coisa, ela confere se há dados nessas partes; se houver, para com a mensagem do que achou e o banco fica como estava. Faça o `pnpm db:backup` antes de publicar e, se ela parar, decida com o dono o que fazer com esses dados.

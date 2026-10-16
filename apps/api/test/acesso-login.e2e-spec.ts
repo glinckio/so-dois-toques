@@ -33,7 +33,7 @@ describe("Etapa 1: login e sessões", () => {
     expect(resposta.body.token).toMatch(/^[A-Za-z0-9_-]{43}$/);
 
     const eu = await api.get("/auth/eu", resposta.body.token).expect(200);
-    expect(eu.body).toMatchObject({ id: usuario.id, areas: ["inicio", "aulas"] });
+    expect(eu.body).toMatchObject({ id: usuario.id, areas: ["inicio", "aulas", "horarios"] });
   });
 
   it("ACESSO-CA-02: e-mail inexistente e senha errada recebem a mesma mensagem", async () => {

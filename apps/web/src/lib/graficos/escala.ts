@@ -54,3 +54,9 @@ export function minigrafico(
   const linha = pontos.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
   return { linha, area: `${linha} L${largura},${altura} L0,${altura} Z`, ultimo: pontos.at(-1)! };
 }
+
+/** Cada valor como fração do maior (0 a 1), para barras proporcionais. */
+export function proporcoes(valores: readonly number[]): number[] {
+  const maior = Math.max(0, ...valores.map(Math.abs));
+  return valores.map((v) => (maior > 0 ? Math.abs(v) / maior : 0));
+}

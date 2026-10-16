@@ -9,14 +9,7 @@ export default async function LayoutAulas({ children }: LayoutProps<"/aulas">) {
   const links = [
     { href: "/aulas", rotulo: "Turmas" },
     { href: "/aulas/alunos", rotulo: admin ? "Alunos" : "Meus alunos" },
-    ...(admin
-      ? [
-          { href: "/aulas/locais", rotulo: "Locais" },
-          { href: "/aulas/planos", rotulo: "Planos" },
-          { href: "/aulas/custos", rotulo: "Custos" },
-          { href: "/aulas/resultado", rotulo: "Resultado" },
-        ]
-      : []),
+    ...(admin ? [{ href: "/aulas/planos", rotulo: "Planos" }] : []),
   ];
   return (
     <div className="flex flex-col gap-6">

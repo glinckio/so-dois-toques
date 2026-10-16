@@ -20,6 +20,20 @@ describe("extractCriteria", () => {
   });
 });
 
+describe("critério removido", () => {
+  it("FOCO-CA-12: critério [removido] com o substituto ao lado não é cobrado, os outros continuam", () => {
+    const texto =
+      "- **CAIXA-CA-01** [removido] (ver FOCO-CA-01): abre o caixa\n- **CAIXA-CA-02**: lança avulso\n";
+    const criteria = extractCriteria(texto);
+    expect(criteria).toEqual([{ id: "CAIXA-CA-02", manual: false }]);
+    expect(findUncoveredCriteria(criteria, [])).toEqual(["CAIXA-CA-02"]);
+  });
+
+  it("FOCO-CA-12: etapa removida não exige testes", () => {
+    expect(extractStatus("**Status:** removida pela Etapa 14\n")).toBe("removida");
+  });
+});
+
 describe("findUncoveredCriteria", () => {
   it("FUND-CA-05: aponta critérios automatizáveis sem teste", () => {
     const criteria = extractCriteria(spec);

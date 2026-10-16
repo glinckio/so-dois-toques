@@ -2,7 +2,7 @@
 
 **Status:** removida
 
-> A lanchonete fechou e esta etapa saiu do sistema na [Etapa 13](../13-sem-lanchonete/spec.md). A spec fica como histórico: as vendas e compras já feitas continuam no banco e no livro-razão.
+> A lanchonete fechou e esta etapa saiu do sistema na [Etapa 13](../13-sem-lanchonete/spec.md). A spec fica como histórico. Na [Etapa 14](../14-foco-em-aulas/spec.md) as tabelas da lanchonete também saíram do banco.
 
 ## Objetivo
 

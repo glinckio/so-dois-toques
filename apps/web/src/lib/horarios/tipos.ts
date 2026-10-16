@@ -1,88 +1,58 @@
-import type { Forma } from "@/lib/mensalidades/formatacao";
-
-export type TipoReserva = "RESERVA" | "BLOQUEIO";
-
 export type Quadra = { id: string; nome: string };
 
-export type Faixa = {
-  id: string;
-  diaSemana: number;
-  horaInicio: number;
-  horaFim: number;
-  valorHoraCentavos: number;
+export type Nivel = "INICIANTE" | "INTERMEDIARIO" | "AVANCADO";
+
+/** Aula de uma turma no dia; início e fim em minutos desde 00:00. */
+export type AulaNaGrade = {
+  turmaId: string;
+  nome: string;
+  nivel: Nivel;
+  inicio: number;
+  fim: number;
+  professor: { id: string; nome: string };
+  vagas: number;
+  ocupadas: number;
 };
 
-export type ReservaNaGrade = {
+/** Bloqueio do dia, em horas inteiras. */
+export type BloqueioNaGrade = {
   id: string;
-  tipo: TipoReserva;
   horaInicio: number;
   horaFim: number;
-  clienteNome: string | null;
-  clienteTelefone: string | null;
-  motivo: string | null;
-  valorCentavos: number;
+  motivo: string;
   serieId: string | null;
-  pago: boolean;
 };
 
 export type Grade = {
   data: string;
   diaSemana: number;
-  faixas: Omit<Faixa, "id" | "diaSemana">[];
-  quadras: (Quadra & { reservas: ReservaNaGrade[] })[];
+  quadra: Quadra;
+  aulas: AulaNaGrade[];
+  bloqueios: BloqueioNaGrade[];
 };
 
-export type ReservaDetalhe = {
+export type BloqueioDetalhe = {
   id: string;
-  tipo: TipoReserva;
-  quadraId: string;
-  quadra: string;
   data: string;
   horaInicio: number;
   horaFim: number;
   inicio: string;
-  clienteNome: string | null;
-  clienteTelefone: string | null;
-  motivo: string | null;
-  valorCentavos: number;
-  criadaPor: string;
-  criadaEm: string;
-  canceladaEm: string | null;
-  canceladaPor: string | null;
+  motivo: string;
+  criadoPor: string;
+  criadoEm: string;
+  canceladoEm: string | null;
+  canceladoPor: string | null;
   motivoCancelamento: string | null;
   serie: { id: string; dataInicio: string; dataFim: string; encerrada: boolean } | null;
-  pago: boolean;
-  pagamentos: {
-    id: string;
-    valorCentavos: number;
-    forma: Forma;
-    data: string;
-    recebidoPor: string;
-    recebidoEm: string;
-    estornadoEm: string | null;
-    estornadoPor: string | null;
-    motivoEstorno: string | null;
-  }[];
 };
 
-export type Serie = {
+export type SerieBloqueio = {
   id: string;
-  tipo: TipoReserva;
-  quadra: string;
   diaSemana: number;
   horaInicio: number;
   horaFim: number;
-  clienteNome: string | null;
-  motivo: string | null;
+  motivo: string;
   dataInicio: string;
   dataFim: string;
-  proximas: number;
-  proximasPagas: number;
-};
-
-export type ClientesAnonimizaveis = {
-  antesDe: string;
-  meses: number;
-  reservas: number;
-  series: number;
+  proximos: number;
 };

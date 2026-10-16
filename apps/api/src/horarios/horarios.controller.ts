@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   Param,
@@ -16,63 +15,30 @@ import { ExigeArea, IpCliente, SomenteAdministrador, UsuarioAtual } from "../com
 import type { UsuarioAutenticado } from "../comum/requisicao.js";
 import { ZodPipe } from "../comum/zod.pipe.js";
 import { motivoSchema } from "../mensalidades/esquemas.js";
-import {
-  anonimizarClientesSchema,
-  consultaGradeSchema,
-  faixasSchema,
-  pagamentoReservaSchema,
-  quadraSchema,
-  reservaSchema,
-} from "./esquemas.js";
+import { bloqueioSchema, consultaGradeSchema, quadraSchema } from "./esquemas.js";
 import { HorariosService } from "./horarios.service.js";
 
 const ator = (u: UsuarioAutenticado, ip?: string): Ator => ({ id: u.id, perfil: u.perfil, ip });
 
-/** Horários das quadras: Administrador e Atendente (HOR-CA-09). */
+/** Agenda da quadra: todos os perfis veem; só o administrador mexe (FOCO-CA-08). */
 @ExigeArea("horarios")
 @Controller("horarios")
 export class HorariosController {
   constructor(private readonly horarios: HorariosService) {}
 
-  @Get("quadras")
-  quadras() {
-    return this.horarios.quadras();
+  @Get("quadra")
+  quadra() {
+    return this.horarios.quadra();
   }
 
   @SomenteAdministrador()
-  @Patch("quadras/:id")
+  @Patch("quadra")
   renomearQuadra(
-    @Param("id", ParseUUIDPipe) id: string,
     @Body(new ZodPipe(quadraSchema)) dados: z.infer<typeof quadraSchema>,
     @UsuarioAtual() usuario: UsuarioAutenticado,
     @IpCliente() ip: string | undefined,
   ) {
-    return this.horarios.renomearQuadra(ator(usuario, ip), id, dados.nome);
-  }
-
-  @Get("faixas")
-  faixas() {
-    return this.horarios.faixas();
-  }
-
-  @SomenteAdministrador()
-  @Post("faixas")
-  criarFaixas(
-    @Body(new ZodPipe(faixasSchema)) dados: z.infer<typeof faixasSchema>,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @IpCliente() ip: string | undefined,
-  ) {
-    return this.horarios.criarFaixas(ator(usuario, ip), dados);
-  }
-
-  @SomenteAdministrador()
-  @Delete("faixas/:id")
-  removerFaixa(
-    @Param("id", ParseUUIDPipe) id: string,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @IpCliente() ip: string | undefined,
-  ) {
-    return this.horarios.removerFaixa(ator(usuario, ip), id);
+    return this.horarios.renomearQuadra(ator(usuario, ip), dados.nome);
   }
 
   @Get("grade")
@@ -80,45 +46,24 @@ export class HorariosController {
     return this.horarios.grade(filtro.data);
   }
 
-  @Post("reservas")
-  criar(
-    @Body(new ZodPipe(reservaSchema)) dados: z.infer<typeof reservaSchema>,
+  @SomenteAdministrador()
+  @Post("bloqueios")
+  bloquear(
+    @Body(new ZodPipe(bloqueioSchema)) dados: z.infer<typeof bloqueioSchema>,
     @UsuarioAtual() usuario: UsuarioAutenticado,
     @IpCliente() ip: string | undefined,
   ) {
-    return this.horarios.criar(ator(usuario, ip), dados);
+    return this.horarios.bloquear(ator(usuario, ip), dados);
   }
 
-  @Get("reservas/:id")
-  reserva(@Param("id", ParseUUIDPipe) id: string) {
-    return this.horarios.reserva(id);
-  }
-
-  @HttpCode(200)
-  @Post("reservas/:id/pagar")
-  pagar(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body(new ZodPipe(pagamentoReservaSchema)) dados: z.infer<typeof pagamentoReservaSchema>,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @IpCliente() ip: string | undefined,
-  ) {
-    return this.horarios.pagar(ator(usuario, ip), id, dados.forma);
+  @Get("bloqueios/:id")
+  bloqueio(@Param("id", ParseUUIDPipe) id: string) {
+    return this.horarios.bloqueio(id);
   }
 
   @SomenteAdministrador()
   @HttpCode(200)
-  @Post("reservas/:id/estornar-pagamento")
-  estornarPagamento(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body(new ZodPipe(motivoSchema)) dados: z.infer<typeof motivoSchema>,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @IpCliente() ip: string | undefined,
-  ) {
-    return this.horarios.estornarPagamento(ator(usuario, ip), id, dados.motivo);
-  }
-
-  @HttpCode(200)
-  @Post("reservas/:id/cancelar")
+  @Post("bloqueios/:id/cancelar")
   cancelar(
     @Param("id", ParseUUIDPipe) id: string,
     @Body(new ZodPipe(motivoSchema)) dados: z.infer<typeof motivoSchema>,
@@ -133,6 +78,7 @@ export class HorariosController {
     return this.horarios.series();
   }
 
+  @SomenteAdministrador()
   @HttpCode(200)
   @Post("series/:id/encerrar")
   encerrarSerie(
@@ -141,23 +87,5 @@ export class HorariosController {
     @IpCliente() ip: string | undefined,
   ) {
     return this.horarios.encerrarSerie(ator(usuario, ip), id);
-  }
-
-  /** Prazo de guarda dos clientes das quadras (LANC-CA-07 e 08). */
-  @SomenteAdministrador()
-  @Get("clientes/anonimizaveis")
-  clientesAnonimizaveis() {
-    return this.horarios.clientesAnonimizaveis();
-  }
-
-  @SomenteAdministrador()
-  @HttpCode(200)
-  @Post("clientes/anonimizar")
-  anonimizarClientes(
-    @Body(new ZodPipe(anonimizarClientesSchema)) _dados: z.infer<typeof anonimizarClientesSchema>,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @IpCliente() ip: string | undefined,
-  ) {
-    return this.horarios.anonimizarClientes(ator(usuario, ip));
   }
 }

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Anel } from "@/components/base/anel";
 import { Avatar } from "@/components/base/avatar";
 import { Selo } from "@/components/base/selo";
-import { Icone } from "@/components/icones";
 import { horaDe } from "@/lib/aulas/formatacao";
 import type { TurmaResumo } from "@/lib/aulas/tipos";
 import { aulaDoDia } from "@/lib/aulas/visual";
@@ -10,7 +9,7 @@ import { PilulasDeHorario } from "./horarios";
 import { SeloNivel } from "./selo-nivel";
 
 /**
- * Cartão da turma: o nível no selo com sinal de barras, o local e os horários em
+ * Cartão da turma: o nível no selo com sinal de barras e os horários em
  * pílulas, o professor com avatar e o anel de vagas ocupadas. Se a turma tem aula
  * hoje, a hora aparece num selo dourado (pulsando enquanto a aula acontece).
  */
@@ -57,10 +56,6 @@ export function CartaoTurma({
 
         <div className="relative flex min-w-0 flex-col gap-2">
           <h2 className="text-xl leading-tight font-extrabold tracking-tight">{turma.nome}</h2>
-          <span className="text-suave inline-flex items-center gap-1.5 text-sm">
-            <Icone nome="local" width={15} height={15} className="text-areia shrink-0" />
-            <span className="truncate">{turma.local.nome}</span>
-          </span>
         </div>
 
         <div className="relative">

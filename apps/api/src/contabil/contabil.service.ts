@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import type { Ator } from "../aulas/comum.js";
 import { deDataDoBanco, hojeEmSaoPaulo, paraDataDoBanco } from "../aulas/regras.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
-import { inicioDaHora } from "../horarios/regras.js";
 import {
   competenciaAtual,
   competenciaDe,
@@ -13,12 +12,8 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import type { ConsultaContabil } from "./esquemas.js";
 import {
   MENSAGENS_PERIODO,
-  TURNOS,
-  datasDoPeriodo,
   mesesAte,
-  ocupacaoPorTurno,
   periodoDoMes,
-  porcentagem,
   problemaDePeriodo,
   resumoFinanceiro,
   type Periodo,
@@ -57,23 +52,20 @@ export class ContabilService {
         categoria: true,
         valorCentavos: true,
         data: true,
-        estornoDe: { select: { categoria: true } },
       },
     });
-    return linhas.map((l) => ({ ...l, categoriaOriginal: l.estornoDe?.categoria ?? null }));
+    return linhas;
   }
 
+  /** FOCO-CA-09: recebido, estornos, resultado, formas, a receber e 12 meses. */
   async painel(consulta: ConsultaContabil) {
     const periodo = this.periodo(consulta);
-    const agora = new Date();
-    const hoje = hojeEmSaoPaulo(agora);
+    const hoje = hojeEmSaoPaulo(new Date());
 
-    // CONT-CA-01, 02 e 08
     const lancamentos = await this.lancamentos(periodo);
     const resumo = resumoFinanceiro(lancamentos);
     const { porForma } = resumoDoCaixa(lancamentos);
 
-    // CONT-CA-04
     const meses = mesesAte(periodo.ate);
     const doComparativo = await this.lancamentos({
       de: primeiroDia(meses[0] as string),
@@ -83,85 +75,23 @@ export class ContabilService {
       const r = resumoFinanceiro(
         doComparativo.filter((l) => competenciaDe(deDataDoBanco(l.data)) === competencia),
       );
-      return {
-        competencia,
-        receitas: r.totalReceitas,
-        despesas: r.totalDespesas,
-        resultado: r.resultado,
-      };
+      return { competencia, recebido: r.recebido, estornos: r.estornos, resultado: r.resultado };
     });
 
-    // CONT-CA-06
-    const [quadras, faixas, ocupacoes] = await Promise.all([
-      this.prisma.quadra.findMany({ orderBy: { ordem: "asc" }, select: { id: true, nome: true } }),
-      this.prisma.faixaPreco.findMany({
-        select: { diaSemana: true, horaInicio: true, horaFim: true },
-      }),
-      this.prisma.reserva.findMany({
-        where: { data: intervalo(periodo), canceladaEm: null },
-        select: {
-          id: true,
-          quadraId: true,
-          data: true,
-          tipo: true,
-          horaInicio: true,
-          horaFim: true,
-          valorCentavos: true,
-          pagamentos: { where: { estornadoEm: null }, select: { id: true } },
-        },
-      }),
-    ]);
-    const porQuadra = ocupacaoPorTurno(
-      quadras.map((q) => q.id),
-      datasDoPeriodo(periodo),
-      faixas,
-      ocupacoes.map((o) => ({ ...o, data: deDataDoBanco(o.data) })),
-    );
-    const ocupacao = quadras.map((q) => {
-      const turnos = porQuadra.get(q.id);
-      const soma = (campo: "abertas" | "bloqueadas" | "reservadas") =>
-        TURNOS.reduce((s, t) => s + (turnos?.[t][campo] ?? 0), 0);
-      return {
-        id: q.id,
-        nome: q.nome,
-        turnos,
-        total: {
-          abertas: soma("abertas"),
-          bloqueadas: soma("bloqueadas"),
-          reservadas: soma("reservadas"),
-          ocupacaoPercentual: porcentagem(soma("reservadas"), soma("abertas") - soma("bloqueadas")),
-        },
-      };
-    });
-
-    // CONT-CA-07
     const atrasadas = await this.prisma.mensalidade.aggregate({
       where: { situacao: "ABERTA", vencimento: { lt: paraDataDoBanco(hoje) } },
       _count: true,
       _sum: { valorCentavos: true },
     });
-    const reservasNaoPagas = ocupacoes.filter(
-      (o) =>
-        o.tipo === "RESERVA" &&
-        o.pagamentos.length === 0 &&
-        inicioDaHora(deDataDoBanco(o.data), o.horaInicio) <= agora,
-    );
 
     return {
       periodo,
       ...resumo,
       porForma,
       comparativo,
-      ocupacao,
       aReceber: {
-        mensalidades: {
-          quantidade: atrasadas._count,
-          valorCentavos: atrasadas._sum.valorCentavos ?? 0,
-        },
-        reservas: {
-          quantidade: reservasNaoPagas.length,
-          valorCentavos: reservasNaoPagas.reduce((s, r) => s + r.valorCentavos, 0),
-        },
+        quantidade: atrasadas._count,
+        valorCentavos: atrasadas._sum.valorCentavos ?? 0,
       },
     };
   }

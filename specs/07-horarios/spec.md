@@ -77,17 +77,19 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 
 ## Critérios de aceite
 
-- **HOR-CA-01**: O administrador cria faixas de preço para um ou vários dias e remove faixas; faixa que se sobrepõe a outra do mesmo dia, hora de fim antes do início e valor fora da faixa são recusados.
-- **HOR-CA-02**: A grade de um dia mostra, para cada quadra, as horas de funcionamento com reservas e bloqueios (cliente, valor e se está pago); reservas canceladas não aparecem.
-- **HOR-CA-03**: Reserva avulsa dentro das faixas é criada com o valor somado pelas faixas; data passada, horário já começado, mais de 180 dias, hora fora das faixas, duração inválida ou horário ocupado são recusados.
-- **HOR-CA-04**: Duas reservas ao mesmo tempo para a mesma quadra e horário: só uma passa.
-- **HOR-CA-05**: A reserva fixa cria todas as ocorrências semanais até a data final; se alguma conflita, nada é criado e as datas são informadas; encerrar a série cancela as futuras não pagas e mantém as pagas.
-- **HOR-CA-06**: O administrador bloqueia horário avulso ou semanal com motivo; o bloqueio ocupa a grade sem valor e impede reservas por cima.
-- **HOR-CA-07**: Pagar a reserva cria um lançamento de entrada "Aluguel de quadra" com o valor da reserva, ligado ao turno aberto se houver; pagar de novo é recusado; o administrador estorna com motivo e a reserva volta a ficar a pagar.
-- **HOR-CA-08**: Cancelar com motivo libera o horário; com menos de 24 horas só o administrador cancela; horário já começado não cancela; cancelar reserva paga estorna o pagamento junto.
-- **HOR-CA-09**: O atendente vê a grade, reserva, recebe e cancela com antecedência, mas não configura faixas, não bloqueia e não estorna; o professor não acessa os horários, pela tela nem pela API.
-- **HOR-CA-10**: Faixas, nome de quadra, reservas, séries, bloqueios, pagamentos, estornos e cancelamentos ficam na auditoria com autor, data e IP.
-- **HOR-CA-11** [manual]: A grade, a reserva, o detalhe da reserva e as faixas funcionam no celular e no computador, em português.
+> **Etapa 14 (foco em aulas):** os critérios marcados `[removido]` deixaram de valer; o critério que os substitui está indicado ao lado. Ver `specs/14-foco-em-aulas/spec.md`.
+
+- **HOR-CA-01** [removido] (ver FOCO-CA-01): O administrador cria faixas de preço para um ou vários dias e remove faixas; faixa que se sobrepõe a outra do mesmo dia, hora de fim antes do início e valor fora da faixa são recusados.
+- **HOR-CA-02** [removido] (ver FOCO-CA-05): A grade de um dia mostra, para cada quadra, as horas de funcionamento com reservas e bloqueios (cliente, valor e se está pago); reservas canceladas não aparecem.
+- **HOR-CA-03** [removido] (ver FOCO-CA-01): Reserva avulsa dentro das faixas é criada com o valor somado pelas faixas; data passada, horário já começado, mais de 180 dias, hora fora das faixas, duração inválida ou horário ocupado são recusados.
+- **HOR-CA-04** [removido] (ver FOCO-CA-06): Duas reservas ao mesmo tempo para a mesma quadra e horário: só uma passa.
+- **HOR-CA-05** [removido] (ver FOCO-CA-07): A reserva fixa cria todas as ocorrências semanais até a data final; se alguma conflita, nada é criado e as datas são informadas; encerrar a série cancela as futuras não pagas e mantém as pagas.
+- **HOR-CA-06** [removido] (ver FOCO-CA-06): O administrador bloqueia horário avulso ou semanal com motivo; o bloqueio ocupa a grade sem valor e impede reservas por cima.
+- **HOR-CA-07** [removido] (ver FOCO-CA-01): Pagar a reserva cria um lançamento de entrada "Aluguel de quadra" com o valor da reserva, ligado ao turno aberto se houver; pagar de novo é recusado; o administrador estorna com motivo e a reserva volta a ficar a pagar.
+- **HOR-CA-08** [removido] (ver FOCO-CA-07): Cancelar com motivo libera o horário; com menos de 24 horas só o administrador cancela; horário já começado não cancela; cancelar reserva paga estorna o pagamento junto.
+- **HOR-CA-09** [removido] (ver FOCO-CA-08): O atendente vê a grade, reserva, recebe e cancela com antecedência, mas não configura faixas, não bloqueia e não estorna; o professor não acessa os horários, pela tela nem pela API.
+- **HOR-CA-10** [removido] (ver FOCO-CA-13): Faixas, nome de quadra, reservas, séries, bloqueios, pagamentos, estornos e cancelamentos ficam na auditoria com autor, data e IP.
+- **HOR-CA-11** [removido] (ver FOCO-CA-14): A grade, a reserva, o detalhe da reserva e as faixas funcionam no celular e no computador, em português.
 
 ## Fora do escopo
 

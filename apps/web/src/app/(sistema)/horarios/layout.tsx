@@ -6,13 +6,11 @@ export default async function LayoutHorarios({ children }: LayoutProps<"/horario
   const { permitido, usuario } = await exigirArea("horarios");
   if (!permitido) return <AcessoNegado />;
   const links = [
-    { href: "/horarios", rotulo: "Grade" },
-    { href: "/horarios/nova", rotulo: "Nova reserva" },
-    { href: "/horarios/fixas", rotulo: "Fixas" },
-    { href: "/horarios/faixas", rotulo: "Preços e quadras" },
+    { href: "/horarios", rotulo: "Agenda" },
     ...(usuario.perfil === "ADMINISTRADOR"
-      ? [{ href: "/horarios/privacidade", rotulo: "Privacidade" }]
+      ? [{ href: "/horarios/bloquear", rotulo: "Bloquear horário" }]
       : []),
+    { href: "/horarios/semanais", rotulo: "Bloqueios semanais" },
   ];
   return (
     <div className="flex flex-col gap-6">

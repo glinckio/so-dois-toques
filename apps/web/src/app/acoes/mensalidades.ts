@@ -128,7 +128,7 @@ export async function registrarPagamento(
     { metodo: "POST", corpo: { forma: texto(form, "forma"), data: texto(form, "data") } },
   );
   if (!resposta.ok) return erroDe(resposta);
-  redirect(`/caixa/recibos/${resposta.dados.id}?novo=1`);
+  redirect(`/mensalidades/recibos/${resposta.dados.id}?novo=1`);
 }
 
 export async function cancelarMensalidade(

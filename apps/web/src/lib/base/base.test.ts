@@ -2,12 +2,11 @@ import { describe, expect, it } from "vitest";
 import { centavosDe } from "@/lib/mensalidades/formatacao";
 import { CORES_DE_AVATAR, corDoAvatar, iniciais } from "./avatar";
 import { filtrarBusca, itensDaBusca, normalizar } from "./busca";
-import { mascararReais, mascararTelefone, posicaoDoCursor } from "./mascaras";
 import { leituraDoMes, type DadosDaLeitura } from "./leitura";
+import { mascararReais, mascararTelefone, posicaoDoCursor } from "./mascaras";
 import { fatiasDaRosca } from "./rosca";
 import { semanaDe } from "./semana";
 import { forcaDaSenha } from "./senha";
-import { tempoDecorrido } from "./tempo";
 
 describe("avatar", () => {
   it("usa a primeira letra do primeiro e do último nome", () => {
@@ -72,54 +71,45 @@ describe("VIVO-CA-10: força da senha", () => {
   });
 });
 
-describe("VIVO-CA-08: tempo do caixa aberto", () => {
-  const agora = new Date("2026-10-07T15:00:00Z");
-  it("escreve minutos, horas e dias", () => {
-    expect(tempoDecorrido("2026-10-07T14:59:40Z", agora)).toBe("menos de 1 min");
-    expect(tempoDecorrido("2026-10-07T14:25:00Z", agora)).toBe("35 min");
-    expect(tempoDecorrido("2026-10-07T12:46:00Z", agora)).toBe("2 h 14 min");
-    expect(tempoDecorrido("2026-10-07T12:00:00Z", agora)).toBe("3 h");
-    expect(tempoDecorrido("2026-10-06T12:00:00Z", agora)).toBe("1 dia e 3 h");
-    expect(tempoDecorrido("2026-10-05T15:00:00Z", agora)).toBe("2 dias");
-  });
-
-  it("não fica negativo se o relógio do aparelho estiver atrasado", () => {
-    expect(tempoDecorrido("2026-10-07T16:00:00Z", agora)).toBe("menos de 1 min");
-  });
-});
-
 describe("VIVO-CA-03: busca rápida", () => {
-  it("lista só as áreas e ações do perfil, com as ações primeiro", () => {
-    const professor = itensDaBusca(["inicio", "aulas"], false);
-    expect(professor.map((i) => i.rotulo)).toEqual(["Início", "Aulas", "Alunos"]);
-
-    const atendente = itensDaBusca(["inicio", "horarios", "caixa"], false);
-    expect(atendente.filter((i) => i.grupo === "Ações rápidas").map((i) => i.rotulo)).toEqual([
-      "Nova reserva",
-      "Lançar no caixa",
+  it("VIVO-CA-03 e FOCO-CA-02: lista só as áreas e ações do perfil, com as ações primeiro", () => {
+    const professor = itensDaBusca(["inicio", "aulas", "horarios"], false);
+    expect(professor.map((i) => i.rotulo)).toEqual([
+      "Início",
+      "Aulas",
+      "Horários",
+      "Alunos",
+      "Bloqueios semanais",
     ]);
+
+    const atendente = itensDaBusca(["inicio", "mensalidades", "horarios"], false);
+    expect(atendente.filter((i) => i.grupo === "Ações rápidas")).toEqual([]);
     expect(atendente.some((i) => i.area === "contabil")).toBe(false);
+    const rotulos = atendente.map((i) => i.rotulo).join(" ");
+    for (const fora of ["Estoque", "Caixa", "venda", "reserva", "Lançar"]) {
+      expect(rotulos).not.toContain(fora);
+    }
 
     const admin = itensDaBusca(
-      ["inicio", "aulas", "horarios", "caixa", "contabil", "usuarios", "auditoria"],
+      ["inicio", "aulas", "mensalidades", "horarios", "contabil", "usuarios", "auditoria"],
       true,
     );
-    expect(admin[0]!.rotulo).toBe("Novo aluno");
+    expect(admin.filter((i) => i.grupo === "Ações rápidas").map((i) => i.rotulo)).toEqual([
+      "Novo aluno",
+      "Nova turma",
+      "Bloquear horário",
+    ]);
     expect(admin.filter((i) => i.grupo === "Áreas")).toHaveLength(7);
   });
 
-  it("LANCH-CA-02: a busca rápida não oferece mais venda, compra ou estoque", () => {
-    const itens = itensDaBusca(["inicio", "horarios", "estoque", "caixa"], true);
-    expect(itens.some((i) => i.href.startsWith("/estoque"))).toBe(false);
-    expect(filtrarBusca(itens, "venda")).toEqual([]);
-  });
-
   it("filtra sem ligar para acento, maiúscula ou ordem das palavras", () => {
-    const itens = itensDaBusca(["inicio", "horarios", "caixa"], false);
+    const itens = itensDaBusca(["inicio", "mensalidades", "horarios"], true);
     expect(normalizar("  Horários ")).toBe("horarios");
     expect(filtrarBusca(itens, "horarios").map((i) => i.rotulo)).toContain("Horários");
-    expect(filtrarBusca(itens, "sangria").map((i) => i.rotulo)).toEqual(["Lançar no caixa"]);
-    expect(filtrarBusca(itens, "quadra alugar").map((i) => i.rotulo)).toEqual(["Nova reserva"]);
+    expect(filtrarBusca(itens, "atraso").map((i) => i.rotulo)).toEqual(["Inadimplentes"]);
+    expect(filtrarBusca(itens, "quadra manutenção").map((i) => i.rotulo)).toEqual([
+      "Bloquear horário",
+    ]);
     expect(filtrarBusca(itens, "   ")).toHaveLength(itens.length);
     expect(filtrarBusca(itens, "contábil")).toEqual([]);
   });
@@ -143,58 +133,41 @@ describe("rosca", () => {
 describe("leitura do mês", () => {
   const base: DadosDaLeitura = {
     comparativo: [
-      { competencia: "2026-09", receitas: 100_00, despesas: 50_00, resultado: 50_00 },
-      { competencia: "2026-10", receitas: 160_00, despesas: 104_00, resultado: 56_00 },
+      { competencia: "2026-09", recebido: 100_00, estornos: 50_00, resultado: 50_00 },
+      { competencia: "2026-10", recebido: 160_00, estornos: 104_00, resultado: 56_00 },
     ],
-    receitas: { AULAS: 120_00, LOCACAO: 40_00 },
-    nomesDasOrigens: { AULAS: "Aulas (mensalidades)", LOCACAO: "Locação de quadras" },
-    totalReceitas: 160_00,
-    totalDespesas: 104_00,
+    recebido: 160_00,
+    estornos: 104_00,
     resultado: 56_00,
     aReceberCentavos: 0,
     mensalidadesVencidas: 0,
   };
 
-  it("compara com o mês anterior e aponta a maior receita", () => {
+  it("FOCO-CA-10: compara com o mês anterior e aponta os estornos", () => {
     expect(leituraDoMes(base)).toEqual([
       "O resultado subiu 12% em relação a setembro.",
-      "Aulas (mensalidades) responde por 75% da receita.",
+      "Houve R$ 104,00 em estornos.",
     ]);
   });
 
-  it("avisa quando o mês está no vermelho e quando há valores a receber", () => {
-    const frases = leituraDoMes({
-      ...base,
-      resultado: -30_00,
-      aReceberCentavos: 250_00,
-      mensalidadesVencidas: 2,
-    });
-    expect(frases[0]).toBe("As despesas passaram as receitas em R$ 30,00 até agora.");
+  it("FOCO-CA-10: avisa quando há mensalidades a receber", () => {
+    const frases = leituraDoMes({ ...base, aReceberCentavos: 250_00, mensalidadesVencidas: 2 });
     expect(frases.at(-1)).toBe("Há R$ 250,00 a receber, com 2 mensalidades vencidas.");
   });
 
-  it("diz quando ainda não há nada no mês", () => {
-    expect(
-      leituraDoMes({
-        ...base,
-        receitas: { AULAS: 0, LOCACAO: 0 },
-        totalReceitas: 0,
-        totalDespesas: 0,
-        resultado: 0,
-      }),
-    ).toEqual(["Ainda não há receitas nem despesas lançadas neste mês."]);
+  it("FOCO-CA-10: diz quando ainda não há nada no mês", () => {
+    expect(leituraDoMes({ ...base, recebido: 0, estornos: 0, resultado: 0 })).toEqual([
+      "Ainda não entrou nenhuma mensalidade neste mês.",
+    ]);
   });
 
-  it("sem base de comparação, mostra o resultado; com uma só origem, toda a receita", () => {
+  it("FOCO-CA-10: sem base de comparação, mostra o recebido", () => {
     const frases = leituraDoMes({
       ...base,
       comparativo: [base.comparativo[1]!],
-      receitas: { AULAS: 160_00, LOCACAO: 0 },
+      estornos: 0,
     });
-    expect(frases).toEqual([
-      "O resultado do mês está em R$ 56,00.",
-      "Aulas (mensalidades) responde por toda receita.",
-    ]);
+    expect(frases).toEqual(["Já entraram R$ 56,00 de mensalidades neste mês."]);
   });
 });
 
@@ -225,7 +198,7 @@ describe("AJU-CA-02: máscara de telefone", () => {
   });
 });
 
-describe("AJU-CA-03: valor em reais só com números", () => {
+describe("valor em reais só com números", () => {
   it("preenche a partir dos centavos", () => {
     expect(mascararReais("")).toBe("");
     expect(mascararReais("1")).toBe("0,01");

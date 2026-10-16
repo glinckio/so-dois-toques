@@ -12,18 +12,11 @@ const TELAS = [
   "/aulas/alunos/novo",
   "/aulas/turmas/nova",
   "/aulas/planos",
-  "/aulas/locais",
-  "/aulas/custos",
-  "/aulas/resultado",
+  "/mensalidades",
+  "/mensalidades/inadimplentes",
   "/horarios",
-  "/horarios/nova",
-  "/horarios/fixas",
-  "/horarios/faixas",
-  "/horarios/privacidade",
-  "/caixa",
-  "/caixa/turnos",
-  "/caixa/mensalidades",
-  "/caixa/inadimplentes",
+  "/horarios/bloquear",
+  "/horarios/semanais",
   "/contabil",
   "/usuarios",
   "/auditoria",
@@ -178,7 +171,8 @@ test("VIVO-CA-03: a busca rápida só lista o que o perfil pode abrir", async ({
       await atendente.getByRole("button", { name: "Buscar ou ir para" }).click();
     else await atendente.keyboard.press("Control+k");
     const busca = atendente.getByRole("dialog", { name: "Busca rápida" });
-    await expect(busca.getByRole("option", { name: "Caixa", exact: true })).toBeVisible();
+    await expect(busca.getByRole("option", { name: "Mensalidades", exact: true })).toBeVisible();
+    await expect(busca.getByRole("option", { name: "Caixa", exact: true })).toHaveCount(0);
     await expect(busca.getByRole("option", { name: "Contábil", exact: true })).toHaveCount(0);
     await busca.getByRole("combobox").fill("aluno");
     await expect(busca.getByText("Nada encontrado.")).toBeVisible();
@@ -271,14 +265,20 @@ test("VIVO-CA-12: anéis, roscas e barras têm texto para leitor de tela", async
         els.filter((el) => !(el.getAttribute("aria-label") ?? "").trim()).map((el) => el.outerHTML),
       );
 
-  await expect(page.getByRole("table", { name: "Receitas por origem" })).toBeAttached();
+  await expect(page.getByTestId("grafico-mensal")).toBeVisible();
   await expect(page.locator('main [role="img"]').first()).toBeVisible();
   expect(await semRotulo()).toEqual([]);
 
   await page.goto("/contabil");
-  await expect(page.getByRole("img", { name: /Margem do período/ })).toBeVisible();
-  await expect(page.getByRole("table", { name: "Receitas por origem" })).toBeVisible();
-  await expect(page.getByRole("table", { name: "Despesas por tipo" })).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: /Recebido e estornos por mês/ }).first(),
+  ).toBeAttached();
+  await expect(page.getByRole("table", { name: "Formas de pagamento" })).toBeVisible();
+  await expect(page.getByRole("table", { name: "Comparativo mensal" })).toBeVisible();
+  expect(await semRotulo()).toEqual([]);
+
+  await page.goto("/horarios");
+  await expect(page.getByRole("img", { name: /Quadra ocupada em \d+% do dia/ })).toBeVisible();
   expect(await semRotulo()).toEqual([]);
 });
 
@@ -297,17 +297,4 @@ test("VIVO-CA-14: a auditoria agrupa por dia e marca o tipo de evento", async ({
   await expect(registros.getByText(ADMIN_E2E.nome).first()).toBeVisible();
   await page.getByRole("link", { name: "Limpar filtros" }).click();
   await expect(page).toHaveURL("/auditoria");
-});
-
-test("a situação do caixa aparece no menu lateral do computador e no Início", async ({ page }) => {
-  await entrarComoAdmin(page);
-  if (noCelular(page)) {
-    await expect(page.getByTestId("status-caixa-menu")).toBeHidden();
-    await expect(page.getByTestId("situacao-caixa")).toContainText(/Aberto|Fechado/);
-    return;
-  }
-  const situacao = page.getByTestId("status-caixa-menu");
-  await expect(situacao).toContainText(/Caixa (aberto|fechado)/);
-  await situacao.click();
-  await expect(page).toHaveURL("/caixa");
 });

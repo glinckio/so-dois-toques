@@ -1,24 +1,16 @@
 import { formatarData } from "@/lib/aulas/formatacao";
-import { nomeDaCategoria } from "@/lib/caixa/formatacao";
 import { competenciaValida, FORMAS } from "@/lib/mensalidades/formatacao";
-import type { LancamentoExportado, Turno } from "./tipos";
+import type { LancamentoExportado } from "./tipos";
 
-export const ORIGENS_RECEITA = {
-  AULAS: "Aulas (mensalidades)",
-  LOCACAO: "Locação de quadras",
-  OUTRAS: "Outras receitas",
-} as const;
-
-export const TIPOS_DESPESA = {
-  QUADRAS_PARCEIRAS: "Quadras parceiras",
-  OUTRAS: "Outras despesas",
-} as const;
-
-export const TURNOS: Record<Turno, string> = {
-  MANHA: "Manhã (até 12h)",
-  TARDE: "Tarde (12h às 18h)",
-  NOITE: "Noite (após 18h)",
+/** O livro-razão só tem mensalidades e estornos (Etapa 14). */
+export const CATEGORIAS: Record<string, string> = {
+  MENSALIDADE: "Mensalidade",
+  ESTORNO: "Estorno",
 };
+
+export function nomeDaCategoria(categoria: string): string {
+  return CATEGORIAS[categoria] ?? categoria;
+}
 
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 

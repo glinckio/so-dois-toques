@@ -1,40 +1,31 @@
 import type { Forma } from "@/lib/mensalidades/formatacao";
 
-export type Turno = "MANHA" | "TARDE" | "NOITE";
-
-export type OcupacaoTurno = {
-  abertas: number;
-  bloqueadas: number;
-  reservadas: number;
-  ocupacaoPercentual: number | null;
-};
-
+/** FOCO-CA-09: o Contábil das mensalidades. */
 export type Painel = {
   periodo: { de: string; ate: string };
-  receitas: { AULAS: number; LOCACAO: number; OUTRAS: number };
-  despesas: { QUADRAS_PARCEIRAS: number; OUTRAS: number };
-  totalReceitas: number;
-  totalDespesas: number;
+  recebido: number;
+  estornos: number;
   resultado: number;
-  margemPercentual: number | null;
-  gaveta: number;
   naoClassificado: number;
   entradas: number;
   saidas: number;
   confere: boolean;
   porForma: Record<Forma, { entradas: number; saidas: number; saldo: number }>;
-  comparativo: { competencia: string; receitas: number; despesas: number; resultado: number }[];
-  ocupacao: {
-    id: string;
-    nome: string;
-    turnos: Record<Turno, OcupacaoTurno>;
-    total: OcupacaoTurno;
-  }[];
-  aReceber: {
-    mensalidades: { quantidade: number; valorCentavos: number };
-    reservas: { quantidade: number; valorCentavos: number };
-  };
+  comparativo: { competencia: string; recebido: number; estornos: number; resultado: number }[];
+  aReceber: { quantidade: number; valorCentavos: number };
 };
+
+/** O comparativo no formato dos gráficos mensais: recebido e estornos. */
+export function mesesDoGrafico(comparativo: Painel["comparativo"]) {
+  return comparativo.map((m) => ({
+    competencia: m.competencia,
+    receitas: m.recebido,
+    despesas: m.estornos,
+    resultado: m.resultado,
+  }));
+}
+
+export const NOMES_DO_GRAFICO = { receitas: "Recebido", despesas: "Estornos" };
 
 export type LancamentoExportado = {
   data: string;

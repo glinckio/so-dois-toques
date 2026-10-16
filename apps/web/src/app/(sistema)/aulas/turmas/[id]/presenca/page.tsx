@@ -63,10 +63,6 @@ export default async function PaginaPresenca({
         descricao={
           <span className="flex flex-wrap items-center gap-2">
             <SeloNivel nivel={turma.dados.nivel} />
-            <span className="inline-flex items-center gap-1.5">
-              <Icone nome="local" width={15} height={15} className="text-areia" />
-              {turma.dados.local.nome}
-            </span>
           </span>
         }
       />

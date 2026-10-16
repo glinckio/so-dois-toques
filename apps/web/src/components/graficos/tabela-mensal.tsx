@@ -5,7 +5,13 @@ type Mes = { competencia: string; receitas: number; despesas: number; resultado:
 const numero = "pl-4 text-right whitespace-nowrap tabular-nums";
 
 /** Os valores do gráfico mensal em tabela (CONT-CA-04, VIS-CA-04). */
-export function TabelaMensal({ meses }: { meses: readonly Mes[] }) {
+export function TabelaMensal({
+  meses,
+  nomes = { receitas: "Receitas", despesas: "Despesas" },
+}: {
+  meses: readonly Mes[];
+  nomes?: { receitas: string; despesas: string };
+}) {
   return (
     <div className="overflow-x-auto">
       <table
@@ -16,10 +22,10 @@ export function TabelaMensal({ meses }: { meses: readonly Mes[] }) {
           <tr className="text-apagado text-left text-xs font-bold tracking-wide uppercase">
             <th scope="col">Mês</th>
             <th scope="col" className={numero}>
-              Receitas
+              {nomes.receitas}
             </th>
             <th scope="col" className={numero}>
-              Despesas
+              {nomes.despesas}
             </th>
             <th scope="col" className={numero}>
               Resultado

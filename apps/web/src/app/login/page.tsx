@@ -11,9 +11,8 @@ export const metadata: Metadata = { title: "Entrar | Só Dois Toques" };
 
 const AREAS: { icone: NomeIcone; nome: string; texto: string }[] = [
   { icone: "aulas", nome: "Aulas", texto: "Turmas e presença" },
-  { icone: "horarios", nome: "Quadras", texto: "Reservas das quadras" },
-  { icone: "pessoa", nome: "Alunos", texto: "Cadastro e mensalidades" },
-  { icone: "caixa", nome: "Caixa", texto: "Turnos e fechamento" },
+  { icone: "mensalidades", nome: "Mensalidades", texto: "Planos e pagamentos" },
+  { icone: "horarios", nome: "Quadra", texto: "Agenda das aulas" },
 ];
 
 function Logo({ className }: { className: string }) {
@@ -61,7 +60,7 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
         </div>
         <div className="relative flex flex-col gap-5">
           <p className="max-w-md text-[2.6rem] leading-[1.05] font-extrabold tracking-tight">
-            Do primeiro <Destaque>saque</Destaque> ao fechamento do caixa.
+            Do primeiro <Destaque>saque</Destaque> à última aula do dia.
           </p>
           <p className="text-suave max-w-sm">
             Tudo do Só Dois Toques num lugar só, no celular da quadra e no computador da recepção.

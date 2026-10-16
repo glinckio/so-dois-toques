@@ -3,9 +3,6 @@
 export const NIVEIS = ["INICIANTE", "INTERMEDIARIO", "AVANCADO"] as const;
 export type Nivel = (typeof NIVEIS)[number];
 
-export const TIPOS_LOCAL = ["PARCEIRA", "PROPRIA"] as const;
-export type TipoLocal = (typeof TIPOS_LOCAL)[number];
-
 export const VAGAS_MINIMO = 1;
 export const VAGAS_MAXIMO = 40;
 /** Horários em minutos desde 00:00: das 05:00 às 23:59. */

@@ -17,7 +17,6 @@ import { ZodPipe } from "../comum/zod.pipe.js";
 import type { Ator } from "./comum.js";
 import {
   dataSchema,
-  localSchema,
   matriculaSchema,
   presencaSchema,
   situacaoTurmasSchema,
@@ -31,33 +30,6 @@ const ator = (u: UsuarioAutenticado, ip?: string): Ator => ({ id: u.id, perfil: 
 @Controller()
 export class TurmasController {
   constructor(private readonly turmas: TurmasService) {}
-
-  @SomenteAdministrador()
-  @Get("locais")
-  listarLocais() {
-    return this.turmas.listarLocais();
-  }
-
-  @SomenteAdministrador()
-  @Post("locais")
-  criarLocal(
-    @Body(new ZodPipe(localSchema)) dados: z.infer<typeof localSchema>,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @IpCliente() ip: string | undefined,
-  ) {
-    return this.turmas.criarLocal(ator(usuario, ip), dados);
-  }
-
-  @SomenteAdministrador()
-  @Patch("locais/:id")
-  alterarLocal(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body(new ZodPipe(localSchema)) dados: z.infer<typeof localSchema>,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @IpCliente() ip: string | undefined,
-  ) {
-    return this.turmas.alterarLocal(ator(usuario, ip), id, dados);
-  }
 
   @SomenteAdministrador()
   @Get("professores")

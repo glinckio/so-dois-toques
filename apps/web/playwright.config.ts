@@ -12,8 +12,6 @@ const bancoBase = new URL(
 bancoBase.pathname = `${bancoBase.pathname.replace(/_(test|e2e)$/, "")}_e2e`;
 // Chave usada só entre o web e a API dos testes.
 const chaveInterna = "chave-interna-dos-testes-ponta-a-ponta-0000";
-const CAIXA = /turnos-caixa\.spec\.ts$/;
-
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -28,18 +26,9 @@ export default defineConfig({
       ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH }
       : {},
   },
-  // Só há um caixa: os testes que abrem, usam e fecham o caixa rodam um projeto de cada
-  // vez, em sequência (cada um depende do anterior).
   projects: [
-    { name: "celular", use: { ...devices["Pixel 7"] }, testIgnore: CAIXA },
-    { name: "desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: CAIXA },
-    { name: "caixa-celular", use: { ...devices["Pixel 7"] }, testMatch: CAIXA },
-    {
-      name: "caixa-desktop",
-      use: { ...devices["Desktop Chrome"] },
-      testMatch: CAIXA,
-      dependencies: ["caixa-celular"],
-    },
+    { name: "celular", use: { ...devices["Pixel 7"] } },
+    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
   ],
 
   webServer: [

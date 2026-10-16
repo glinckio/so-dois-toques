@@ -23,7 +23,7 @@ No teste, o dono achou o sistema pronto, com quatro detalhes a acertar:
 
 ## Critérios de aceite
 
-- AJU-CA-01: no cadastro de local, os blocos "Quadra parceira" e "Quadra própria" ficam um embaixo do outro quando o cartão é estreito, e cada texto cabe numa linha.
+- AJU-CA-01 [removido] (ver FOCO-CA-01): no cadastro de local, os blocos "Quadra parceira" e "Quadra própria" ficam um embaixo do outro quando o cartão é estreito, e cada texto cabe numa linha.
 - AJU-CA-02: os campos de telefone formatam o número enquanto se digita, ignoram letras e param no 11º dígito.
-- AJU-CA-03: os campos de valor do Caixa só aceitam números, preenchem a partir dos centavos e enviam um valor que o servidor converte nos mesmos centavos.
-- AJU-CA-04: no fechamento, contado maior que o esperado aparece em verde; menor, em vermelho.
+- AJU-CA-03 [removido] (ver FOCO-CA-01): os campos de valor do Caixa só aceitam números, preenchem a partir dos centavos e enviam um valor que o servidor converte nos mesmos centavos.
+- AJU-CA-04 [removido] (ver FOCO-CA-01): no fechamento, contado maior que o esperado aparece em verde; menor, em vermelho.
