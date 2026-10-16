@@ -168,6 +168,7 @@ export const AREAS = [
   "aulas",
   "mensalidades",
   "horarios",
+  "chat",
   "contabil",
   "feedback",
   "usuarios",
@@ -177,7 +178,7 @@ export type Area = (typeof AREAS)[number];
 
 const PERMISSOES: Record<PerfilUsuario, readonly Area[]> = {
   ADMINISTRADOR: AREAS,
-  ATENDENTE: ["inicio", "aulas", "mensalidades", "horarios"],
+  ATENDENTE: ["inicio", "aulas", "mensalidades", "horarios", "chat"],
 };
 
 export function podeAcessar(perfil: PerfilUsuario, area: Area): boolean {

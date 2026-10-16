@@ -35,7 +35,7 @@ describe("Etapa 1: login e sessões", () => {
     const eu = await api.get("/auth/eu", resposta.body.token).expect(200);
     expect(eu.body).toMatchObject({
       id: usuario.id,
-      areas: ["inicio", "aulas", "mensalidades", "horarios"],
+      areas: ["inicio", "aulas", "mensalidades", "horarios", "chat"],
     });
   });
 

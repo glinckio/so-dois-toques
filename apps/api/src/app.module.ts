@@ -17,6 +17,10 @@ import { GastosService } from "./gastos/gastos.service.js";
 import { LancamentoMensalService } from "./gastos/lancamento-mensal.service.js";
 import { FeedbackController, FeedbackPublicoController } from "./feedback/feedback.controller.js";
 import { FeedbackService } from "./feedback/feedback.service.js";
+import { ChatController } from "./chat/chat.controller.js";
+import { ChatService } from "./chat/chat.service.js";
+import { EventosDoChat } from "./chat/eventos.service.js";
+import { EvolutionCliente } from "./chat/evolution.cliente.js";
 import { HorariosController } from "./horarios/horarios.controller.js";
 import { HorariosService } from "./horarios/horarios.service.js";
 import { HealthController } from "./health/health.controller.js";
@@ -45,6 +49,7 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     MensalidadesController,
     FeedbackPublicoController,
     FeedbackController,
+    ChatController,
   ],
   providers: [
     AuditoriaService,
@@ -60,6 +65,9 @@ import { UsuariosService } from "./usuarios/usuarios.service.js";
     GastosService,
     LancamentoMensalService,
     FeedbackService,
+    EvolutionCliente,
+    EventosDoChat,
+    ChatService,
     // A ordem importa: chave interna, depois sessão, depois perfil.
     { provide: APP_GUARD, useClass: ChaveInternaGuard },
     { provide: APP_GUARD, useClass: SessaoGuard },

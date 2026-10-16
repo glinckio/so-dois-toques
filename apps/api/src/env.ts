@@ -18,8 +18,27 @@ const envSchema = z
       .enum(["true", "false"])
       .default("true")
       .transform((valor) => valor === "true"),
+    /** Etapa 20: microserviço do WhatsApp (services/evolution). Vazio = Chat desligado (CHAT-CA-12). */
+    EVOLUTION_URL: z.preprocess((v) => (v === "" ? undefined : v), z.string().url().optional()),
+    /** Chave que o microserviço espera em x-internal-api-key. */
+    EVOLUTION_CHAVE: z.preprocess(
+      (v) => (v === "" ? undefined : v),
+      z.string().min(32, "EVOLUTION_CHAVE precisa ter pelo menos 32 caracteres").optional(),
+    ),
+    /** Nome da instância (o número da escola) no Evolution. */
+    EVOLUTION_INSTANCIA: z
+      .string()
+      .regex(/^[a-z0-9_-]{1,40}$/, "Use letras minúsculas, números, - ou _")
+      .default("so-dois-toques"),
   })
   .superRefine((env, ctx) => {
+    if (Boolean(env.EVOLUTION_URL) !== Boolean(env.EVOLUTION_CHAVE)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [env.EVOLUTION_URL ? "EVOLUTION_CHAVE" : "EVOLUTION_URL"],
+        message: "Informe EVOLUTION_URL e EVOLUTION_CHAVE juntas",
+      });
+    }
     // LANC-CA-01: em produção, nada de valores de exemplo nem origem sem https.
     if (env.NODE_ENV !== "production") return;
     if (env.INTERNAL_API_KEY.includes("troque-por")) {

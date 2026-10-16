@@ -134,7 +134,13 @@ describe("permissões", () => {
 
   it("ACESSO-CA-10 e TURMA-CA-04: só há administrador e atendente; o atendente vê aulas, sem contábil e usuários", () => {
     expect(PERFIS).toEqual(["ADMINISTRADOR", "ATENDENTE"]);
-    expect(areasDoPerfil("ATENDENTE")).toEqual(["inicio", "aulas", "mensalidades", "horarios"]);
+    expect(areasDoPerfil("ATENDENTE")).toEqual([
+      "inicio",
+      "aulas",
+      "mensalidades",
+      "horarios",
+      "chat",
+    ]);
     expect(podeAcessar("ATENDENTE", "contabil")).toBe(false);
     expect(podeAcessar("ATENDENTE", "usuarios")).toBe(false);
     expect(podeAcessar("ATENDENTE", "auditoria")).toBe(false);

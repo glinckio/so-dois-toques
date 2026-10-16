@@ -10,7 +10,33 @@ const valid = {
 
 describe("parseEnv", () => {
   it("FUND-CA-03: aceita variáveis válidas", () => {
-    expect(parseEnv(valid)).toEqual({ ...valid, PORT: 3001, GERACAO_AUTOMATICA: true });
+    expect(parseEnv(valid)).toEqual({
+      ...valid,
+      PORT: 3001,
+      GERACAO_AUTOMATICA: true,
+      EVOLUTION_INSTANCIA: "so-dois-toques",
+    });
+  });
+
+  it("CHAT-CA-12: sem o WhatsApp configurado a API sobe; com ele, URL e chave vão juntas", () => {
+    expect(parseEnv({ ...valid, EVOLUTION_URL: "", EVOLUTION_CHAVE: "" })).toMatchObject({
+      EVOLUTION_URL: undefined,
+      EVOLUTION_CHAVE: undefined,
+    });
+    const chave = "c".repeat(32);
+    expect(
+      parseEnv({ ...valid, EVOLUTION_URL: "http://localhost:3004", EVOLUTION_CHAVE: chave }),
+    ).toMatchObject({ EVOLUTION_URL: "http://localhost:3004", EVOLUTION_CHAVE: chave });
+    expect(() => parseEnv({ ...valid, EVOLUTION_URL: "http://localhost:3004" })).toThrow(
+      /EVOLUTION_CHAVE/,
+    );
+    expect(() => parseEnv({ ...valid, EVOLUTION_CHAVE: chave })).toThrow(/EVOLUTION_URL/);
+    expect(() =>
+      parseEnv({ ...valid, EVOLUTION_URL: "http://localhost:3004", EVOLUTION_CHAVE: "curta" }),
+    ).toThrow(/EVOLUTION_CHAVE/);
+    expect(() => parseEnv({ ...valid, EVOLUTION_INSTANCIA: "Com Espaço" })).toThrow(
+      /EVOLUTION_INSTANCIA/,
+    );
   });
 
   it("MENS-CA-07: a geração automática de mensalidades pode ser desligada", () => {
