@@ -30,7 +30,6 @@ export function itensDoMenu(areasPermitidas: readonly string[]) {
 
 export const PERFIS = {
   ADMINISTRADOR: "Administrador",
-  PROFESSOR: "Professor",
   ATENDENTE: "Atendente",
 } as const;
 export type Perfil = keyof typeof PERFIS;

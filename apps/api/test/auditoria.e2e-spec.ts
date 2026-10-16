@@ -26,7 +26,7 @@ describe("Etapa 1: auditoria", () => {
       token,
     );
     const alvoId: string = criado.body.usuario.id;
-    await api.patch(`/usuarios/${alvoId}/perfil`, { perfil: "PROFESSOR" }, token).expect(200);
+    await api.patch(`/usuarios/${alvoId}/perfil`, { perfil: "ADMINISTRADOR" }, token).expect(200);
     await api.post(`/usuarios/${alvoId}/redefinir-senha`, {}, token).expect(200);
     await api.post(`/usuarios/${alvoId}/desativar`, {}, token).expect(200);
     await api
@@ -80,7 +80,7 @@ describe("Etapa 1: auditoria", () => {
 
   it("ACESSO-CA-20: consulta por período, usuário e ação, com paginação", async () => {
     const admin = await criarUsuario(app, "ADMINISTRADOR");
-    const professor = await criarUsuario(app, "PROFESSOR");
+    const professor = await criarUsuario(app, "ATENDENTE");
     const api = cliente(app);
     const token = await api.entrar(admin.email, SENHA_BOA);
     const apiProfessor = cliente(app);

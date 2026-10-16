@@ -13,15 +13,17 @@ import {
 
 const turma = (dados: Partial<TurmaResumo>): TurmaResumo => ({
   id: "t",
-  nome: "Turma",
+  diaSemana: 6,
+  horaInicio: 480,
+  horaFim: 540,
   nivel: "INICIANTE",
+  categoria: "MISTO",
+  descricao: "Sábado, 08:00 às 09:00 · Iniciante",
   vagas: 10,
   ocupadas: 0,
   livres: 10,
   ativa: true,
   inicio: "2026-01-01",
-  professor: { id: "p", nome: "Paula" },
-  horarios: [],
   ...dados,
 });
 
@@ -41,19 +43,23 @@ describe("cartões das turmas", () => {
     const turmas = [
       turma({
         id: "a",
-        nome: "Manhã",
+        descricao: "Manhã",
         vagas: 8,
         ocupadas: 8,
-        horarios: [{ diaSemana: 3, inicio: 420, fim: 480 }],
+        diaSemana: 3,
+        horaInicio: 420,
+        horaFim: 480,
       }),
       turma({
         id: "b",
-        nome: "Noite",
+        descricao: "Noite",
         vagas: 12,
         ocupadas: 5,
-        horarios: [{ diaSemana: 3, inicio: 1140, fim: 1230 }],
+        diaSemana: 3,
+        horaInicio: 1140,
+        horaFim: 1230,
       }),
-      turma({ id: "c", nome: "Sábado", vagas: 0, ocupadas: 0 }),
+      turma({ id: "c", vagas: 0, ocupadas: 0 }),
     ];
     const cedo = resumoDasTurmas(turmas, 3, 400);
     expect(cedo).toMatchObject({ turmas: 3, vagas: 20, ocupadas: 13, livres: 7, lotadas: 1 });

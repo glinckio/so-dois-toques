@@ -86,9 +86,9 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 ### Locais e turmas
 
 - **AULAS-CA-09** [removido] (ver FOCO-CA-04): O administrador cadastra locais (quadra parceira ou própria); nome repetido é recusado, e local inativo não aparece para turma nova.
-- **AULAS-CA-10**: O administrador cadastra uma turma com nível, local, professor, vagas e horários semanais; horário com fim antes do início, fora de 05:00–23:59 ou sem nenhum dia é recusado.
-- **AULAS-CA-11**: Uma turma não pode ter como professor um usuário inativo ou com perfil Atendente.
-- **AULAS-CA-12**: O mesmo professor não pode ter duas turmas ativas com horários sobrepostos no mesmo dia.
+- **AULAS-CA-10** [removido] (ver TURMA-CA-01): O administrador cadastra uma turma com nível, local, professor, vagas e horários semanais; horário com fim antes do início, fora de 05:00–23:59 ou sem nenhum dia é recusado.
+- **AULAS-CA-11** [removido] (ver TURMA-CA-04): Uma turma não pode ter como professor um usuário inativo ou com perfil Atendente.
+- **AULAS-CA-12** [removido] (ver TURMA-CA-02): O mesmo professor não pode ter duas turmas ativas com horários sobrepostos no mesmo dia.
 - **AULAS-CA-13**: Encerrar uma turma encerra as matrículas abertas, e turma encerrada não aceita matrícula nem presença nova.
 
 ### Matrículas
@@ -105,7 +105,7 @@ A checagem vale na API; as telas só escondem o que o perfil não pode usar.
 
 ### Permissões
 
-- **AULAS-CA-20**: O professor vê e registra presença só nas turmas que ele dá, e vê só os alunos dessas turmas; tentar outra turma ou outro aluno, pela tela ou pela API, dá "Acesso negado" (ou "não encontrado") e fica na auditoria.
+- **AULAS-CA-20** [removido] (ver TURMA-CA-05): O professor vê e registra presença só nas turmas que ele dá, e vê só os alunos dessas turmas; tentar outra turma ou outro aluno, pela tela ou pela API, dá "Acesso negado" (ou "não encontrado") e fica na auditoria.
 - **AULAS-CA-21**: Professor e atendente não conseguem cadastrar ou alterar alunos, locais, turmas e matrículas, nem exportar ou anonimizar, pela tela nem pela API.
 - **AULAS-CA-22**: Cadastro, alteração, inativação, exportação e anonimização de aluno, cadastro e alteração de local e turma, matrícula e encerramento ficam na auditoria com autor, data e IP.
 

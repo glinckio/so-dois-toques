@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { PontoVivo } from "@/components/base/selo";
 import { Icone } from "@/components/icones";
-import { NIVEIS } from "@/lib/aulas/formatacao";
 import {
   descreverBloco,
   LINHAS_DA_AGENDA,
@@ -156,8 +155,7 @@ function Bloco({ bloco, linkDaTurma }: { bloco: BlocoDaAgenda; linkDaTurma: bool
       {alto && (
         <span className="text-suave truncate text-xs tabular-nums">
           {horario}
-          {bloco.tipo === "aula" &&
-            ` · ${bloco.aula.professor.nome} · ${NIVEIS[bloco.aula.nivel]} · ${bloco.aula.ocupadas}/${bloco.aula.vagas} alunos`}
+          {bloco.tipo === "aula" && ` · ${bloco.aula.ocupadas}/${bloco.aula.vagas} alunos`}
         </span>
       )}
     </>

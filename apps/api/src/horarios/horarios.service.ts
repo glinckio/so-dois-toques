@@ -7,7 +7,14 @@ import {
 } from "@nestjs/common";
 import type { z } from "zod";
 import type { Ator } from "../aulas/comum.js";
-import { deDataDoBanco, diaDaSemana, hojeEmSaoPaulo, paraDataDoBanco } from "../aulas/regras.js";
+import {
+  deDataDoBanco,
+  descreverTurma,
+  diaDaSemana,
+  hojeEmSaoPaulo,
+  horarioDaTurma,
+  paraDataDoBanco,
+} from "../aulas/regras.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
 import { Prisma } from "../generated/prisma/client.js";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -87,7 +94,7 @@ export class HorariosService {
       this.prisma.turma.findMany({
         where: {
           inicio: { lte: dia },
-          horarios: { some: { diaSemana: diaDaSemana(data) } },
+          diaSemana: diaDaSemana(data),
           // Encerrada no dia D: dá aula até o dia anterior.
           OR: [
             { encerradaEm: null },
@@ -96,13 +103,14 @@ export class HorariosService {
         },
         select: {
           id: true,
-          nome: true,
           nivel: true,
+          categoria: true,
           vagas: true,
+          diaSemana: true,
+          horaInicio: true,
+          horaFim: true,
           inicio: true,
           encerradaEm: true,
-          professor: { select: { id: true, nome: true } },
-          horarios: { select: { diaSemana: true, inicio: true, fim: true } },
           _count: {
             select: {
               matriculas: {
@@ -122,10 +130,10 @@ export class HorariosService {
     const aulas = aulasDoDia(
       turmas.map((t) => ({
         id: t.id,
-        nome: t.nome,
+        nome: descreverTurma(t),
         desde: deDataDoBanco(t.inicio),
         ate: t.encerradaEm ? hojeEmSaoPaulo(t.encerradaEm) : null,
-        horarios: t.horarios,
+        horarios: [horarioDaTurma(t)],
       })),
       data,
     ).map((a) => {
@@ -133,7 +141,7 @@ export class HorariosService {
       return {
         ...a,
         nivel: t.nivel,
-        professor: t.professor,
+        categoria: t.categoria,
         vagas: t.vagas,
         ocupadas: t._count.matriculas,
       };

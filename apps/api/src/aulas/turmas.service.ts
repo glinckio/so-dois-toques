@@ -9,37 +9,37 @@ import { Prisma } from "../generated/prisma/client.js";
 import { travarAgenda } from "../horarios/agenda.js";
 import { datasDeBloqueioSobreHorarios, formatarData } from "../horarios/regras.js";
 import { PrismaService } from "../prisma/prisma.service.js";
-import { ehAdmin, negarForaDoEscopo, type Ator } from "./comum.js";
+import type { Ator } from "./comum.js";
 import {
   conflitosDeHorario,
   deDataDoBanco,
-  horaDe,
+  descreverTurma,
   hojeEmSaoPaulo,
+  horarioDaTurma,
   matriculaValeEm,
   MENSAGENS_PRESENCA,
   paraDataDoBanco,
-  temSobreposicaoInterna,
   validarDataDePresenca,
-  type Horario,
+  type CategoriaTurma,
   type Nivel,
 } from "./regras.js";
 
 type Tx = Prisma.TransactionClient;
 
+/** TURMA-CA-01: a turma é um dia, um horário (minutos), um nível e as vagas. */
 export type DadosTurma = {
-  nome: string;
+  diaSemana: number;
+  horaInicio: number;
+  horaFim: number;
   nivel: Nivel;
-  professorId: string;
+  categoria: CategoriaTurma;
   vagas: number;
-  horarios: Horario[];
 };
+
+type TurmaDoBanco = Prisma.TurmaGetPayload<object>;
 
 export const MENSAGEM_SEM_VAGAS = "Turma sem vagas";
 const MENSAGEM_TURMA_ENCERRADA = "Esta turma está encerrada.";
-const DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
-
-const descreverHorario = (h: Horario) =>
-  `${DIAS[h.diaSemana]} ${horaDe(h.inicio)}–${horaDe(h.fim)}`;
 
 @Injectable()
 export class TurmasService {
@@ -47,15 +47,6 @@ export class TurmasService {
     private readonly prisma: PrismaService,
     private readonly auditoria: AuditoriaService,
   ) {}
-
-  /** Quem pode dar aula: usuários ativos com perfil Professor ou Administrador (AULAS-CA-11). */
-  listarProfessores() {
-    return this.prisma.usuario.findMany({
-      where: { ativo: true, perfil: { in: ["PROFESSOR", "ADMINISTRADOR"] } },
-      select: { id: true, nome: true, perfil: true },
-      orderBy: { nome: "asc" },
-    });
-  }
 
   // ---------- Turmas ----------
 
@@ -68,17 +59,11 @@ export class TurmasService {
     return new Map(contagem.map((c) => [c.turmaId, c._count._all]));
   }
 
-  async listar(ator: Ator, situacao: "ativas" | "encerradas" | "todas") {
+  /** TURMA-CA-03: na ordem da semana e da hora. */
+  async listar(situacao: "ativas" | "encerradas" | "todas") {
     const turmas = await this.prisma.turma.findMany({
-      where: {
-        ...(ehAdmin(ator) ? {} : { professorId: ator.id }),
-        ...(situacao === "todas" ? {} : { ativa: situacao === "ativas" }),
-      },
-      include: {
-        professor: { select: { id: true, nome: true } },
-        horarios: { orderBy: [{ diaSemana: "asc" }, { inicio: "asc" }] },
-      },
-      orderBy: [{ ativa: "desc" }, { nome: "asc" }],
+      where: situacao === "todas" ? {} : { ativa: situacao === "ativas" },
+      orderBy: [{ ativa: "desc" }, { diaSemana: "asc" }, { horaInicio: "asc" }],
     });
     const ocupadas = await this.ocupadas(
       this.prisma,
@@ -87,47 +72,31 @@ export class TurmasService {
     return turmas.map((t) => this.resumo(t, ocupadas.get(t.id) ?? 0));
   }
 
-  private resumo(
-    t: Prisma.TurmaGetPayload<{
-      include: {
-        professor: { select: { id: true; nome: true } };
-        horarios: true;
-      };
-    }>,
-    ocupadas: number,
-  ) {
+  private resumo(t: TurmaDoBanco, ocupadas: number) {
     return {
       id: t.id,
-      nome: t.nome,
+      diaSemana: t.diaSemana,
+      horaInicio: t.horaInicio,
+      horaFim: t.horaFim,
       nivel: t.nivel,
+      categoria: t.categoria,
+      descricao: descreverTurma(t),
       vagas: t.vagas,
       ocupadas,
       livres: Math.max(0, t.vagas - ocupadas),
       ativa: t.ativa,
       inicio: deDataDoBanco(t.inicio),
-      professor: t.professor,
-      horarios: t.horarios.map((h) => ({ diaSemana: h.diaSemana, inicio: h.inicio, fim: h.fim })),
     };
   }
 
-  /** Turma visível para o ator, ou 404 (auditado quando é o professor fora do escopo). */
-  private async turmaDoAtor(ator: Ator, id: string) {
-    const turma = await this.prisma.turma.findUnique({
-      where: { id },
-      include: {
-        professor: { select: { id: true, nome: true } },
-        horarios: { orderBy: [{ diaSemana: "asc" }, { inicio: "asc" }] },
-      },
-    });
+  private async turmaPorId(id: string) {
+    const turma = await this.prisma.turma.findUnique({ where: { id } });
     if (!turma) throw new NotFoundException("Turma não encontrada.");
-    if (!ehAdmin(ator) && turma.professorId !== ator.id) {
-      return negarForaDoEscopo(this.auditoria, ator, "turma", id);
-    }
     return turma;
   }
 
-  async buscar(ator: Ator, id: string) {
-    const turma = await this.turmaDoAtor(ator, id);
+  async buscar(id: string) {
+    const turma = await this.turmaPorId(id);
     const matriculas = await this.prisma.matricula.findMany({
       where: { turmaId: id, fim: null },
       include: { aluno: { select: { id: true, nome: true, telefone: true } } },
@@ -144,42 +113,32 @@ export class TurmasService {
   }
 
   /**
-   * AULAS-CA-10 a 12, FOCO-CA-04 e 06: professor válido, horários sem conflito com outra
-   * turma ativa (a quadra é uma só) nem com bloqueios a partir de hoje.
+   * TURMA-CA-02, FOCO-CA-04 e 06: o horário não divide a quadra com outra turma ativa
+   * nem cai sobre bloqueio a partir de hoje.
    */
   private async validarTurma(tx: Tx, dados: DadosTurma, turmaId: string | null) {
-    if (dados.horarios.length === 0)
-      throw new BadRequestException("Informe pelo menos um horário.");
-    if (temSobreposicaoInterna(dados.horarios)) {
-      throw new BadRequestException("Os horários da turma se sobrepõem.");
-    }
-    const professor = await tx.usuario.findUnique({ where: { id: dados.professorId } });
-    if (!professor || !professor.ativo || professor.perfil === "ATENDENTE") {
-      throw new BadRequestException(
-        "O professor precisa ser um usuário ativo com perfil Professor ou Administrador.",
-      );
-    }
+    const horario = horarioDaTurma(dados);
     await travarAgenda(tx);
-    const existentes = await tx.horarioTurma.findMany({
-      where: { turma: { ativa: true, ...(turmaId ? { id: { not: turmaId } } : {}) } },
-      include: { turma: { select: { nome: true, professorId: true } } },
+    const existentes = await tx.turma.findMany({
+      where: {
+        ativa: true,
+        diaSemana: dados.diaSemana,
+        ...(turmaId ? { id: { not: turmaId } } : {}),
+      },
     });
-    const conflitos = conflitosDeHorario(dados.horarios, existentes);
-    const conflito =
-      conflitos.find((c) => c.turma.professorId === dados.professorId) ?? conflitos[0];
+    const conflito = conflitosDeHorario(
+      [horario],
+      existentes.map((t) => ({ ...horarioDaTurma(t), turma: t })),
+    )[0];
     if (conflito) {
-      throw new ConflictException(
-        conflito.turma.professorId === dados.professorId
-          ? `O professor já tem a turma "${conflito.turma.nome}" na ${descreverHorario(conflito)}.`
-          : `A quadra já tem a turma "${conflito.turma.nome}" na ${descreverHorario(conflito)}.`,
-      );
+      throw new ConflictException(`A quadra já tem a turma de ${descreverTurma(conflito.turma)}.`);
     }
     const bloqueios = await tx.bloqueio.findMany({
       where: { canceladoEm: null, data: { gte: paraDataDoBanco(hojeEmSaoPaulo(new Date())) } },
       select: { data: true, horaInicio: true, horaFim: true },
     });
     const datas = datasDeBloqueioSobreHorarios(
-      dados.horarios,
+      [horario],
       bloqueios.map((b) => ({ ...b, data: deDataDoBanco(b.data) })),
     );
     if (datas.length > 0) {
@@ -193,14 +152,7 @@ export class TurmasService {
     return this.prisma.$transaction(async (tx) => {
       await this.validarTurma(tx, dados, null);
       const turma = await tx.turma.create({
-        data: {
-          nome: dados.nome,
-          nivel: dados.nivel,
-          professorId: dados.professorId,
-          vagas: dados.vagas,
-          inicio: paraDataDoBanco(hojeEmSaoPaulo(new Date())),
-          horarios: { create: dados.horarios },
-        },
+        data: { ...dados, inicio: paraDataDoBanco(hojeEmSaoPaulo(new Date())) },
       });
       await this.auditoria.registrar(
         {
@@ -209,7 +161,7 @@ export class TurmasService {
           ip: ator.ip,
           alvoTipo: "Turma",
           alvoId: turma.id,
-          detalhes: { nome: turma.nome, professorId: turma.professorId, vagas: turma.vagas },
+          detalhes: { ...dados },
         },
         tx,
       );
@@ -236,17 +188,7 @@ export class TurmasService {
           `A turma tem ${ocupadas} alunos matriculados; as vagas não podem ficar abaixo disso.`,
         );
       }
-      await tx.horarioTurma.deleteMany({ where: { turmaId: id } });
-      await tx.turma.update({
-        where: { id },
-        data: {
-          nome: dados.nome,
-          nivel: dados.nivel,
-          professorId: dados.professorId,
-          vagas: dados.vagas,
-          horarios: { create: dados.horarios },
-        },
-      });
+      await tx.turma.update({ where: { id }, data: dados });
       await this.auditoria.registrar(
         {
           acao: "TURMA_ALTERADA",
@@ -256,15 +198,14 @@ export class TurmasService {
           alvoId: id,
           detalhes: {
             de: {
-              nome: atual.nome,
-              professorId: atual.professorId,
+              diaSemana: atual.diaSemana,
+              horaInicio: atual.horaInicio,
+              horaFim: atual.horaFim,
+              nivel: atual.nivel,
+              categoria: atual.categoria,
               vagas: atual.vagas,
             },
-            para: {
-              nome: dados.nome,
-              professorId: dados.professorId,
-              vagas: dados.vagas,
-            },
+            para: { ...dados },
           },
         },
         tx,
@@ -362,10 +303,10 @@ export class TurmasService {
 
   // ---------- Presença (AULAS-CA-17 a 19) ----------
 
-  private validarData(turma: { inicio: Date; horarios: Horario[] }, data: string) {
+  private validarData(turma: TurmaDoBanco, data: string) {
     const problema = validarDataDePresenca(
       data,
-      turma.horarios,
+      [horarioDaTurma(turma)],
       deDataDoBanco(turma.inicio),
       hojeEmSaoPaulo(new Date()),
     );
@@ -415,8 +356,8 @@ export class TurmasService {
       });
   }
 
-  async listaDePresenca(ator: Ator, turmaId: string, data: string) {
-    const turma = await this.turmaDoAtor(ator, turmaId);
+  async listaDePresenca(turmaId: string, data: string) {
+    const turma = await this.turmaPorId(turmaId);
     this.validarData(turma, data);
     return {
       turmaId,
@@ -432,7 +373,7 @@ export class TurmasService {
     data: string,
     registros: { alunoId: string; presente: boolean }[],
   ) {
-    const turma = await this.turmaDoAtor(ator, turmaId);
+    const turma = await this.turmaPorId(turmaId);
     if (!turma.ativa) throw new ConflictException(MENSAGEM_TURMA_ENCERRADA);
     this.validarData(turma, data);
     const dia = paraDataDoBanco(data);

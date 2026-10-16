@@ -10,18 +10,12 @@ const horas = (minutos: number) =>
  * Resumo do dia, o destaque da agenda: quanto da quadra está ocupado (aulas e
  * bloqueios sobre as 19 horas abertas) e a legenda, com o mesmo desenho dos blocos.
  */
-export function ResumoDoDia({ agenda, professor }: { agenda: Agenda; professor: boolean }) {
+export function ResumoDoDia({ agenda }: { agenda: Agenda }) {
   const aulas = agenda.blocos.filter((b) => b.tipo === "aula").length;
   const bloqueios = agenda.blocos.length - aulas;
-  const ordem: (SituacaoDoHorario | "livre")[] = [
-    "aula",
-    ...(professor ? (["minha"] as const) : []),
-    "bloqueio",
-    "livre",
-  ];
+  const ordem: (SituacaoDoHorario | "livre")[] = ["aula", "bloqueio", "livre"];
   const legenda: Record<SituacaoDoHorario | "livre", string> = {
     aula: horas(agenda.minutosDeAula),
-    minha: "",
     bloqueio: horas(agenda.minutosBloqueados),
     livre: `${agenda.livres.length} h`,
   };

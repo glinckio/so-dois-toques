@@ -8,7 +8,7 @@ export default async function LayoutAulas({ children }: LayoutProps<"/aulas">) {
   const admin = usuario.perfil === "ADMINISTRADOR";
   const links = [
     { href: "/aulas", rotulo: "Turmas" },
-    { href: "/aulas/alunos", rotulo: admin ? "Alunos" : "Meus alunos" },
+    { href: "/aulas/alunos", rotulo: "Alunos" },
     ...(admin ? [{ href: "/aulas/planos", rotulo: "Planos" }] : []),
   ];
   return (

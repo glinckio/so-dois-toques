@@ -1,3 +1,4 @@
+import { CATEGORIAS, NIVEIS as NOMES_DOS_NIVEIS } from "@/lib/aulas/formatacao";
 import { faixaDeMinutos, HORA_ABRE, HORA_FECHA } from "./formatacao";
 import type { AulaNaGrade, BloqueioNaGrade, Grade } from "./tipos";
 
@@ -8,11 +9,10 @@ const FECHA = HORA_FECHA * 60;
 export const LINHAS_DA_AGENDA = (FECHA - ABRE) / MINUTOS_POR_LINHA;
 
 /** Cor do bloco na agenda (sempre acompanhada de texto). */
-export type SituacaoDoHorario = "aula" | "minha" | "bloqueio";
+export type SituacaoDoHorario = "aula" | "bloqueio";
 
 export const ROTULOS_DA_SITUACAO: Record<SituacaoDoHorario | "livre", string> = {
   aula: "Aula",
-  minha: "Sua aula",
   bloqueio: "Bloqueio",
   livre: "Livre",
 };
@@ -78,20 +78,15 @@ export function descreverBloco(bloco: BlocoDaAgenda): string {
   const horario = faixaDeMinutos(bloco.inicio, bloco.fim);
   if (bloco.tipo === "bloqueio") return `Bloqueado: ${bloco.bloqueio.motivo}, ${horario}`;
   const a = bloco.aula;
-  return `Aula ${a.nome}, ${horario}, com ${a.professor.nome}, ${a.ocupadas} de ${a.vagas} alunos`;
+  return `Aula ${NOMES_DOS_NIVEIS[a.nivel]} · ${CATEGORIAS[a.categoria]}, ${horario}, ${a.ocupadas} de ${a.vagas} alunos`;
 }
 
 /**
  * FOCO-CA-05: a agenda do dia da quadra. Cada quarto de hora é uma linha; a aula ou o
  * bloqueio vira um bloco que ocupa as suas linhas, e cada hora inteira sem nada é uma
- * célula livre. A aula do professor que está vendo ganha cor própria.
+ * célula livre.
  */
-export function agendaDoDia(
-  grade: Grade,
-  hoje: string,
-  minutoAtual: number,
-  professorId?: string,
-): Agenda {
+export function agendaDoDia(grade: Grade, hoje: string, minutoAtual: number): Agenda {
   const passou = (minuto: number) =>
     grade.data < hoje || (grade.data === hoje && minuto <= minutoAtual);
   const bloco = <T extends object>(inicio: number, fim: number, extra: T) => ({
@@ -107,7 +102,7 @@ export function agendaDoDia(
       bloco(aula.inicio, aula.fim, {
         tipo: "aula" as const,
         aula,
-        situacao: (aula.professor.id === professorId ? "minha" : "aula") as SituacaoDoHorario,
+        situacao: "aula" as SituacaoDoHorario,
       }),
     ),
     ...grade.bloqueios.map((b) =>

@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { minutosDe } from "@/lib/aulas/formatacao";
 import { chamarApi, type RespostaApi } from "@/lib/servidor/api";
 import type { EstadoFormulario } from "./estado";
 import { erroComValores } from "./formulario";
@@ -29,7 +30,7 @@ const CAMPOS_ALUNO = [
   "consentimento",
 ] as const;
 
-const CAMPOS_TURMA = ["nome", "nivel", "professorId", "vagas"] as const;
+const CAMPOS_TURMA = ["diaSemana", "horaInicio", "horaFim", "nivel", "categoria", "vagas"] as const;
 
 export async function salvarAluno(_: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
   const alunoId = texto(form, "id");
@@ -83,27 +84,22 @@ export async function anonimizarAluno(
   return acaoDeAluno(form, "anonimizar");
 }
 
-const horariosSchema = z.array(
-  z.object({ diaSemana: z.number().int(), inicio: z.number().int(), fim: z.number().int() }),
-);
-
+/** TURMA-CA-01: dia, início, fim, nível e vagas (horas "HH:MM" viram minutos). */
 export async function salvarTurma(_: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
   const turmaId = texto(form, "id");
   if (turmaId && !id.safeParse(turmaId).success) return { erro: "Turma inválida." };
-  let horarios: unknown;
-  try {
-    horarios = JSON.parse(texto(form, "horarios") || "[]");
-  } catch {
-    return { erro: "Horários inválidos." };
+  const horaInicio = minutosDe(texto(form, "horaInicio"));
+  const horaFim = minutosDe(texto(form, "horaFim"));
+  if (horaInicio === null || horaFim === null) {
+    return erroComValores({ erro: "Informe o início e o fim da aula." }, form, CAMPOS_TURMA);
   }
-  const horariosValidos = horariosSchema.safeParse(horarios);
-  if (!horariosValidos.success) return { erro: "Horários inválidos." };
   const corpo = {
-    nome: texto(form, "nome"),
+    diaSemana: Number(texto(form, "diaSemana")),
+    horaInicio,
+    horaFim,
     nivel: texto(form, "nivel"),
-    professorId: texto(form, "professorId"),
+    categoria: texto(form, "categoria"),
     vagas: Number(texto(form, "vagas")),
-    horarios: horariosValidos.data,
   };
   const resposta = turmaId
     ? await chamarApi<{ id: string }>(`/turmas/${turmaId}`, { metodo: "PATCH", corpo })

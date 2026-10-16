@@ -1,9 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrarComoAdmin, horariosUnicos } from "./apoio";
-
-const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-const hojeSP = () =>
-  new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
+import { criarTurmaPelaTela, entrarComoAdmin } from "./apoio";
 
 /** Só letras: a busca de alunos também procura dígitos no telefone, e isso traria outros alunos. */
 const marcaSoDeLetras = () =>
@@ -26,30 +22,10 @@ async function cadastrarAluno(page: Page, nome: string) {
 
 test("VIVO-CA-09: na presença, o contador e o anel acompanham cada marcação", async ({ page }) => {
   const marca = marcaSoDeLetras();
-  const diaDeHoje = new Date(`${hojeSP()}T12:00:00Z`).getUTCDay();
   await entrarComoAdmin(page);
 
-  // Professor novo: o celular e o computador rodam juntos, e o mesmo professor
-  // no mesmo dia e hora daria choque de horário entre as duas turmas.
-  const nomeProfessor = `Professor Vivo ${marca}`;
-  await cadastrarUsuario(page, {
-    nome: nomeProfessor,
-    email: emailUnico("prof-vivo"),
-    perfil: "Professor",
-  });
-
   // Turma com aula hoje; a presença é marcada pelo administrador.
-  await page.goto("/aulas/turmas/nova");
-  const nomeTurma = `Presença Viva ${marca}`;
-  await page.getByLabel("Nome da turma").fill(nomeTurma);
-  await page.getByLabel("Professor").selectOption({ label: nomeProfessor });
-  await page.getByLabel("Vagas").fill("4");
-  await page.getByLabel("Dia 1").selectOption({ label: DIAS[diaDeHoje]! });
-  await page.getByLabel("Dia 2").selectOption({ label: DIAS[(diaDeHoje + 3) % 7]! });
-  await horariosUnicos(page);
-  await page.getByRole("button", { name: "Salvar turma" }).click();
-  await expect(page.getByText("Turma salva.")).toBeVisible();
-  const urlTurma = page.url().replace(/\?.*$/, "");
+  const { url: urlTurma } = await criarTurmaPelaTela(page, { vagas: 4 });
 
   // Três alunos, matriculados pela busca da turma.
   const [ana, bia, caio] = ["Ana", "Bia", "Caio"].map((n) => `${n} Viva ${marca}`) as [

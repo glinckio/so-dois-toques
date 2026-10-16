@@ -131,24 +131,3 @@ test("MENS-CA-01, MENS-CA-02, MENS-CA-05, MENS-CA-09, MENS-CA-11, MENS-CA-12, ME
   await expect(page.getByTestId("situacao")).not.toHaveText("Paga");
   await expect(page.getByRole("button", { name: "Registrar pagamento" })).toBeVisible();
 });
-
-test("MENS-CA-19: professor não entra em Mensalidades nem em Planos", async ({ page, browser }) => {
-  await entrarComoAdmin(page);
-  const email = emailUnico("prof-caixa");
-  const senhaTemporaria = await cadastrarUsuario(page, {
-    nome: "Professor Caixa",
-    email,
-    perfil: "Professor",
-  });
-  const contexto = await browser.newContext();
-  const professor = await contexto.newPage();
-  try {
-    await primeiroAcesso(professor, email, senhaTemporaria, "rede-alta-2026-w");
-    for (const rota of ["/mensalidades", "/mensalidades/inadimplentes", "/aulas/planos"]) {
-      await professor.goto(rota);
-      await expect(professor.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
-    }
-  } finally {
-    await contexto.close();
-  }
-});

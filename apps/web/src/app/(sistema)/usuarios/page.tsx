@@ -24,7 +24,6 @@ type UsuarioLista = {
 
 const ESTILO_DO_PERFIL: Record<Perfil, { tom: Tom; icone: NomeIcone; plural: string }> = {
   ADMINISTRADOR: { tom: "roxo", icone: "escudo", plural: "Administradores" },
-  PROFESSOR: { tom: "ouro", icone: "aulas", plural: "Professores" },
   ATENDENTE: { tom: "areia", icone: "mensalidades", plural: "Atendentes" },
 };
 

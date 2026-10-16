@@ -1,15 +1,16 @@
 export type Quadra = { id: string; nome: string };
 
 export type Nivel = "INICIANTE" | "INTERMEDIARIO" | "AVANCADO";
+export type Categoria = "MASCULINO" | "MISTO" | "FEMININO";
 
 /** Aula de uma turma no dia; início e fim em minutos desde 00:00. */
 export type AulaNaGrade = {
   turmaId: string;
   nome: string;
   nivel: Nivel;
+  categoria: Categoria;
   inicio: number;
   fim: number;
-  professor: { id: string; nome: string };
   vagas: number;
   ocupadas: number;
 };

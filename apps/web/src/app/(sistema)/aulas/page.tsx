@@ -19,7 +19,7 @@ import { exigirArea } from "@/lib/servidor/sessao";
 export const metadata: Metadata = { title: "Aulas | Só Dois Toques" };
 
 /**
- * Turmas em cartões (nível, horários, professor e anel de vagas), com as
+ * Turmas em cartões (dia, horário, nível e anel de vagas), com as
  * abas Ativas e Encerradas e, nas ativas, o destaque da ocupação e da próxima aula.
  */
 export default async function PaginaTurmas({ searchParams }: PageProps<"/aulas">) {
@@ -50,14 +50,14 @@ export default async function PaginaTurmas({ searchParams }: PageProps<"/aulas">
             </>
           ) : (
             <>
-              Minhas <Destaque>turmas</Destaque>
+              Turmas da <Destaque>semana</Destaque>
             </>
           )
         }
         descricao={
           admin
             ? "Cada turma com o nível, os horários e quantas vagas já estão ocupadas."
-            : "As turmas em que você dá aula, com os horários e a lista de presença."
+            : "Todas as turmas, com o dia, o horário e a lista de presença."
         }
         acoes={
           admin && (
@@ -96,7 +96,7 @@ export default async function PaginaTurmas({ searchParams }: PageProps<"/aulas">
           {encerradas
             ? "As turmas encerradas ficam aqui, com o histórico de presença."
             : admin
-              ? "Crie a primeira turma com o professor e os horários."
+              ? "Crie a primeira turma com o dia, o horário e o nível."
               : "Quando o administrador colocar você numa turma, ela aparece aqui."}
         </Vazio>
       ) : (

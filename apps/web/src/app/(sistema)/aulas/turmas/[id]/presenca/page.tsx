@@ -4,7 +4,7 @@ import { LinkVoltar } from "@/components/aulas/link-voltar";
 import { PilulasDeHorario } from "@/components/aulas/horarios";
 import { ListaPresenca } from "@/components/aulas/lista-presenca";
 import { SemanaDaPresenca } from "@/components/aulas/semana-da-presenca";
-import { SeloNivel } from "@/components/aulas/selo-nivel";
+import { SeloCategoria, SeloNivel } from "@/components/aulas/selo-nivel";
 import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { Vazio } from "@/components/base/vazio";
 import { Icone } from "@/components/icones";
@@ -23,6 +23,7 @@ import {
   ultimaAula,
 } from "@/lib/aulas/formatacao";
 import type { ListaPresenca as Lista, TurmaDetalhe } from "@/lib/aulas/tipos";
+import { horariosDaTurma } from "@/lib/aulas/visual";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
 
@@ -45,7 +46,7 @@ export default async function PaginaPresenca({
   const data =
     typeof pedida === "string" && /^\d{4}-\d{2}-\d{2}$/.test(pedida)
       ? pedida
-      : (ultimaAula(turma.dados.horarios, hoje) ?? hoje);
+      : (ultimaAula(horariosDaTurma(turma.dados), hoje) ?? hoje);
   const lista = await chamarApi<Lista>(`/turmas/${turma.dados.id}/presencas/${data}`);
   const caminho = `/aulas/turmas/${turma.dados.id}/presenca`;
 
@@ -57,12 +58,13 @@ export default async function PaginaPresenca({
         icone="calendario"
         titulo={
           <>
-            <Destaque>Presença</Destaque>: {turma.dados.nome}
+            <Destaque>Presença</Destaque>: {turma.dados.descricao}
           </>
         }
         descricao={
           <span className="flex flex-wrap items-center gap-2">
             <SeloNivel nivel={turma.dados.nivel} />
+            <SeloCategoria categoria={turma.dados.categoria} />
           </span>
         }
       />
@@ -71,11 +73,14 @@ export default async function PaginaPresenca({
           caminho={caminho}
           data={data}
           hoje={hoje}
-          horarios={turma.dados.horarios}
+          horarios={horariosDaTurma(turma.dados)}
           inicioDaTurma={turma.dados.inicio}
         />
         <div className="flex flex-wrap items-center justify-between gap-3 px-1">
-          <PilulasDeHorario horarios={turma.dados.horarios} destaqueDia={diaDaSemana(data)} />
+          <PilulasDeHorario
+            horarios={horariosDaTurma(turma.dados)}
+            destaqueDia={diaDaSemana(data)}
+          />
           <details className="group">
             <summary className="text-roxo-claro hover:text-texto inline-flex min-h-10 items-center gap-2 rounded-full text-sm font-semibold">
               <Icone

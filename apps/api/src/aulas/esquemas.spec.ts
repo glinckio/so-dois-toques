@@ -1,6 +1,3 @@
-import { NotFoundException } from "@nestjs/common";
-import type { AuditoriaService } from "../auditoria/auditoria.service.js";
-import { ehAdmin, negarForaDoEscopo } from "./comum.js";
 import { alunoSchema, novoAlunoSchema, presencaSchema, turmaSchema } from "./esquemas.js";
 
 const aluno = {
@@ -73,21 +70,31 @@ describe("validação de entrada de Aulas", () => {
     );
   });
 
-  it("AULAS-CA-10 e FOCO-CA-04: turma sem local", () => {
+  it("TURMA-CA-01 e TURMA-CA-08: turma só com dia, início, fim, nível, categoria e vagas", () => {
     const turma = {
-      nome: "Iniciantes",
+      diaSemana: 2,
+      horaInicio: 19 * 60,
+      horaFim: 20 * 60,
       nivel: "INICIANTE",
-      professorId: "1b8f9a3e-1c2d-4e5f-8a9b-0c1d2e3f4a5b",
+      categoria: "MISTO",
       vagas: 10,
-      horarios: [{ diaSemana: 1, inicio: 420, fim: 480 }],
     };
-    expect(turmaSchema.safeParse(turma).success).toBe(true);
-    expect(turmaSchema.safeParse({ ...turma, horarios: [] }).success).toBe(false);
-    expect(
-      turmaSchema.safeParse({ ...turma, horarios: [{ diaSemana: 1, inicio: 480, fim: 420 }] })
-        .success,
-    ).toBe(false);
-    expect(turmaSchema.safeParse({ ...turma, vagas: 41 }).success).toBe(false);
+    expect(turmaSchema.parse(turma)).toEqual(turma);
+    for (const errado of [
+      { horaInicio: 4 * 60 },
+      { horaFim: 24 * 60 },
+      { horaInicio: 20 * 60, horaFim: 19 * 60 },
+      { diaSemana: 7 },
+      { vagas: 0 },
+      { vagas: 41 },
+      { nivel: "PRO" },
+      { categoria: "INFANTIL" },
+      { categoria: undefined },
+    ]) {
+      expect(turmaSchema.safeParse({ ...turma, ...errado }).success, JSON.stringify(errado)).toBe(
+        false,
+      );
+    }
   });
 
   it("AULAS-CA-17: presença sem aluno repetido", () => {
@@ -103,30 +110,5 @@ describe("validação de entrada de Aulas", () => {
         ],
       }).success,
     ).toBe(false);
-  });
-});
-
-describe("escopo do professor", () => {
-  it("AULAS-CA-20: fora do escopo responde não encontrado e audita", async () => {
-    const registrar = vi.fn().mockResolvedValue(undefined);
-    const auditoria = { registrar } as unknown as AuditoriaService;
-    const professor = { id: "p1", perfil: "PROFESSOR" as const, ip: "2001:db8::1" };
-    expect(ehAdmin(professor)).toBe(false);
-    expect(ehAdmin({ ...professor, perfil: "ADMINISTRADOR" })).toBe(true);
-
-    await expect(negarForaDoEscopo(auditoria, professor, "turma", "t1")).rejects.toThrow(
-      new NotFoundException("Turma não encontrada."),
-    );
-    await expect(negarForaDoEscopo(auditoria, professor, "aluno", "a1")).rejects.toThrow(
-      "Aluno não encontrado.",
-    );
-    expect(registrar).toHaveBeenCalledWith({
-      acao: "ACESSO_NEGADO",
-      atorId: "p1",
-      ip: "2001:db8::1",
-      alvoTipo: "Turma",
-      alvoId: "t1",
-      detalhes: { area: "aulas", recurso: "turma" },
-    });
   });
 });

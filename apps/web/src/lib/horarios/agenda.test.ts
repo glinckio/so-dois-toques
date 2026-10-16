@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { agendaDoDia, descreverBloco, LINHAS_DA_AGENDA } from "./agenda";
 import type { AulaNaGrade, Grade } from "./tipos";
 
-const aula = (turmaId: string, inicio: number, fim: number, professorId = "p1"): AulaNaGrade => ({
+const aula = (turmaId: string, inicio: number, fim: number): AulaNaGrade => ({
   turmaId,
   nome: `Turma ${turmaId}`,
   nivel: "INICIANTE",
+  categoria: "MISTO",
   inicio,
   fim,
-  professor: { id: professorId, nome: "Ana" },
   vagas: 8,
   ocupadas: 5,
 });
@@ -72,17 +72,7 @@ describe("FOCO-CA-05: agenda da quadra na tela", () => {
     expect(agendaDoDia(grade(), "2026-10-20", 4 * 60).agora).toBeNull();
   });
 
-  it("FOCO-CA-08: a aula do professor que está vendo tem cor própria", () => {
-    const agenda = agendaDoDia(
-      grade({ aulas: [aula("a", 420, 480, "eu"), aula("b", 540, 600, "outro")] }),
-      "2026-10-19",
-      0,
-      "eu",
-    );
-    expect(agenda.blocos.map((b) => b.situacao)).toEqual(["minha", "aula"]);
-  });
-
-  it("FOCO-CA-05: descreve o bloco em texto", () => {
+  it("FOCO-CA-05 e TURMA-CA-08: descreve o bloco em texto, com nível e categoria", () => {
     const [primeiro, segundo] = agendaDoDia(
       grade({
         aulas: [aula("a", 18 * 60 + 30, 19 * 60 + 30)],
@@ -92,6 +82,6 @@ describe("FOCO-CA-05: agenda da quadra na tela", () => {
       0,
     ).blocos;
     expect(descreverBloco(primeiro!)).toBe("Bloqueado: Pintura, 07:00 às 09:00");
-    expect(descreverBloco(segundo!)).toBe("Aula Turma a, 18:30 às 19:30, com Ana, 5 de 8 alunos");
+    expect(descreverBloco(segundo!)).toBe("Aula Iniciante · Misto, 18:30 às 19:30, 5 de 8 alunos");
   });
 });

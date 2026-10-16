@@ -5,7 +5,7 @@ Este documento descreve os dados pessoais que o sistema Só Dois Toques guarda, 
 ## Quem é quem
 
 - **Controlador:** Só Dois Toques (o negócio), que decide para que os dados servem.
-- **Quem opera:** a equipe com login no sistema (administradores, professores e atendentes), cada um vendo só o que o perfil permite.
+- **Quem opera:** a equipe com login no sistema (administradores e atendentes), cada um vendo só o que o perfil permite.
 - **Encarregado (DPO):** a definir pelo dono. Até lá, pedidos de titulares vão ao administrador.
 
 ## Dados guardados

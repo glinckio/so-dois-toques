@@ -216,7 +216,7 @@ export default async function PaginaAluno({
                     >
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="truncate font-semibold group-hover:underline">
-                          {m.turma.nome}
+                          {m.turma.descricao}
                         </span>
                         <span className="text-apagado text-sm">
                           desde {formatarData(m.inicio)}
