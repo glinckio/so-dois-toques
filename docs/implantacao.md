@@ -32,6 +32,16 @@ Variáveis:
 
 Em produção a API se recusa a subir com a chave do `.env.example` ou com `WEB_ORIGIN` sem https; o erro diz qual variável corrigir.
 
+### Chat do WhatsApp (opcional)
+
+O Chat precisa de mais dois serviços, que **não** ficam expostos na internet (só na rede interna, junto da API):
+
+1. **Servidor Evolution API** (`infra/evolution-api`): `docker compose up -d --build` com o `.env` preenchido (troque `AUTHENTICATION_API_KEY` e `POSTGRES_PASSWORD`). A imagem é a v2.3.7 oficial com a correção de LID.
+2. **Microserviço** (`services/evolution`): build com `docker build -f services/evolution/Dockerfile .` a partir da raiz. Variáveis: `INTERNAL_API_KEY` (nova, 32+ caracteres), `EVOLUTION_API_URL` e `EVOLUTION_API_KEY` (do servidor Evolution), `WEBHOOK_TOKEN` (outro valor novo) e `API_PUBLIC_URL` (endereço do microserviço visto pelo servidor Evolution, na rede interna).
+3. **API**: `EVOLUTION_URL` (endereço interno do microserviço) e `EVOLUTION_CHAVE` (o `INTERNAL_API_KEY` do microserviço). `EVOLUTION_INSTANCIA` pode ficar no padrão.
+
+Depois, o administrador conecta o número em **Chat → Conexão do número**, lendo o QR code no celular da escola. As conversas ficam no PostgreSQL do Evolution: inclua o volume `postgres_data` dele no backup.
+
 ## 3. Site
 
 Na Vercel, importe o repositório com **Root Directory** `apps/web` (framework Next.js).
@@ -107,6 +117,7 @@ O `pnpm db:backup` e o `pnpm db:restaurar` continuam valendo da sua máquina; pa
 - [ ] Nome da quadra, planos e turmas cadastrados.
 - [ ] Um backup feito e restaurado com conferência igual.
 - [ ] Conferência manual das telas no celular e no computador.
+- [ ] Se for usar o Chat: número conectado e um teste de enviar e receber texto, áudio, foto e figurinha.
 - [ ] Tag `v1.0.0` criada no commit que foi para produção:
 
 ```bash

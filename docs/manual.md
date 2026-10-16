@@ -17,6 +17,7 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 | Aulas                | Tudo          | Ver turmas e alunos e marcar presença |
 | Mensalidades         | Tudo          | Ver e receber, sem estornos           |
 | Horários             | Tudo          | Ver a agenda de cada quadra           |
+| Chat                 | Tudo          | Conversar (sem conectar o número)     |
 | Contábil e gastos    | Sim           | Não                                   |
 | Feedback             | Sim           | Não                                   |
 | Usuários e Auditoria | Sim           | Não                                   |
@@ -41,6 +42,14 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 - **Bloqueio:** abra o bloqueio na agenda para liberar o horário (com motivo), se ainda não começou.
 - **Bloqueios semanais:** os que se repetem; encerrar libera as datas que ainda não começaram.
 - **Quadras (administrador):** cadastre as quadras alugadas pelo nome, mude o nome ou desative a que deixou de usar. Quadra desativada não recebe turma, contrato nem locação nova; o histórico dela fica.
+
+## Chat
+
+- **Conectar o número (administrador):** Chat → **Conexão do número** → **Conectar pelo QR code**. No celular da escola, abra o WhatsApp → Aparelhos conectados → Conectar um aparelho e leia o código. Para tirar o número do sistema, **Desconectar o número**.
+- **Conversas:** a lista mostra as conversas do WhatsApp da escola (grupos ficam de fora), da mais recente para a mais antiga, com as não lidas em verde. Quando o número é de um aluno cadastrado, aparece o nome do aluno e o botão **Ficha do aluno**. Busque por nome ou número; **Nova conversa** abre pelo número com DDD (o sistema avisa se o número não tem WhatsApp). Na ficha do aluno, **Conversar no sistema** abre a conversa direto.
+- **Mandar:** escreva e aperte Enter (Shift+Enter quebra a linha); 😊 abre os emojis; 📎 anexa foto, vídeo, documento ou áudio (até 10 MB, com legenda); 🌟 manda uma imagem como figurinha; o microfone grava um áudio de voz. Para **responder** ou **reagir**, use os três pontinhos ao lado da mensagem; uma figurinha recebida dá para enviar de volta.
+- Cada mensagem enviada pelo sistema mostra quem da equipe mandou, a hora e se foi entregue (✓✓) e lida (✓✓ azul). Se o envio falhar, aparece **Tentar de novo**.
+- As mensagens novas chegam sozinhas; o ponto verde ao lado de "Conversas" indica que está ao vivo (areia: atualizando a cada poucos segundos).
 
 ## Contábil (administrador)
 

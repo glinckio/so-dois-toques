@@ -1,6 +1,6 @@
 # Etapa 20: Chat do WhatsApp no sistema
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
