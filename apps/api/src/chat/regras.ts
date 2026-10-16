@@ -429,3 +429,35 @@ export function lerBlocosSse(buffer: string): { dados: string[]; resto: string }
     .filter((d) => d !== "");
   return { dados, resto };
 }
+
+// ---------------------------------------------------------------- contatos (CHAT-CA-14)
+
+/** Contato do WhatsApp (findContacts) com número; grupos e @lid ficam de fora. */
+export function contatoDoEvolution(
+  contato: unknown,
+): { numero: string; nome: string | null } | null {
+  const c = obj(contato);
+  const numero = numeroDoJid(c?.["remoteJid"]) ?? numeroDoJid(c?.["id"]);
+  if (!c || !numero) return null;
+  return { numero, nome: texto(c["pushName"]) ?? texto(c["name"]) };
+}
+
+const semAcento = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+/** A busca da janela de nova conversa: parte do nome (sem acento) ou, com 3+ dígitos, do número. */
+export function contatoCombina(
+  contato: { numero: string; nome: string | null },
+  busca: string,
+): boolean {
+  const termo = semAcento(busca.trim());
+  if (!termo) return true;
+  const digitos = termo.replace(/\D/g, "");
+  return (
+    semAcento(contato.nome ?? "").includes(termo) ||
+    (digitos.length >= 3 && contato.numero.includes(digitos))
+  );
+}

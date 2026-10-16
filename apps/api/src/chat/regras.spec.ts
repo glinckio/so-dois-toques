@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   ARQUIVO_MAXIMO_BYTES,
+  contatoCombina,
+  contatoDoEvolution,
   bytesDoBase64,
   conversaDoEvolution,
   estadoDe,
@@ -359,5 +361,26 @@ describe("CHAT-CA-08: eventos do webhook", () => {
       dados: ["x"],
       resto: "",
     });
+  });
+});
+
+describe("CHAT-CA-14: contatos da janela de nova conversa", () => {
+  it("traduz contatos do WhatsApp e deixa grupo e @lid de fora", () => {
+    expect(contatoDoEvolution({ remoteJid: JID, pushName: "Ana" })).toEqual({
+      numero: "5551999998888",
+      nome: "Ana",
+    });
+    expect(contatoDoEvolution({ remoteJid: JID })).toEqual({ numero: "5551999998888", nome: null });
+    expect(contatoDoEvolution({ remoteJid: "1203@g.us", pushName: "Grupo" })).toBeNull();
+    expect(contatoDoEvolution({ remoteJid: "9@lid" })).toBeNull();
+  });
+
+  it("busca por nome sem acento ou por parte do número", () => {
+    const c = { numero: "5551999998888", nome: "João Pedro" };
+    expect(contatoCombina(c, "")).toBe(true);
+    expect(contatoCombina(c, "joao")).toBe(true);
+    expect(contatoCombina(c, "8888")).toBe(true);
+    expect(contatoCombina(c, "88")).toBe(false);
+    expect(contatoCombina({ numero: "1", nome: null }, "ana")).toBe(false);
   });
 });

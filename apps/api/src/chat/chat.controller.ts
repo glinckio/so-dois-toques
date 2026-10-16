@@ -19,7 +19,9 @@ import type { UsuarioAutenticado } from "../comum/requisicao.js";
 import { ZodPipe } from "../comum/zod.pipe.js";
 import { ChatService } from "./chat.service.js";
 import {
+  consultaContatosSchema,
   consultaMensagensSchema,
+  contatoSchema,
   consultaMidiaSchema,
   envioSchema,
   numeroSchema,
@@ -66,6 +68,23 @@ export class ChatController {
   @Get("conversas")
   conversas() {
     return this.chat.conversas();
+  }
+
+  /** CHAT-CA-14 */
+  @Get("contatos")
+  contatos(
+    @Query(new ZodPipe(consultaContatosSchema)) consulta: z.infer<typeof consultaContatosSchema>,
+  ) {
+    return this.chat.contatos(consulta.busca);
+  }
+
+  @Post("contatos")
+  salvarContato(
+    @Body(new ZodPipe(contatoSchema)) dados: z.infer<typeof contatoSchema>,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+    @IpCliente() ip: string | undefined,
+  ) {
+    return this.chat.salvarContato(ator(usuario, ip), dados);
   }
 
   /** CHAT-CA-11 */

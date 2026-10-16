@@ -457,6 +457,76 @@ describe("Etapa 20: chat do WhatsApp", () => {
     }
   });
 
+  it("CHAT-CA-14: nova conversa lista alunos, salvos e contatos do WhatsApp; contato novo é salvo e dá nome à conversa", async () => {
+    const marca = `Contatinho ${Date.now().toString(36)}`;
+    const alunoId = await criarAluno(admin.api, admin.token, {
+      nome: `${marca} Aluna`,
+      telefone: "(51) 98111-2233",
+    });
+
+    // Busca por nome acha o aluno; contato do WhatsApp aparece; grupo e @lid não.
+    type Lista = {
+      alunos: { id: string; nome: string; numero: string }[];
+      salvos: { numero: string; nome: string }[];
+      whatsapp: { numero: string; nome: string | null }[];
+    };
+    const busca = (termo: string) =>
+      atendente.api
+        .get(`/chat/contatos?busca=${encodeURIComponent(termo)}`, atendente.token)
+        .expect(200)
+        .then((r) => r.body as Lista);
+    const porNome = await busca(marca.toLowerCase());
+    expect(porNome.alunos).toEqual([
+      { id: alunoId, nome: `${marca} Aluna`, numero: "5551981112233" },
+    ]);
+    expect((await busca("2233")).alunos.map((a) => a.id)).toContain(alunoId);
+    const agenda = await busca("zeca");
+    expect(agenda.whatsapp).toEqual([{ numero: "5551933334444", nome: "Zeca da Agenda" }]);
+    const tudo = await busca("");
+    expect(tudo.whatsapp.some((c) => c.nome === "Grupo" || c.nome === "Sem número")).toBe(false);
+
+    // Contato novo: salvo com nome; número sem WhatsApp é recusado e não é salvo.
+    const numeroNovo = `55519${String(Date.now()).slice(-8)}`;
+    const salvo = await atendente.api
+      .post(
+        "/chat/contatos",
+        { nome: "Interessada Vôlei", numero: numeroNovo.slice(2) },
+        atendente.token,
+      )
+      .expect(201);
+    expect(salvo.body).toEqual({ numero: numeroNovo, nome: "Interessada Vôlei" });
+    expect((await busca("volei")).salvos).toContainEqual({
+      numero: numeroNovo,
+      nome: "Interessada Vôlei",
+    });
+
+    const semWhatsapp = await atendente.api.post(
+      "/chat/contatos",
+      { nome: "Sem Zap", numero: "(51) 99999-0000" },
+      atendente.token,
+    );
+    expect([semWhatsapp.status, semWhatsapp.body.message]).toEqual([
+      400,
+      "Este número não tem WhatsApp.",
+    ]);
+    expect(await prisma.contatoChat.findUnique({ where: { numero: "5551999990000" } })).toBeNull();
+    await atendente.api
+      .post("/chat/contatos", { nome: "", numero: "51999998888" }, atendente.token)
+      .expect(400);
+
+    // O nome salvo aparece na conversa e no cabeçalho dela; o do aluno continua valendo para aluno.
+    evolution.receber(numeroNovo, { conversation: "Oi!" }, { nome: "Perfil do Zap" });
+    const conversas = (await admin.api.get("/chat/conversas", admin.token).expect(200)).body as {
+      numero: string;
+      nome: string | null;
+    }[];
+    expect(conversas.find((c) => c.numero === numeroNovo)?.nome).toBe("Interessada Vôlei");
+    const pagina = await admin.api
+      .get(`/chat/conversas/${numeroNovo}/mensagens`, admin.token)
+      .expect(200);
+    expect(pagina.body.contato).toBe("Interessada Vôlei");
+  });
+
   it("o microserviço fora do ar vira erro claro, sem derrubar a API", async () => {
     const foraDoAr = await criarApp({
       EVOLUTION_URL: "http://127.0.0.1:9",

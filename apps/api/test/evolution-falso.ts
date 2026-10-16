@@ -266,6 +266,15 @@ export async function iniciarEvolutionFalso(opcoes: {
       if (!registro) return responder(res, 400, { message: "Message not found" });
       return responder(res, 200, { base64: PNG_1X1, mimetype: "image/png" });
     }
+    if (rota === `GET /chat/contacts/${inst}`) {
+      // Contatos da agenda do WhatsApp, mais um grupo e um @lid que a API precisa ignorar.
+      return responder(res, 200, [
+        ...[...nomes].map(([numero, pushName]) => ({ remoteJid: jid(numero), pushName })),
+        { remoteJid: "5551933334444@s.whatsapp.net", pushName: "Zeca da Agenda" },
+        { remoteJid: "1203630000@g.us", pushName: "Grupo" },
+        { remoteJid: "999@lid", pushName: "Sem número" },
+      ]);
+    }
     if (rota === `GET /chat/profile-picture/${inst}`) {
       return responder(res, 200, { profilePictureUrl: null });
     }

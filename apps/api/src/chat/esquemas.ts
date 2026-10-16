@@ -61,3 +61,17 @@ export const reacaoSchema = z.object({
   /** Vazio tira a reação. */
   emoji: z.string().max(16),
 });
+
+/** CHAT-CA-14 */
+export const consultaContatosSchema = z.object({
+  busca: z.string().max(60).default(""),
+});
+
+export const contatoSchema = z.object({
+  nome: z
+    .string()
+    .trim()
+    .min(1, "Informe o nome do contato.")
+    .max(120, "O nome pode ter até 120 caracteres."),
+  numero: z.string().trim().min(8, "Informe o número com DDD.").max(30, "Número inválido."),
+});

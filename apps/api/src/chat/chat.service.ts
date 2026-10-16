@@ -1,10 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import type { Ator } from "../aulas/comum.js";
+import { normalizarBusca } from "../aulas/regras.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import type { Envio } from "./esquemas.js";
 import { ErroDoEvolution, EvolutionCliente } from "./evolution.cliente.js";
 import {
+  contatoCombina,
+  contatoDoEvolution,
   conversaDoEvolution,
   estadoDe,
   jidDoNumero,
@@ -160,8 +163,80 @@ export class ChatService {
     const conversas = ordenarConversas(
       (Array.isArray(chats) ? chats : []).flatMap((c) => conversaDoEvolution(c) ?? []),
     );
-    const alunos = await this.alunosDosNumeros(conversas.map((c) => c.numero));
-    return conversas.map((c) => ({ ...c, aluno: alunos.get(c.numero) ?? null }));
+    const numeros = conversas.map((c) => c.numero);
+    const [alunos, salvos] = await Promise.all([
+      this.alunosDosNumeros(numeros),
+      this.contatosSalvos(numeros),
+    ]);
+    // Nome: o do aluno (na tela), senão o do contato salvo, senão o do WhatsApp.
+    return conversas.map((c) => ({
+      ...c,
+      nome: salvos.get(c.numero) ?? c.nome,
+      aluno: alunos.get(c.numero) ?? null,
+    }));
+  }
+
+  /** CHAT-CA-14: nomes dos contatos salvos pela janela de nova conversa. */
+  private async contatosSalvos(numeros: readonly string[]) {
+    const salvos = await this.prisma.contatoChat.findMany({
+      where: { numero: { in: [...numeros] } },
+      select: { numero: true, nome: true },
+    });
+    return new Map(salvos.map((s) => [s.numero, s.nome]));
+  }
+
+  /** CHAT-CA-14: contatos para a janela de nova conversa (alunos, salvos e do WhatsApp). */
+  async contatos(busca: string) {
+    const termo = normalizarBusca(busca.trim());
+    const digitos = busca.replace(/\D/g, "");
+    const filtros = [
+      ...(termo ? [{ nomeBusca: { contains: termo } }] : []),
+      ...(digitos.length >= 3 ? [{ telefone: { contains: digitos } }] : []),
+    ];
+    const [alunos, salvos, doWhatsapp] = await Promise.all([
+      this.prisma.aluno.findMany({
+        where: {
+          ativo: true,
+          anonimizadoEm: null,
+          telefone: { not: "" },
+          ...(filtros.length > 0 && { OR: filtros }),
+        },
+        select: { id: true, nome: true, telefone: true },
+        orderBy: { nome: "asc" },
+        take: 30,
+      }),
+      this.prisma.contatoChat.findMany({
+        select: { numero: true, nome: true },
+        orderBy: { nome: "asc" },
+      }),
+      // A lista do WhatsApp é um extra: se falhar, a janela mostra o resto.
+      this.evolution
+        .chamar<unknown>("GET", `/chat/contacts/${this.inst}`)
+        .then((lista) =>
+          (Array.isArray(lista) ? lista : []).flatMap((c) => contatoDoEvolution(c) ?? []),
+        )
+        .catch(() => []),
+    ]);
+    const daEscola = alunos.map((a) => ({ id: a.id, nome: a.nome, numero: `55${a.telefone}` }));
+    const salvosFiltrados = salvos.filter((s) => contatoCombina(s, busca)).slice(0, 30);
+    const usados = new Set([...daEscola, ...salvosFiltrados].map((c) => c.numero));
+    const whatsapp = doWhatsapp
+      .filter((c) => !usados.has(c.numero) && contatoCombina(c, busca))
+      .sort((a, b) => (a.nome ?? "~").localeCompare(b.nome ?? "~", "pt-BR"))
+      .slice(0, 30);
+    return { alunos: daEscola, salvos: salvosFiltrados, whatsapp };
+  }
+
+  /** CHAT-CA-14: contato novo, só se o número tiver WhatsApp. */
+  async salvarContato(ator: Ator, dados: { nome: string; numero: string }) {
+    const { numero, existe } = await this.verificarNumero(dados.numero);
+    if (!existe) throw new BadRequestException("Este número não tem WhatsApp.");
+    await this.prisma.contatoChat.upsert({
+      where: { numero },
+      create: { numero, nome: dados.nome, criadoPorId: ator.id },
+      update: { nome: dados.nome },
+    });
+    return { numero, nome: dados.nome };
   }
 
   /** CHAT-CA-11: o número digitado tem WhatsApp? */
@@ -214,10 +289,14 @@ export class ChatService {
       .filter((m) => m.numero === numero)
       .reverse()
       .sort((a, b) => a.enviadaEm.localeCompare(b.enviadaEm));
-    const alunos = await this.alunosDosNumeros([numero]);
+    const [alunos, salvos] = await Promise.all([
+      this.alunosDosNumeros([numero]),
+      this.contatosSalvos([numero]),
+    ]);
     return {
       numero,
       aluno: alunos.get(numero) ?? null,
+      contato: salvos.get(numero) ?? null,
       pagina,
       temMais: pagina < paginas,
       mensagens: await this.comAutores(mensagens),
