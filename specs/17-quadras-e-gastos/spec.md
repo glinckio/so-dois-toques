@@ -1,6 +1,6 @@
 # Etapa 17: Quadras alugadas, gastos e saldo do caixa
 
-**Status:** rascunho
+**Status:** aprovada
 
 ## Objetivo
 
