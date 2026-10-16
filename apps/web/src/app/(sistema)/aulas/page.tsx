@@ -50,14 +50,14 @@ export default async function PaginaTurmas({ searchParams }: PageProps<"/aulas">
             </>
           ) : (
             <>
-              Minhas <Destaque>turmas</Destaque>
+              Turmas da <Destaque>semana</Destaque>
             </>
           )
         }
         descricao={
           admin
             ? "Cada turma com o nível, os horários e quantas vagas já estão ocupadas."
-            : "As turmas em que você dá aula, com os horários e a lista de presença."
+            : "Todas as turmas, com o dia, o horário e a lista de presença."
         }
         acoes={
           admin && (

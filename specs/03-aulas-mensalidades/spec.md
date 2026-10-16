@@ -100,7 +100,7 @@ As mensalidades ficam na área Caixa (Administrador e Atendente), porque é no b
 ### Permissões e auditoria
 
 - **MENS-CA-18**: O atendente vê mensalidades e inadimplentes e registra pagamentos, mas não estorna, não cancela, não gera mensalidades e não mexe em planos e assinaturas, pela tela nem pela API.
-- **MENS-CA-19**: O professor não acessa mensalidades, planos nem o Caixa, pela tela nem pela API.
+- **MENS-CA-19** [removido] (ver TURMA-CA-04): O professor não acessa mensalidades, planos nem o Caixa, pela tela nem pela API.
 - **MENS-CA-20**: Cadastro e alteração de plano, mudança de assinatura, geração, pagamento, estorno e cancelamento ficam na auditoria com autor, data e IP.
 
 ### Telas

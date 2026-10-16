@@ -1,13 +1,12 @@
 import { expect, test } from "@playwright/test";
 import {
   cadastrarUsuario,
+  criarTurmaPelaTela,
   emailUnico,
   entrarComoAdmin,
-  horariosUnicos,
   primeiroAcesso,
 } from "./apoio";
 
-const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const DIAS_CURTOS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 const diaEmSP = (dias: number) =>
@@ -78,70 +77,34 @@ test("FOCO-CA-05, FOCO-CA-06 e FOCO-CA-07: bloqueio pela agenda, conflito e libe
   await expect(agenda.getByRole("link", { name: "Bloquear às 15:00" })).toBeVisible();
 });
 
-test("FOCO-CA-05 e FOCO-CA-08: a aula da turma aparece na agenda; professor e atendente só veem", async ({
+test("FOCO-CA-05 e FOCO-CA-08: a aula da turma aparece na agenda; a atendente só vê", async ({
   page,
   browser,
 }) => {
-  // Cadastra dois usuários, uma turma e entra com cada um: mais longo que os outros.
-  test.slow();
-  const marca = Math.random().toString(36).slice(2, 8);
   const hoje = diaEmSP(0);
-  const diaDeHoje = new Date(`${hoje}T12:00:00Z`).getUTCDay();
   await entrarComoAdmin(page);
-
-  const nomeProfessor = `Professor Agenda ${marca}`;
-  const emailProfessor = emailUnico("prof-agenda");
-  const senhaProfessor = await cadastrarUsuario(page, {
-    nome: nomeProfessor,
-    email: emailProfessor,
-    perfil: "Professor",
-  });
   const emailAtendente = emailUnico("atendente-agenda");
   const senhaAtendente = await cadastrarUsuario(page, {
-    nome: `Atendente Agenda ${marca}`,
+    nome: "Atendente Agenda",
     email: emailAtendente,
     perfil: "Atendente",
   });
 
-  // Turma com aula hoje.
-  await page.goto("/aulas/turmas/nova");
-  const nomeTurma = `Agenda ${marca}`;
-  await page.getByLabel("Nome da turma").fill(nomeTurma);
-  await page.getByLabel("Professor").selectOption({ label: nomeProfessor });
-  await page.getByLabel("Vagas").fill("6");
-  await page.getByLabel("Dia 1").selectOption({ label: DIAS[diaDeHoje]! });
-  await page.getByLabel("Dia 2").selectOption({ label: DIAS[(diaDeHoje + 2) % 7]! });
-  await horariosUnicos(page);
-  await page.getByRole("button", { name: "Salvar turma" }).click();
-  await expect(page.getByText("Turma salva.")).toBeVisible();
-
+  // Turma com aula hoje: aparece na agenda com o nível e o horário.
+  const { inicio, fim } = await criarTurmaPelaTela(page, { vagas: 6 });
+  const nomeDaAula = new RegExp(`Aula Iniciante, ${inicio} às ${fim}`);
   await page.goto(`/horarios?data=${hoje}`);
   const agenda = page.getByRole("list", { name: `Agenda da quadra em ${hoje}` });
-  await expect(agenda.getByRole("link", { name: new RegExp(`Aula ${nomeTurma}`) })).toHaveCount(1);
+  await expect(agenda.getByRole("link", { name: nomeDaAula })).toHaveCount(1);
 
   const contexto = await browser.newContext();
   const pessoa = await contexto.newPage();
   try {
-    // O professor vê a aula dele em destaque e não bloqueia.
-    await primeiroAcesso(pessoa, emailProfessor, senhaProfessor, "rede-alta-2026-q");
-    await pessoa.goto(`/horarios?data=${hoje}`);
-    const agendaDoProfessor = pessoa.getByRole("list", { name: `Agenda da quadra em ${hoje}` });
-    await expect(
-      agendaDoProfessor.getByRole("link", { name: new RegExp(`Aula ${nomeTurma}`) }),
-    ).toHaveCount(1);
-    await expect(pessoa.getByRole("list", { name: "Legenda da agenda" })).toContainText("Sua aula");
-    await expect(agendaDoProfessor.getByRole("link", { name: /^Bloquear às/ })).toHaveCount(0);
-    await pessoa.goto("/horarios/bloquear");
-    await expect(pessoa.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
-
-    // A atendente vê a aula, mas não abre a turma nem bloqueia.
-    await contexto.clearCookies();
+    // A atendente vê a aula (e abre a turma para a presença), mas não bloqueia.
     await primeiroAcesso(pessoa, emailAtendente, senhaAtendente, "saque-curto-2026-q");
     await pessoa.goto(`/horarios?data=${hoje}`);
     const agendaDaAtendente = pessoa.getByRole("list", { name: `Agenda da quadra em ${hoje}` });
-    await expect(
-      agendaDaAtendente.getByRole("group", { name: new RegExp(`Aula ${nomeTurma}`) }),
-    ).toHaveCount(1);
+    await expect(agendaDaAtendente.getByRole("link", { name: nomeDaAula })).toHaveCount(1);
     await expect(agendaDaAtendente.getByRole("link", { name: /^Bloquear às/ })).toHaveCount(0);
     await pessoa.goto("/horarios/bloquear");
     await expect(pessoa.getByRole("heading", { name: "Acesso negado" })).toBeVisible();

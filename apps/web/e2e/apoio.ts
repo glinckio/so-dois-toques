@@ -69,17 +69,35 @@ export async function primeiroAcesso(
 const hhmm = (minutos: number) =>
   `${String(Math.floor(minutos / 60)).padStart(2, "0")}:${String(minutos % 60).padStart(2, "0")}`;
 
+const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+
+/** Dia da semana de hoje em São Paulo (0 = domingo). */
+export function diaDeHojeSP() {
+  const hoje = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(
+    new Date(),
+  );
+  return new Date(`${hoje}T12:00:00Z`).getUTCDay();
+}
+
 /**
- * A quadra é uma só (FOCO-CA-04): duas turmas ativas não dividem horário, e os testes
- * rodam ao mesmo tempo no celular e no computador. Cada turma criada pela tela ganha
- * aulas de um minuto num horário sorteado entre 05:00 e 23:58.
+ * Cria uma turma pela tela (TURMA-CA-01) e devolve o endereço dela e o horário. A quadra é
+ * uma só e duas turmas ativas não dividem horário, e os testes rodam ao mesmo tempo no
+ * celular e no computador: cada turma ganha uma aula de um minuto sorteada entre 05:00
+ * e 23:58.
  */
-export async function horariosUnicos(page: Page, linhas = 2) {
-  for (let i = 0; i < linhas; i++) {
-    const inicio = 5 * 60 + Math.floor(Math.random() * (19 * 60 - 1));
-    // Cada linha de horário tem dois campos de hora: início e fim.
-    const horas = page.locator('input[type="time"]');
-    await horas.nth(2 * i).fill(hhmm(inicio));
-    await horas.nth(2 * i + 1).fill(hhmm(inicio + 1));
-  }
+export async function criarTurmaPelaTela(
+  page: Page,
+  dados: { diaSemana?: number; vagas?: number } = {},
+) {
+  const inicio = 5 * 60 + Math.floor(Math.random() * (19 * 60 - 1));
+  await page.goto("/aulas/turmas/nova");
+  await page
+    .getByLabel("Dia da semana")
+    .selectOption({ label: DIAS[dados.diaSemana ?? diaDeHojeSP()]! });
+  await page.getByLabel("Início", { exact: true }).fill(hhmm(inicio));
+  await page.getByLabel("Fim", { exact: true }).fill(hhmm(inicio + 1));
+  if (dados.vagas !== undefined) await page.getByLabel("Vagas").fill(String(dados.vagas));
+  await page.getByRole("button", { name: "Salvar turma" }).click();
+  await expect(page.getByText("Turma salva.")).toBeVisible();
+  return { url: page.url().replace(/\?.*$/, ""), inicio: hhmm(inicio), fim: hhmm(inicio + 1) };
 }

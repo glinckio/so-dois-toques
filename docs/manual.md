@@ -11,19 +11,19 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 
 ## O que cada perfil vê
 
-| Tela                 | Administrador | Atendente                   | Professor             |
-| -------------------- | ------------- | --------------------------- | --------------------- |
-| Início               | Sim           | Sim                         | Sim                   |
-| Aulas                | Tudo          | Não                         | Só as próprias turmas |
-| Mensalidades         | Tudo          | Ver e receber, sem estornos | Não                   |
-| Horários             | Tudo          | Ver a agenda                | Ver a agenda          |
-| Contábil             | Sim           | Não                         | Não                   |
-| Usuários e Auditoria | Sim           | Não                         | Não                   |
+| Tela                 | Administrador | Atendente                             |
+| -------------------- | ------------- | ------------------------------------- |
+| Início               | Sim           | Sim                                   |
+| Aulas                | Tudo          | Ver turmas e alunos e marcar presença |
+| Mensalidades         | Tudo          | Ver e receber, sem estornos           |
+| Horários             | Tudo          | Ver a agenda                          |
+| Contábil             | Sim           | Não                                   |
+| Usuários e Auditoria | Sim           | Não                                   |
 
 ## Aulas
 
-- **Turmas:** cada turma tem professor, nível, vagas e horários da semana, e acontece na quadra. Duas turmas ativas não podem ter aula no mesmo horário, nem com professores diferentes. Abra a turma para matricular alunos (respeitando as vagas) e para a **presença**.
-- **Presença (professor):** abra a turma → Presença, escolha a data da aula e marque presente ou ausente. Dá para corrigir depois.
+- **Turmas:** cada turma é um horário fixo da semana: um dia, o início e o fim, o nível e as vagas. Não tem nome nem professor; aparece como "Terça, 19:00 às 20:00 · Iniciante". Quem treina duas vezes por semana é matriculado em duas turmas. Duas turmas ativas não podem ter aula no mesmo horário. Abra a turma para matricular alunos (respeitando as vagas) e para a **presença**.
+- **Presença (administrador e atendente):** abra a turma → Presença, escolha a data da aula e marque presente ou ausente. Dá para corrigir depois.
 - **Alunos (administrador):** cadastro com nome, telefone e consentimento obrigatórios; data de nascimento e contato de emergência são opcionais. Com a data informada, menor de 18 anos exige responsável. A busca acha por parte do nome (sem acento) ou do telefone. Na ficha do aluno ficam o plano, a exportação de dados e a anonimização (ver [LGPD](lgpd.md)).
 - **Planos:** valor mensal por quantidade de aulas na semana. Na ficha do aluno, escolha o plano, o dia de vencimento e um desconto, se houver.
 
@@ -35,7 +35,7 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 
 ## Horários
 
-- **Agenda:** a quadra dia a dia, das 05h às 24h. As aulas aparecem sozinhas, pelos horários das turmas; o professor vê as dele em destaque.
+- **Agenda:** a quadra dia a dia, das 05h às 24h. As aulas aparecem sozinhas, pelos horários das turmas.
 - **Bloquear horário (administrador):** fecha a quadra num dia ou toda semana (até 26 semanas), com motivo, por exemplo manutenção ou evento. Horário com aula de turma não pode ser bloqueado. Na agenda, toque numa hora livre para bloquear.
 - **Bloqueio:** abra o bloqueio na agenda para liberar o horário (com motivo), se ainda não começou.
 - **Bloqueios semanais:** os que se repetem; encerrar libera as datas que ainda não começaram.

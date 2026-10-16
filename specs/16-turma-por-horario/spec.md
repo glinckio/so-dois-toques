@@ -1,6 +1,6 @@
 # Etapa 16: Turma é um dia e um horário
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
@@ -56,7 +56,7 @@ Em 16/10/2026 o dono explicou que as turmas são divididas por dia e horário, n
 
 ## Efeito em outras etapas
 
-Critérios das Etapas 1, 2, 11 e 14 que falam do professor (o professor vê só as turmas dele, o menu do professor, a aula dele em destaque na agenda) ganham a marca `[removido]` com o critério que os substitui ao lado.
+Ganham a marca `[removido]`, com o critério que os substitui ao lado: AULAS-CA-10, 11, 12 e 20 (Etapa 2) e MENS-CA-19 (Etapa 3). Os outros critérios que falam do professor (por exemplo, AULAS-CA-17, presença) continuam valendo com o atendente no lugar dele.
 
 ## Fora do escopo
 

@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso, sair } from "./apoio";
+import { cadastrarUsuario, emailUnico, entrarComoAdmin, primeiroAcesso } from "./apoio";
 
 function errosDoConsole(page: Page) {
   const erros: string[] = [];
@@ -65,7 +65,7 @@ test("VIS-CA-04: o Início do administrador mostra o mês e o gráfico de 12 mes
   expect(erros).toEqual([]);
 });
 
-test("VIS-CA-05 e FOCO-CA-10: atendente e professor veem só o resumo das suas áreas", async ({
+test("FOCO-CA-10: a atendente vê aulas de hoje e mensalidades em atraso, sem o Contábil", async ({
   page,
   browser,
 }) => {
@@ -75,12 +75,6 @@ test("VIS-CA-05 e FOCO-CA-10: atendente e professor veem só o resumo das suas �
     nome: "Iara Inicio",
     email: emailAtendente,
     perfil: "Atendente",
-  });
-  const emailProfessor = emailUnico("professor-inicio");
-  const senhaProfessor = await cadastrarUsuario(page, {
-    nome: "Paulo Inicio",
-    email: emailProfessor,
-    perfil: "Professor",
   });
 
   const contexto = await browser.newContext();
@@ -92,13 +86,6 @@ test("VIS-CA-05 e FOCO-CA-10: atendente e professor veem só o resumo das suas �
     }
     await expect(pessoa.getByTestId("kpi-Recebido")).toHaveCount(0);
     await expect(pessoa.getByTestId("grafico-mensal")).toHaveCount(0);
-
-    await sair(pessoa);
-    await expect(pessoa).toHaveURL("/login");
-    await primeiroAcesso(pessoa, emailProfessor, senhaProfessor, "manchete-baixa-2026-p");
-    await expect(pessoa.getByRole("region", { name: "Aulas de hoje" })).toBeVisible();
-    await expect(pessoa.getByRole("region", { name: "Mensalidades em atraso" })).toHaveCount(0);
-    await expect(pessoa.getByTestId("kpi-Recebido")).toHaveCount(0);
   } finally {
     await contexto.close();
   }

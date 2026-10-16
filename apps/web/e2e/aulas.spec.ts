@@ -1,50 +1,31 @@
 import { expect, test } from "@playwright/test";
 import {
   cadastrarUsuario,
+  criarTurmaPelaTela,
   emailUnico,
   entrarComoAdmin,
-  horariosUnicos,
   primeiroAcesso,
 } from "./apoio";
 
-const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-const hojeSP = () =>
-  new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
-
-test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma nova à presença do professor", async ({
+test("AULAS-CA-01, TURMA-CA-01, AULAS-CA-15, AULAS-CA-17 e TURMA-CA-05: da turma nova à presença marcada pelo atendente", async ({
   page,
   browser,
 }) => {
   const marca = Math.random().toString(36).slice(2, 8);
   await entrarComoAdmin(page);
 
-  // Professor novo, para a turma dele.
-  const emailProfessor = emailUnico("prof-aulas");
-  const nomeProfessor = `Professor ${marca}`;
+  // Atendente nova, que marca a presença.
+  const emailAtendente = emailUnico("atendente-aulas");
+  const nomeAtendente = `Atendente ${marca}`;
   const senhaTemporaria = await cadastrarUsuario(page, {
-    nome: nomeProfessor,
-    email: emailProfessor,
-    perfil: "Professor",
+    nome: nomeAtendente,
+    email: emailAtendente,
+    perfil: "Atendente",
   });
 
-  // Turma com aula hoje.
-  await page.goto("/aulas/turmas/nova");
-  const nomeTurma = `Iniciantes ${marca}`;
-  await page.getByLabel("Nome da turma").fill(nomeTurma);
-  await page.getByLabel("Professor").selectOption({ label: nomeProfessor });
-  await page.getByLabel("Vagas").fill("2");
-  const hoje = hojeSP();
-  await page
-    .getByLabel("Dia 1")
-    .selectOption({ label: DIAS[new Date(`${hoje}T12:00:00Z`).getUTCDay()]! });
-  await page
-    .getByLabel("Dia 2")
-    .selectOption({ label: DIAS[(new Date(`${hoje}T12:00:00Z`).getUTCDay() + 3) % 7]! });
-  await horariosUnicos(page);
-  await page.getByRole("button", { name: "Salvar turma" }).click();
-  await expect(page.getByText("Turma salva.")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1, name: nomeTurma })).toBeVisible();
-  const urlTurma = page.url().replace(/\?.*$/, "");
+  // Turma com aula hoje: dia, horário, nível e vagas.
+  const { url: urlTurma, inicio } = await criarTurmaPelaTela(page, { vagas: 2 });
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(inicio);
 
   // Aluno: sem consentimento é recusado; com consentimento, salvo.
   await page.goto("/aulas/alunos/novo");
@@ -79,14 +60,14 @@ test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma
   await expect(page.getByRole("list", { name: "Alunos matriculados" })).toContainText(nomeAluno);
   await expect(page.getByTestId("vagas")).toContainText("1 de 2 vagas ocupadas");
 
-  // O professor marca a presença no celular ou no computador.
+  // A atendente marca a presença no celular ou no computador.
   const contexto = await browser.newContext();
   const professor = await contexto.newPage();
   try {
-    await primeiroAcesso(professor, emailProfessor, senhaTemporaria, "rede-alta-2026-x");
+    await primeiroAcesso(professor, emailAtendente, senhaTemporaria, "rede-alta-2026-x");
     await professor.goto("/aulas");
-    await expect(professor.getByRole("heading", { name: "Minhas turmas" })).toBeVisible();
-    await professor.getByRole("link", { name: new RegExp(nomeTurma) }).click();
+    await expect(professor.getByRole("heading", { name: "Turmas da semana" })).toBeVisible();
+    await professor.goto(urlTurma);
     await professor.getByRole("link", { name: "Lista de presença" }).click();
     const lista = professor.getByRole("list", { name: "Lista de presença" });
     await expect(lista).toContainText(nomeAluno);
@@ -94,7 +75,7 @@ test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma
     await professor.getByRole("button", { name: "Salvar presença" }).click();
     await expect(professor.getByText("Presença salva.")).toBeVisible();
     await expect(professor.getByText("1 de 1 presentes")).toBeVisible();
-    await expect(lista).toContainText(`Marcado por ${nomeProfessor}`);
+    await expect(lista).toContainText(`Marcado por ${nomeAtendente}`);
 
     // Cadastros são só do administrador.
     await professor.goto("/aulas/alunos/novo");
@@ -104,7 +85,10 @@ test("AULAS-CA-01, AULAS-CA-10, AULAS-CA-15, AULAS-CA-17 e AULAS-CA-20: da turma
   }
 });
 
-test("AULAS-CA-21: atendente não entra em Aulas", async ({ page, browser }) => {
+test("AULAS-CA-21 e TURMA-CA-05: atendente vê os alunos, mas não cadastra aluno nem turma", async ({
+  page,
+  browser,
+}) => {
   await entrarComoAdmin(page);
   const email = emailUnico("atendente-aulas");
   const senhaTemporaria = await cadastrarUsuario(page, {
@@ -117,7 +101,11 @@ test("AULAS-CA-21: atendente não entra em Aulas", async ({ page, browser }) => 
   try {
     await primeiroAcesso(atendente, email, senhaTemporaria, "caixa-forte-2026-y");
     await atendente.goto("/aulas/alunos");
-    await expect(atendente.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
+    await expect(atendente.getByRole("heading", { name: "Acesso negado" })).toHaveCount(0);
+    for (const rota of ["/aulas/alunos/novo", "/aulas/turmas/nova", "/aulas/planos"]) {
+      await atendente.goto(rota);
+      await expect(atendente.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
+    }
   } finally {
     await contexto.close();
   }

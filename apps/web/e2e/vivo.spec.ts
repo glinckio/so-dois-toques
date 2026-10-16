@@ -174,8 +174,10 @@ test("VIVO-CA-03: a busca rápida só lista o que o perfil pode abrir", async ({
     await expect(busca.getByRole("option", { name: "Mensalidades", exact: true })).toBeVisible();
     await expect(busca.getByRole("option", { name: "Caixa", exact: true })).toHaveCount(0);
     await expect(busca.getByRole("option", { name: "Contábil", exact: true })).toHaveCount(0);
-    await busca.getByRole("combobox").fill("aluno");
-    await expect(busca.getByText("Nada encontrado.")).toBeVisible();
+    // Só sobra a busca de alunos (a atendente vê os alunos), sem a área do Contábil.
+    await busca.getByRole("combobox").fill("contabil");
+    await expect(busca.getByRole("option", { name: "Contábil", exact: true })).toHaveCount(0);
+    await expect(busca.getByRole("option", { name: /Buscar alunos por/ })).toBeVisible();
   } finally {
     await contexto.close();
   }
@@ -184,7 +186,7 @@ test("VIVO-CA-03: a busca rápida só lista o que o perfil pode abrir", async ({
 test("VIVO-CA-04: a confirmação do sistema só executa com Confirmar", async ({ page }) => {
   await entrarComoAdmin(page);
   const email = emailUnico("confirmacao");
-  await cadastrarUsuario(page, { nome: "Pessoa da Confirmação", email, perfil: "Professor" });
+  await cadastrarUsuario(page, { nome: "Pessoa da Confirmação", email, perfil: "Atendente" });
   const item = page.getByRole("listitem").filter({ hasText: email });
   const janela = page.getByRole("dialog", { name: /Desativar Pessoa da Confirmação/ });
 
