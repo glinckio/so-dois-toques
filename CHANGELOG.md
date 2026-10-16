@@ -2,6 +2,7 @@
 
 ## Próxima versão
 
+- Etapa 17: quadras alugadas, gastos e saldo do caixa. Várias quadras (cadastro, renomear, desativar); cada turma e cada bloqueio numa quadra, e a agenda mostra uma quadra por vez. Aluguel mensal de quadra lançado sozinho no dia do pagamento, locação avulsa, equipamentos, investimentos e outros gastos, com estorno. Saldo inicial de R$ 600,00 em 16/10/2026 e saldo em caixa no Contábil e no Início.
 - Etapa 13: sem lanchonete. Sai a área Estoque (produtos, vendas e compras), o cartão de estoque do Início e a lanchonete do Contábil. O Atendente fica com Horários e Caixa. Vendas e compras antigas continuam no histórico do Caixa e contam como outras receitas e despesas no Contábil.
 - Etapa 14: foco em aulas. Saem Estoque, Caixa (turnos e avulsos), quadras parceiras e aluguel de quadra. Mensalidades ganham área própria; a agenda da única quadra mostra as aulas das turmas e os bloqueios; turmas não dividem horário; o Contábil fica só com mensalidades e estornos. A migration para sem mexer em nada se encontrar dados das partes que saem.
 - Etapa 10: identidade visual. Tema escuro com as cores do logo (roxo e dourado), menu lateral com ícones, logo no login, no menu e no ícone do site, Início com painel por perfil (resumo do mês, gráfico de 12 meses, caixa, quadras, aulas e estoque) e gráficos no Contábil.

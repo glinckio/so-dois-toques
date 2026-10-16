@@ -1,6 +1,6 @@
 # Etapa 17: Quadras alugadas, gastos e saldo do caixa
 
-**Status:** aprovada
+**Status:** implementada
 
 ## Objetivo
 
@@ -26,10 +26,10 @@ Em 16/10/2026 o dono contou que as aulas acontecem em quadras alugadas, algumas 
 
 ## Aluguel mensal (contrato)
 
-- O administrador registra: quadra, dia da semana, início e fim do horário, valor por mês (R$ 1,00 a R$ 20.000,00), dia do pagamento (1 a 28) e o mês de início.
+- O administrador registra: quadra, dia da semana, início e fim do horário, valor por mês (R$ 1,00 a R$ 20.000,00), dia do pagamento (1 a 28) e o mês de início (do mês atual até 12 meses à frente, para não lançar meses antigos de uma vez).
 - **Todo mês, no dia do pagamento, o sistema lança sozinho a saída** do valor no caixa ("Aluguel mensal: quadra X, terça 19:00 às 20:00, outubro de 2026"), na forma de pagamento escolhida no contrato. Nunca lança duas vezes o mesmo mês do mesmo contrato, mesmo com duas execuções ao mesmo tempo.
 - Se o contrato começa num mês cujo dia de pagamento já passou, a saída daquele mês é lançada no dia em que o contrato foi registrado.
-- O administrador **encerra** o contrato a partir de um mês: daquele mês em diante não há mais lançamento. Mudar o valor é encerrar e registrar um novo.
+- O administrador **encerra** o contrato a partir de um mês (o atual ou um seguinte, depois do mês de início): daquele mês em diante não há mais lançamento. Mudar o valor é encerrar e registrar um novo.
 - O contrato não ocupa a agenda sozinho: quem ocupa o horário é a turma que acontece nele.
 
 ## Aluguel avulso e outros gastos
