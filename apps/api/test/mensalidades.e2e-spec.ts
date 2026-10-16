@@ -92,9 +92,10 @@ describe("Etapa 3: mensalidades e Caixa", () => {
       await api.put(rota, { ...base, diaVencimento: 0 }, token).expect(400);
       await api.put(rota, { ...base, diaVencimento: 29 }, token).expect(400);
       await api.put(rota, { ...base, descontoCentavos: 2000 }, token).expect(400);
-      await api
-        .put(rota, { ...base, descontoCentavos: 15000, motivoDesconto: "Bolsa" }, token)
+      const maior = await api
+        .put(rota, { ...base, descontoCentavos: 15001, motivoDesconto: "Bolsa" }, token)
         .expect(400);
+      expect(maior.body.message).toBe("O desconto não pode passar do valor do plano.");
       await api.put(rota, { ...base, inicio: mesesAtras(1) }, token).expect(400);
 
       await api
@@ -214,6 +215,40 @@ describe("Etapa 3: mensalidades e Caixa", () => {
       // Mês inválido ou longe demais é recusado.
       await api.post("/mensalidades/geracoes", { competencia: "2026-13" }, token).expect(400);
       await api.post("/mensalidades/geracoes", { competencia: "2099-01" }, token).expect(400);
+    });
+
+    it("DESC-CA-01 e DESC-CA-02: desconto do plano inteiro deixa o aluno isento, sem mensalidade na geração", async () => {
+      const { api, token } = admin;
+      const competencia = proximoMes();
+      const planoId = await criarPlano(api, token, { valorCentavos: 10000 });
+      const isento = await criarAluno(api, token);
+      const pagante = await criarAluno(api, token);
+      await assinar(api, token, isento, planoId, {
+        inicio: competencia,
+        descontoCentavos: 10000,
+        motivoDesconto: "Aluna especial",
+      });
+      await assinar(api, token, pagante, planoId, {
+        inicio: competencia,
+        descontoCentavos: 9999,
+        motivoDesconto: "Bolsa quase inteira",
+      });
+      const assinaturas = await api.get(`/alunos/${isento}/assinaturas`, token).expect(200);
+      expect(assinaturas.body.vigente).toMatchObject({
+        descontoCentavos: 10000,
+        motivoDesconto: "Aluna especial",
+        valorCentavos: 0,
+      });
+
+      await api.post("/mensalidades/geracoes", { competencia }, token).expect(201);
+      const mes = new Date(`${competencia}-01T00:00:00Z`);
+      expect(await prisma.mensalidade.count({ where: { alunoId: isento, competencia: mes } })).toBe(
+        0,
+      );
+      const doPagante = await prisma.mensalidade.findFirstOrThrow({
+        where: { alunoId: pagante, competencia: mes },
+      });
+      expect(doPagante.valorCentavos).toBe(1);
     });
 
     it("MENS-CA-06: mudar o valor do plano não altera as mensalidades já geradas", async () => {

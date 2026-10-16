@@ -193,7 +193,7 @@ export class PlanosService {
         if (!plano) throw new NotFoundException("Plano não encontrado.");
         if (!plano.ativo) throw new ConflictException("Plano inativo não recebe aluno novo.");
         if (valorDaMensalidade(plano.valorCentavos, dados.descontoCentavos) === null) {
-          throw new BadRequestException("O desconto precisa ser menor que o valor do plano.");
+          throw new BadRequestException("O desconto não pode passar do valor do plano.");
         }
 
         const inicio = paraDataDoBanco(primeiroDia(dados.inicio));
