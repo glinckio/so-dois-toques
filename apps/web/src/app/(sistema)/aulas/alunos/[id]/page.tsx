@@ -319,15 +319,25 @@ async function SecaoPlano({ alunoId, ativo }: { alunoId: string; ativo: boolean 
               </span>
             </span>
           </div>
-          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <Valor
-              centavos={vigente.valorCentavos}
-              className="text-3xl leading-none font-extrabold tracking-tight"
-            />{" "}
-            <span className="text-suave text-sm">
-              por mês · vence todo dia {vigente.diaVencimento} · desde {nomeDoMes(vigente.inicio)}
-            </span>
-          </p>
+          {vigente.valorCentavos === 0 ? (
+            // DESC-CA-03: desconto do plano inteiro, o aluno não recebe mensalidade.
+            <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="text-sucesso text-2xl leading-none font-extrabold tracking-tight">
+                Isento de mensalidade
+              </span>{" "}
+              <span className="text-suave text-sm">desde {nomeDoMes(vigente.inicio)}</span>
+            </p>
+          ) : (
+            <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <Valor
+                centavos={vigente.valorCentavos}
+                className="text-3xl leading-none font-extrabold tracking-tight"
+              />{" "}
+              <span className="text-suave text-sm">
+                por mês · vence todo dia {vigente.diaVencimento} · desde {nomeDoMes(vigente.inicio)}
+              </span>
+            </p>
+          )}
           {vigente.descontoCentavos > 0 && (
             <p className="text-suave flex items-center gap-2 text-sm">
               <Icone nome="porcentagem" width={15} height={15} className="text-ouro" />

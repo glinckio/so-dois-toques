@@ -46,9 +46,11 @@ describe("valores e vencimento", () => {
     expect(valorDaMensalidade(15000, 2500)).toBe(12500);
   });
 
-  it("MENS-CA-02: desconto negativo, igual ou maior que o plano é recusado", () => {
+  it("MENS-CA-02 e DESC-CA-01: desconto negativo ou maior que o plano é recusado; o plano inteiro deixa isento", () => {
     expect(valorDaMensalidade(15000, -1)).toBeNull();
-    expect(valorDaMensalidade(15000, 15000)).toBeNull();
+    expect(valorDaMensalidade(15000, 15001)).toBeNull();
+    expect(valorDaMensalidade(15000, 15000)).toBe(0);
+    expect(valorDaMensalidade(15000, 14999)).toBe(1);
     expect(valorDaMensalidade(15000, 0.5)).toBeNull();
   });
 

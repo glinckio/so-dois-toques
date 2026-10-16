@@ -45,10 +45,13 @@ export function vencimentoEm(competencia: string, dia: number): string {
   return `${competencia}-${String(dia).padStart(2, "0")}`;
 }
 
-/** Valor da mensalidade: plano menos desconto. Desconto precisa ser menor que o plano. */
+/**
+ * Valor da mensalidade: plano menos desconto. O desconto vai até o plano inteiro; com
+ * ele igual ao plano, o aluno é isento e não recebe mensalidade (DESC-CA-01 e 02).
+ */
 export function valorDaMensalidade(valorPlano: number, desconto: number): number | null {
   if (!Number.isInteger(valorPlano) || !Number.isInteger(desconto)) return null;
-  if (desconto < 0 || desconto >= valorPlano) return null;
+  if (desconto < 0 || desconto > valorPlano) return null;
   return valorPlano - desconto;
 }
 
