@@ -1,6 +1,6 @@
 # Etapa 19: Feedback dos alunos
 
-**Status:** rascunho
+**Status:** aprovada
 
 ## Objetivo
 
@@ -12,7 +12,7 @@ Em 16/10/2026 o dono pediu "uma tela para feedback dos alunos para saber o que e
 
 ## Formulário (página pública)
 
-- Endereço fixo, por exemplo `https://<sistema>/feedback`, aberto sem login, no celular e no computador, em português, com o nome e a identidade visual da escola.
+- Endereço fixo `https://<sistema>/avaliar`, aberto sem login, no celular e no computador, em português, com o nome e a identidade visual da escola.
 - Perguntas:
   - **Nota das aulas** de 1 a 5 (obrigatória), em estrelas.
   - **O que você está achando das aulas?** (opcional, até 1.000 caracteres).
