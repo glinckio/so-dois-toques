@@ -72,6 +72,25 @@ export function exigeResponsavel(nascimento: string | null, hoje: string): boole
 
 export type Horario = { diaSemana: number; inicio: number; fim: number };
 
+type TurmaComHorario = { diaSemana: number; horaInicio: number; horaFim: number };
+
+/** Etapa 16: a turma tem um só horário; este é ele no formato das regras de horário. */
+export function horarioDaTurma(t: TurmaComHorario): Horario {
+  return { diaSemana: t.diaSemana, inicio: t.horaInicio, fim: t.horaFim };
+}
+
+const DIAS_DA_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+const NOMES_DOS_NIVEIS: Record<Nivel, string> = {
+  INICIANTE: "Iniciante",
+  INTERMEDIARIO: "Intermediário",
+  AVANCADO: "Avançado",
+};
+
+/** TURMA-CA-03: a turma não tem nome; aparece como "Terça, 19:00 às 20:00 · Iniciante". */
+export function descreverTurma(t: TurmaComHorario & { nivel: Nivel }): string {
+  return `${DIAS_DA_SEMANA[t.diaSemana]}, ${horaDe(t.horaInicio)} às ${horaDe(t.horaFim)} · ${NOMES_DOS_NIVEIS[t.nivel]}`;
+}
+
 export function horarioValido(h: Horario): boolean {
   return (
     Number.isInteger(h.diaSemana) &&

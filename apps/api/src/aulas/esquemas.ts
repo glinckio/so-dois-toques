@@ -105,28 +105,27 @@ export const consultaAlunosSchema = z.object({
   pagina: z.coerce.number().int().min(1).max(10000).default(1),
 });
 
-const horarioSchema = z
+/** TURMA-CA-01: dia da semana, início e fim (minutos, 05:00 às 23:59), nível e vagas. */
+export const turmaSchema = z
   .object({
-    diaSemana: z.number().int().min(0).max(6),
-    inicio: z.number().int().min(HORARIO_MINIMO, "As aulas começam a partir das 05:00."),
-    fim: z.number().int().max(HORARIO_MAXIMO, "As aulas terminam até as 23:59."),
+    diaSemana: z
+      .number()
+      .int()
+      .min(0, "Escolha o dia da semana.")
+      .max(6, "Escolha o dia da semana."),
+    horaInicio: z.number().int().min(HORARIO_MINIMO, "As aulas começam a partir das 05:00."),
+    horaFim: z.number().int().max(HORARIO_MAXIMO, "As aulas terminam até as 23:59."),
+    nivel: z.enum(NIVEIS),
+    vagas: z
+      .number()
+      .int()
+      .min(VAGAS_MINIMO, "A turma precisa de pelo menos 1 vaga.")
+      .max(VAGAS_MAXIMO, "No máximo 40 vagas."),
   })
-  .refine((h) => h.fim > h.inicio, {
+  .refine((t) => t.horaFim > t.horaInicio, {
     message: "O fim da aula precisa ser depois do início.",
-    path: ["fim"],
+    path: ["horaFim"],
   });
-
-export const turmaSchema = z.object({
-  nome: z.string().trim().min(2, "Informe o nome da turma.").max(80),
-  nivel: z.enum(NIVEIS),
-  professorId: z.uuid(),
-  vagas: z
-    .number()
-    .int()
-    .min(VAGAS_MINIMO, "A turma precisa de pelo menos 1 vaga.")
-    .max(VAGAS_MAXIMO, "No máximo 40 vagas."),
-  horarios: z.array(horarioSchema).min(1, "Informe pelo menos um dia e horário.").max(14),
-});
 
 export const situacaoTurmasSchema = z.object({
   situacao: z.enum(["ativas", "encerradas", "todas"]).default("ativas"),

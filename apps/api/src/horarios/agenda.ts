@@ -1,4 +1,4 @@
-import { deDataDoBanco, hojeEmSaoPaulo } from "../aulas/regras.js";
+import { deDataDoBanco, descreverTurma, hojeEmSaoPaulo, horarioDaTurma } from "../aulas/regras.js";
 import type { Prisma } from "../generated/prisma/client.js";
 import type { PrismaService } from "../prisma/prisma.service.js";
 import type { TurmaNaAgenda } from "./regras.js";
@@ -20,17 +20,19 @@ export async function turmasNaAgenda(cliente: Cliente, filtro: { ativas?: boolea
     where: filtro.ativas ? { ativa: true } : {},
     select: {
       id: true,
-      nome: true,
+      nivel: true,
+      diaSemana: true,
+      horaInicio: true,
+      horaFim: true,
       inicio: true,
       encerradaEm: true,
-      horarios: { select: { diaSemana: true, inicio: true, fim: true } },
     },
   });
   return turmas.map((t): TurmaNaAgenda => ({
     id: t.id,
-    nome: t.nome,
+    nome: descreverTurma(t),
     desde: deDataDoBanco(t.inicio),
     ate: t.encerradaEm ? hojeEmSaoPaulo(t.encerradaEm) : null,
-    horarios: t.horarios,
+    horarios: [horarioDaTurma(t)],
   }));
 }

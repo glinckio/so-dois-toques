@@ -26,23 +26,15 @@ import { TurmasService } from "./turmas.service.js";
 
 const ator = (u: UsuarioAutenticado, ip?: string): Ator => ({ id: u.id, perfil: u.perfil, ip });
 
+/** Turmas e presença: o administrador faz tudo; o atendente vê e marca presença (TURMA-CA-05). */
 @ExigeArea("aulas")
 @Controller()
 export class TurmasController {
   constructor(private readonly turmas: TurmasService) {}
 
-  @SomenteAdministrador()
-  @Get("professores")
-  listarProfessores() {
-    return this.turmas.listarProfessores();
-  }
-
   @Get("turmas")
-  listar(
-    @Query(new ZodPipe(situacaoTurmasSchema)) filtro: z.infer<typeof situacaoTurmasSchema>,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-  ) {
-    return this.turmas.listar(ator(usuario), filtro.situacao);
+  listar(@Query(new ZodPipe(situacaoTurmasSchema)) filtro: z.infer<typeof situacaoTurmasSchema>) {
+    return this.turmas.listar(filtro.situacao);
   }
 
   @SomenteAdministrador()
@@ -56,12 +48,8 @@ export class TurmasController {
   }
 
   @Get("turmas/:id")
-  buscar(
-    @Param("id", ParseUUIDPipe) id: string,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @IpCliente() ip: string | undefined,
-  ) {
-    return this.turmas.buscar(ator(usuario, ip), id);
+  buscar(@Param("id", ParseUUIDPipe) id: string) {
+    return this.turmas.buscar(id);
   }
 
   @SomenteAdministrador()
@@ -112,10 +100,8 @@ export class TurmasController {
   listaDePresenca(
     @Param("id", ParseUUIDPipe) id: string,
     @Param("data", new ZodPipe(dataSchema)) data: string,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @IpCliente() ip: string | undefined,
   ) {
-    return this.turmas.listaDePresenca(ator(usuario, ip), id, data);
+    return this.turmas.listaDePresenca(id, data);
   }
 
   @Put("turmas/:id/presencas/:data")

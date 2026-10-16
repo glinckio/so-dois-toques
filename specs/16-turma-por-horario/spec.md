@@ -1,6 +1,6 @@
 # Etapa 16: Turma é um dia e um horário
 
-**Status:** rascunho
+**Status:** aprovada
 
 ## Objetivo
 

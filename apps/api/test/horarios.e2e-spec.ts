@@ -29,20 +29,22 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
     admin.api.post("/horarios/bloqueios", { motivo: "Manutenção", ...dados }, admin.token);
 
   it("FOCO-CA-05: a grade mostra as aulas das turmas no dia e os bloqueios valendo", async () => {
-    const { api, token, usuario } = admin;
+    const { api, token } = admin;
     const data = semanaLivre();
     const dia = diaDaSemana(data);
     const turmaId = await criarTurma(api, token, {
-      professorId: usuario.id,
+      diaSemana: dia,
+      horaInicio: 7 * 60,
+      horaFim: 8 * 60 + 30,
       vagas: 6,
-      horarios: [{ diaSemana: dia, inicio: 7 * 60, fim: 8 * 60 + 30 }],
     });
     await api
       .post(`/turmas/${turmaId}/matriculas`, { alunoId: await criarAluno(api, token) }, token)
       .expect(201);
     const outroDia = await criarTurma(api, token, {
-      professorId: usuario.id,
-      horarios: [{ diaSemana: (dia + 1) % 7, inicio: 7 * 60, fim: 8 * 60 }],
+      diaSemana: (dia + 1) % 7,
+      horaInicio: 7 * 60,
+      horaFim: 8 * 60,
     });
     const bloqueio = await bloquear({
       repeticao: "AVULSO",
@@ -69,7 +71,7 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
       fim: 510,
       vagas: 6,
       ocupadas: 1,
-      professor: { id: usuario.id },
+      nivel: "INICIANTE",
     });
     expect(grade.aulas.some((a: { turmaId: string }) => a.turmaId === outroDia)).toBe(false);
     expect(grade.bloqueios).toEqual([
@@ -86,12 +88,13 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
   });
 
   it("FOCO-CA-06: bloqueio avulso e semanal com motivo, sem cair sobre aula nem sobre outro bloqueio", async () => {
-    const { api, token, usuario } = admin;
+    const { api, token } = admin;
     const data = semanaLivre();
     const dia = diaDaSemana(data);
     await criarTurma(api, token, {
-      professorId: usuario.id,
-      horarios: [{ diaSemana: dia, inicio: 18 * 60 + 30, fim: 19 * 60 + 30 }],
+      diaSemana: dia,
+      horaInicio: 18 * 60 + 30,
+      horaFim: 19 * 60 + 30,
     });
 
     const sobreAula = await bloquear({
@@ -151,31 +154,24 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
   });
 
   it("FOCO-CA-06: turma ou horário de turma sobre bloqueio futuro é recusado com as datas", async () => {
-    const { api, token, usuario } = admin;
+    const { api, token } = admin;
     const data = semanaLivre();
     const dia = diaDaSemana(data);
     await bloquear({ repeticao: "AVULSO", data, horaInicio: 6, horaFim: 7 }).expect(201);
-    const base = { nome: "Cedinho", nivel: "INICIANTE", professorId: usuario.id, vagas: 5 };
+    const base = { diaSemana: dia, nivel: "INICIANTE", vagas: 5 };
     const recusada = await api
-      .post(
-        "/turmas",
-        { ...base, horarios: [{ diaSemana: dia, inicio: 6 * 60 + 30, fim: 7 * 60 + 30 }] },
-        token,
-      )
+      .post("/turmas", { ...base, horaInicio: 6 * 60 + 30, horaFim: 7 * 60 + 30 }, token)
       .expect(409);
     const dataCurta = data.split("-").reverse().slice(0, 2).join("/");
     expect(recusada.body.message).toBe(`A quadra está bloqueada nesse horário em ${dataCurta}.`);
 
     const turmaId = await criarTurma(api, token, {
-      professorId: usuario.id,
-      horarios: [{ diaSemana: dia, inicio: 7 * 60, fim: 8 * 60 }],
+      diaSemana: dia,
+      horaInicio: 7 * 60,
+      horaFim: 8 * 60,
     });
     await api
-      .patch(
-        `/turmas/${turmaId}`,
-        { ...base, horarios: [{ diaSemana: dia, inicio: 6 * 60, fim: 7 * 60 }] },
-        token,
-      )
+      .patch(`/turmas/${turmaId}`, { ...base, horaInicio: 6 * 60, horaFim: 7 * 60 }, token)
       .expect(409);
   });
 
@@ -244,7 +240,7 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
       horaInicio: 9,
       horaFim: 10,
     }).expect(201);
-    for (const perfil of ["ATENDENTE", "PROFESSOR"] as const) {
+    for (const perfil of ["ATENDENTE"] as const) {
       const { api, token } = await logado(app, perfil);
       await api.get(`/horarios/grade?data=${data}`, token).expect(200);
       await api.get("/horarios/quadra", token).expect(200);

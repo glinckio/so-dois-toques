@@ -22,8 +22,8 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
     return { admin, api, token: await api.entrar(admin.email, SENHA_BOA) };
   }
 
-  it("ACESSO-CA-10: Professor chamando a API de usuários recebe Acesso negado, com auditoria", async () => {
-    const professor = await criarUsuario(app, "PROFESSOR");
+  it("ACESSO-CA-10: Atendente chamando a API de usuários recebe Acesso negado, com auditoria", async () => {
+    const professor = await criarUsuario(app, "ATENDENTE");
     const api = cliente(app);
     const token = await api.entrar(professor.email, SENHA_BOA);
     const resposta = await api.get("/usuarios", token).expect(403);
@@ -68,8 +68,7 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
         "usuarios",
         "auditoria",
       ],
-      PROFESSOR: ["inicio", "aulas", "horarios"],
-      ATENDENTE: ["inicio", "mensalidades", "horarios"],
+      ATENDENTE: ["inicio", "aulas", "mensalidades", "horarios"],
     } as const;
     for (const [perfil, areas] of Object.entries(esperado)) {
       const usuario = await criarUsuario(app, perfil as keyof typeof esperado);
@@ -85,14 +84,14 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
     const criado = await api
       .post(
         "/usuarios",
-        { nome: "Maria Areia", email: email.toUpperCase(), perfil: "PROFESSOR" },
+        { nome: "Maria Areia", email: email.toUpperCase(), perfil: "ATENDENTE" },
         token,
       )
       .expect(201);
     expect(criado.body.usuario).toMatchObject({
       nome: "Maria Areia",
       email,
-      perfil: "PROFESSOR",
+      perfil: "ATENDENTE",
       trocarSenha: true,
     });
     expect(criado.body.senhaTemporaria).toMatch(/^.{16}$/);
@@ -149,7 +148,7 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
 
   it("ACESSO-CA-14: desativar encerra as sessões, impede o login e mantém o histórico", async () => {
     const { api: adminApi, token: tokenAdmin } = await adminLogado();
-    const alvo = await criarUsuario(app, "PROFESSOR");
+    const alvo = await criarUsuario(app, "ATENDENTE");
     const api = cliente(app);
     const token = await api.entrar(alvo.email, SENHA_BOA);
 
@@ -173,6 +172,15 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
     ).toBe(1);
   });
 
+  it("TURMA-CA-04: o perfil Professor não existe mais, nem para criar nem para alterar", async () => {
+    const { api, token } = await adminLogado();
+    await api
+      .post("/usuarios", { nome: "Paulo", email: novoEmail("prof"), perfil: "PROFESSOR" }, token)
+      .expect(400);
+    const alvo = await criarUsuario(app, "ATENDENTE");
+    await api.patch(`/usuarios/${alvo.id}/perfil`, { perfil: "PROFESSOR" }, token).expect(400);
+  });
+
   it("ACESSO-CA-15: alterar o perfil encerra as sessões do usuário", async () => {
     const { api: adminApi, token: tokenAdmin } = await adminLogado();
     const alvo = await criarUsuario(app, "ATENDENTE");
@@ -181,16 +189,16 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
 
     const resposta = await adminApi.patch(
       `/usuarios/${alvo.id}/perfil`,
-      { perfil: "PROFESSOR" },
+      { perfil: "ADMINISTRADOR" },
       tokenAdmin,
     );
     expect(resposta.status).toBe(200);
-    expect(resposta.body.perfil).toBe("PROFESSOR");
+    expect(resposta.body.perfil).toBe("ADMINISTRADOR");
     await api.get("/auth/eu", token).expect(401);
     const registro = await prisma.auditoria.findFirstOrThrow({
       where: { acao: "USUARIO_PERFIL_ALTERADO", alvoId: alvo.id },
     });
-    expect(registro.detalhes).toEqual({ de: "ATENDENTE", para: "PROFESSOR" });
+    expect(registro.detalhes).toEqual({ de: "ATENDENTE", para: "ADMINISTRADOR" });
   });
 
   it("ACESSO-CA-15: nova senha temporária invalida a antiga e exige troca", async () => {
@@ -221,7 +229,7 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
     });
     const desativar = await api.post(`/usuarios/${admin.id}/desativar`, {}, token).expect(409);
     expect(desativar.body.message).toBe("O sistema precisa ter pelo menos um administrador ativo.");
-    await api.patch(`/usuarios/${admin.id}/perfil`, { perfil: "PROFESSOR" }, token).expect(409);
+    await api.patch(`/usuarios/${admin.id}/perfil`, { perfil: "ATENDENTE" }, token).expect(409);
 
     // Com um segundo administrador, a mudança passa a ser permitida.
     const outro = await criarUsuario(app, "ADMINISTRADOR");
@@ -251,7 +259,7 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
   });
 
   it("ACESSO-CA-17: trocar a própria senha exige a atual e encerra as outras sessões", async () => {
-    const usuario = await criarUsuario(app, "PROFESSOR");
+    const usuario = await criarUsuario(app, "ATENDENTE");
     const celular = cliente(app);
     const computador = cliente(app);
     const tokenCelular = await celular.entrar(usuario.email, SENHA_BOA);

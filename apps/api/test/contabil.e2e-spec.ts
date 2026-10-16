@@ -189,7 +189,7 @@ describe("Etapa 8 e 12: painel contábil das mensalidades", () => {
   });
 
   it("CONT-CA-10: só o administrador acessa o Contábil", async () => {
-    for (const perfil of ["ATENDENTE", "PROFESSOR"] as const) {
+    for (const perfil of ["ATENDENTE"] as const) {
       const { api, token } = await logado(app, perfil);
       await api.get("/contabil/painel", token).expect(403);
       await api.get("/contabil/lancamentos", token).expect(403);

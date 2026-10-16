@@ -625,19 +625,6 @@ describe("Etapa 3: mensalidades e Caixa", () => {
       expect(negado).not.toBeNull();
     });
 
-    it("MENS-CA-19: professor não acessa mensalidades nem planos", async () => {
-      const { api, token } = await logado(app, "PROFESSOR");
-      const { alunoId, mensalidadeId, competencia } = await alunoComMensalidade();
-      await api.get(`/mensalidades?competencia=${competencia}`, token).expect(403);
-      await api.get("/mensalidades/inadimplentes", token).expect(403);
-      await api.get(`/mensalidades/${mensalidadeId}`, token).expect(403);
-      await api
-        .post(`/mensalidades/${mensalidadeId}/pagamentos`, { forma: "PIX", data: hoje() }, token)
-        .expect(403);
-      await api.get("/planos", token).expect(403);
-      await api.get(`/alunos/${alunoId}/assinaturas`, token).expect(403);
-    });
-
     it("MENS-CA-20: planos, assinaturas, geração, pagamento, estorno e cancelamento ficam na auditoria", async () => {
       const { api, token, usuario } = admin;
       const { alunoId, planoId, mensalidadeId } = await alunoComMensalidade();

@@ -18,7 +18,7 @@ describe("Etapa 1: login e sessões", () => {
   });
 
   it("ACESSO-CA-01: usuário ativo com e-mail e senha corretos entra no sistema", async () => {
-    const usuario = await criarUsuario(app, "PROFESSOR");
+    const usuario = await criarUsuario(app, "ATENDENTE");
     const api = cliente(app);
     const resposta = await api.post("/auth/login", {
       email: ` ${usuario.email.toUpperCase()} `,
@@ -27,13 +27,16 @@ describe("Etapa 1: login e sessões", () => {
     expect(resposta.status).toBe(200);
     expect(resposta.body.usuario).toMatchObject({
       id: usuario.id,
-      perfil: "PROFESSOR",
+      perfil: "ATENDENTE",
       trocarSenha: false,
     });
     expect(resposta.body.token).toMatch(/^[A-Za-z0-9_-]{43}$/);
 
     const eu = await api.get("/auth/eu", resposta.body.token).expect(200);
-    expect(eu.body).toMatchObject({ id: usuario.id, areas: ["inicio", "aulas", "horarios"] });
+    expect(eu.body).toMatchObject({
+      id: usuario.id,
+      areas: ["inicio", "aulas", "mensalidades", "horarios"],
+    });
   });
 
   it("ACESSO-CA-02: e-mail inexistente e senha errada recebem a mesma mensagem", async () => {
@@ -65,7 +68,7 @@ describe("Etapa 1: login e sessões", () => {
   });
 
   it("ACESSO-CA-03: 5 erros seguidos bloqueiam o e-mail mesmo com a senha certa, com auditoria", async () => {
-    const usuario = await criarUsuario(app, "PROFESSOR");
+    const usuario = await criarUsuario(app, "ATENDENTE");
     const api = cliente(app);
     for (let i = 0; i < 5; i++) {
       await api.post("/auth/login", { email: usuario.email, senha: `errada-${i}-xyz` }).expect(401);
@@ -92,7 +95,7 @@ describe("Etapa 1: login e sessões", () => {
   });
 
   it("ACESSO-CA-03: o bloqueio termina 15 minutos depois do último erro", async () => {
-    const usuario = await criarUsuario(app, "PROFESSOR");
+    const usuario = await criarUsuario(app, "ATENDENTE");
     const api = cliente(app);
     for (let i = 0; i < 5; i++)
       await api.post("/auth/login", { email: usuario.email, senha: "errada-abc-1" });
@@ -143,7 +146,7 @@ describe("Etapa 1: login e sessões", () => {
   });
 
   it("ACESSO-CA-06: sessão sem uso por 12 horas deixa de valer", async () => {
-    const usuario = await criarUsuario(app, "PROFESSOR");
+    const usuario = await criarUsuario(app, "ATENDENTE");
     const api = cliente(app);
     const token = await api.entrar(usuario.email, SENHA_BOA);
     await prisma.sessao.update({
@@ -156,7 +159,7 @@ describe("Etapa 1: login e sessões", () => {
   });
 
   it("ACESSO-CA-06: sessão com 7 dias desde o login deixa de valer, mesmo em uso", async () => {
-    const usuario = await criarUsuario(app, "PROFESSOR");
+    const usuario = await criarUsuario(app, "ATENDENTE");
     const api = cliente(app);
     const token = await api.entrar(usuario.email, SENHA_BOA);
     await prisma.sessao.update({
@@ -167,7 +170,7 @@ describe("Etapa 1: login e sessões", () => {
   });
 
   it("ACESSO-CA-06: o uso da sessão renova o prazo de inatividade", async () => {
-    const usuario = await criarUsuario(app, "PROFESSOR");
+    const usuario = await criarUsuario(app, "ATENDENTE");
     const api = cliente(app);
     const token = await api.entrar(usuario.email, SENHA_BOA);
     const antigo = new Date(Date.now() - 11 * 60 * 60 * 1000);

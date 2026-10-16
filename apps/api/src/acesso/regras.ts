@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
 
-export const PERFIS = ["ADMINISTRADOR", "PROFESSOR", "ATENDENTE"] as const;
+export const PERFIS = ["ADMINISTRADOR", "ATENDENTE"] as const;
 export type PerfilUsuario = (typeof PERFIS)[number];
 
 // ---------------------------------------------------------------- senhas
@@ -176,8 +176,7 @@ export type Area = (typeof AREAS)[number];
 
 const PERMISSOES: Record<PerfilUsuario, readonly Area[]> = {
   ADMINISTRADOR: AREAS,
-  PROFESSOR: ["inicio", "aulas", "horarios"],
-  ATENDENTE: ["inicio", "mensalidades", "horarios"],
+  ATENDENTE: ["inicio", "aulas", "mensalidades", "horarios"],
 };
 
 export function podeAcessar(perfil: PerfilUsuario, area: Area): boolean {

@@ -12,9 +12,9 @@ datasource db {
   provider = "postgresql"
 }
 
+/// Etapa 16: o perfil Professor saiu; quem era professor virou atendente.
 enum Perfil {
   ADMINISTRADOR
-  PROFESSOR
   ATENDENTE
 }
 
@@ -30,7 +30,6 @@ model Usuario {
   atualizadoEm DateTime @updatedAt @db.Timestamptz(3)
 
   sessoes                Sessao[]
-  turmas                 Turma[]
   consentimentos         Aluno[]         @relation("ConsentimentoRegistradoPor")
   presencasRegistradas   Presenca[]
   assinaturasCriadas     Assinatura[]
@@ -132,12 +131,15 @@ model Aluno {
   @@index([telefone])
 }
 
+/// Etapa 16: a turma é um horário fixo da semana (dia, início e fim), com nível e vagas.
 model Turma {
   id           String    @id @default(uuid()) @db.Uuid
-  nome         String    @db.VarChar(80)
+  /// 0 = domingo ... 6 = sábado
+  diaSemana    Int       @db.SmallInt
+  /// Minutos desde 00:00, das 05:00 às 23:59.
+  horaInicio   Int       @db.SmallInt
+  horaFim      Int       @db.SmallInt
   nivel        Nivel
-  professorId  String    @db.Uuid
-  professor    Usuario   @relation(fields: [professorId], references: [id], onDelete: Restrict)
   vagas        Int
   ativa        Boolean   @default(true)
   /// Data (São Paulo) em que a turma passou a existir; presença só a partir dela.
@@ -146,24 +148,10 @@ model Turma {
   criadaEm     DateTime  @default(now()) @db.Timestamptz(3)
   atualizadaEm DateTime  @updatedAt @db.Timestamptz(3)
 
-  horarios   HorarioTurma[]
   matriculas Matricula[]
   presencas  Presenca[]
 
-  @@index([professorId, ativa])
-}
-
-model HorarioTurma {
-  id        String @id @default(uuid()) @db.Uuid
-  turmaId   String @db.Uuid
-  turma     Turma  @relation(fields: [turmaId], references: [id], onDelete: Cascade)
-  /// 0 = domingo ... 6 = sábado
-  diaSemana Int    @db.SmallInt
-  /// Minutos desde 00:00.
-  inicio    Int    @db.SmallInt
-  fim       Int    @db.SmallInt
-
-  @@index([turmaId])
+  @@index([diaSemana, ativa])
 }
 
 model Matricula {

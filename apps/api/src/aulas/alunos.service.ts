@@ -8,10 +8,11 @@ import { AuditoriaService } from "../auditoria/auditoria.service.js";
 import type { Prisma } from "../generated/prisma/client.js";
 import { encerrarAssinaturaVigente } from "../mensalidades/planos.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
-import { ehAdmin, negarForaDoEscopo, type Ator } from "./comum.js";
+import { ehAdmin, type Ator } from "./comum.js";
 import {
   dadosAnonimizados,
   deDataDoBanco,
+  descreverTurma,
   exigeResponsavel,
   hojeEmSaoPaulo,
   normalizarBusca,
@@ -44,19 +45,12 @@ export class AlunosService {
     private readonly auditoria: AuditoriaService,
   ) {}
 
-  /** Professor só alcança alunos com matrícula aberta numa turma dele. */
-  private escopo(ator: Ator): Prisma.AlunoWhereInput {
-    return ehAdmin(ator)
-      ? {}
-      : { matriculas: { some: { fim: null, turma: { professorId: ator.id } } } };
-  }
-
   /** AULAS-CA-05: busca por parte do nome (sem acento) ou do telefone. */
   async listar(
     ator: Ator,
     filtro: { busca?: string; situacao: "ativos" | "inativos" | "todos"; pagina: number },
   ) {
-    const where: Prisma.AlunoWhereInput = { AND: [this.escopo(ator)] };
+    const where: Prisma.AlunoWhereInput = { AND: [] };
     const and = where.AND as Prisma.AlunoWhereInput[];
     if (filtro.situacao !== "todos") and.push({ ativo: filtro.situacao === "ativos" });
     if (!ehAdmin(ator) || filtro.situacao !== "todos") and.push({ anonimizadoEm: null });
@@ -97,25 +91,37 @@ export class AlunosService {
 
   async buscar(ator: Ator, id: string) {
     const aluno = await this.prisma.aluno.findFirst({
-      where: { id, ...this.escopo(ator) },
+      where: { id },
       include: {
         consentimentoRegistradoPor: { select: { nome: true } },
         matriculas: {
-          where: ehAdmin(ator) ? {} : { turma: { professorId: ator.id } },
           orderBy: [{ fim: { sort: "desc", nulls: "first" } }, { inicio: "desc" }],
-          include: { turma: { select: { id: true, nome: true, nivel: true, ativa: true } } },
+          include: {
+            turma: {
+              select: {
+                id: true,
+                nivel: true,
+                ativa: true,
+                diaSemana: true,
+                horaInicio: true,
+                horaFim: true,
+              },
+            },
+          },
         },
       },
     });
-    if (!aluno) {
-      if (!ehAdmin(ator)) return negarForaDoEscopo(this.auditoria, ator, "aluno", id);
-      throw new NotFoundException("Aluno não encontrado.");
-    }
+    if (!aluno) throw new NotFoundException("Aluno não encontrado.");
     const matriculas = aluno.matriculas.map((m) => ({
       id: m.id,
       inicio: deDataDoBanco(m.inicio),
       fim: m.fim ? deDataDoBanco(m.fim) : null,
-      turma: m.turma,
+      turma: {
+        id: m.turma.id,
+        nivel: m.turma.nivel,
+        ativa: m.turma.ativa,
+        descricao: descreverTurma(m.turma),
+      },
     }));
     const contato = {
       id: aluno.id,
@@ -129,7 +135,7 @@ export class AlunosService {
       anonimizado: aluno.anonimizadoEm !== null,
       matriculas,
     };
-    // O professor vê só o necessário para a aula (contato e emergência).
+    // O atendente vê só o necessário para a aula (contato e emergência).
     if (!ehAdmin(ator)) return contato;
     return {
       ...contato,
@@ -282,8 +288,18 @@ export class AlunosService {
     const aluno = await this.prisma.aluno.findUnique({
       where: { id },
       include: {
-        matriculas: { include: { turma: { select: { nome: true } } }, orderBy: { inicio: "asc" } },
-        presencas: { include: { turma: { select: { nome: true } } }, orderBy: { data: "asc" } },
+        matriculas: {
+          include: {
+            turma: { select: { diaSemana: true, horaInicio: true, horaFim: true, nivel: true } },
+          },
+          orderBy: { inicio: "asc" },
+        },
+        presencas: {
+          include: {
+            turma: { select: { diaSemana: true, horaInicio: true, horaFim: true, nivel: true } },
+          },
+          orderBy: { data: "asc" },
+        },
       },
     });
     if (!aluno) throw new NotFoundException("Aluno não encontrado.");
@@ -313,12 +329,12 @@ export class AlunosService {
         finalidade: "Organização das aulas",
       },
       matriculas: aluno.matriculas.map((m) => ({
-        turma: m.turma.nome,
+        turma: descreverTurma(m.turma),
         inicio: deDataDoBanco(m.inicio),
         fim: m.fim ? deDataDoBanco(m.fim) : null,
       })),
       presencas: aluno.presencas.map((p) => ({
-        turma: p.turma.nome,
+        turma: descreverTurma(p.turma),
         data: deDataDoBanco(p.data),
         presente: p.presente,
       })),
