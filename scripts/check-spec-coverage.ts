@@ -11,10 +11,10 @@ function walk(dir: string, accept: (path: string) => boolean): string[] {
 }
 
 const specs = walk("specs", (path) => path.endsWith("spec.md"));
-// Testes de todos os apps: unidade (*.test.ts, *.spec.ts), integração (*.e2e-spec.ts) e Playwright.
-const tests = walk("apps", (path) => /\.(test|spec|e2e-spec)\.tsx?$/.test(path)).map((path) =>
-  readFileSync(path, "utf8"),
-);
+// Testes dos apps e dos serviços: unidade (*.test.ts, *.spec.ts), integração (*.e2e-spec.ts) e Playwright.
+const tests = ["apps", "services"]
+  .flatMap((pasta) => walk(pasta, (path) => /\.(test|spec|e2e-spec)\.tsx?$/.test(path)))
+  .map((path) => readFileSync(path, "utf8"));
 
 let failed = false;
 for (const spec of specs) {
