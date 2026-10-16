@@ -5,37 +5,11 @@ import { salvarTurma } from "@/app/acoes/aulas";
 import { ESTADO_INICIAL } from "@/app/acoes/estado";
 import { BotaoEnviar } from "@/components/base/enviar";
 import { Icone } from "@/components/icones";
-import {
-  Aviso,
-  Campo,
-  classeBotaoIcone,
-  classeBotaoSecundario,
-  classeCampo,
-  classeRotulo,
-} from "@/components/ui";
-import {
-  DIAS_SEMANA,
-  descreverHorarios,
-  horaDe,
-  minutosDe,
-  NIVEIS,
-  type Horario,
-  type Nivel,
-} from "@/lib/aulas/formatacao";
-import type { Professor, TurmaResumo } from "@/lib/aulas/tipos";
+import { Aviso, Campo, classeCampo, classeRotulo } from "@/components/ui";
+import { DIAS_SEMANA, horaDe, minutosDe, NIVEIS, type Nivel } from "@/lib/aulas/formatacao";
+import type { TurmaResumo } from "@/lib/aulas/tipos";
 import { GrupoDoFormulario } from "./grupo-do-formulario";
-import { SemanaDaTurma } from "./horarios";
 import { SinalDoNivel } from "./selo-nivel";
-
-type Linha = { chave: number; diaSemana: number; inicio: string; fim: string };
-
-let proximaChave = 0;
-const linha = (h: Partial<Horario> = {}): Linha => ({
-  chave: proximaChave++,
-  diaSemana: h.diaSemana ?? 1,
-  inicio: h.inicio !== undefined ? horaDe(h.inicio) : "07:00",
-  fim: h.fim !== undefined ? horaDe(h.fim) : "08:00",
-});
 
 const DICAS_DO_NIVEL: Record<Nivel, string> = {
   INICIANTE: "Primeiros toques",
@@ -43,30 +17,22 @@ const DICAS_DO_NIVEL: Record<Nivel, string> = {
   AVANCADO: "Jogo e tática",
 };
 
-export function FormTurma({
-  turma,
-  professores,
-}: {
-  turma?: TurmaResumo;
-  professores: Professor[];
-}) {
+/**
+ * TURMA-CA-01: a turma é um dia, um horário, um nível e as vagas. Quem treina mais de
+ * uma vez por semana é matriculado em mais de uma turma.
+ */
+export function FormTurma({ turma }: { turma?: TurmaResumo }) {
   const [estado, acao, enviando] = useActionState(salvarTurma, ESTADO_INICIAL);
   // Depois de um erro, os campos voltam ao que foi digitado, não à turma salva.
   const valor = (campo: string, salvo?: string | number) =>
     estado.valores?.[campo] ?? (salvo === undefined ? "" : String(salvo));
-  const [linhas, setLinhas] = useState<Linha[]>(() =>
-    turma
-      ? turma.horarios.map((h) => linha(h))
-      : [linha({ diaSemana: 1 }), linha({ diaSemana: 3 })],
+  const [inicio, setInicio] = useState(
+    valor("horaInicio", turma ? horaDe(turma.horaInicio) : "19:00"),
   );
-  const horarios = linhas.map((l) => ({
-    diaSemana: l.diaSemana,
-    inicio: minutosDe(l.inicio) ?? -1,
-    fim: minutosDe(l.fim) ?? -1,
-  }));
-  const validos = horarios.filter((h) => h.inicio >= 0 && h.fim > h.inicio);
-  const atualizar = (chave: number, mudanca: Partial<Linha>) =>
-    setLinhas((atuais) => atuais.map((l) => (l.chave === chave ? { ...l, ...mudanca } : l)));
+  const [fim, setFim] = useState(valor("horaFim", turma ? horaDe(turma.horaFim) : "20:00"));
+  const minutosInicio = minutosDe(inicio);
+  const minutosFim = minutosDe(fim);
+  const invertido = minutosInicio !== null && minutosFim !== null && minutosFim <= minutosInicio;
   const nivelEscolhido = valor("nivel", turma?.nivel ?? "INICIANTE");
 
   return (
@@ -79,20 +45,71 @@ export function FormTurma({
     >
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
       {turma && <input type="hidden" name="id" value={turma.id} />}
-      <input type="hidden" name="horarios" value={JSON.stringify(horarios)} />
 
-      <GrupoDoFormulario legenda="A turma" icone="aulas">
-        <div className="sm:col-span-2">
-          <Campo
-            rotulo="Nome da turma"
-            id="nome"
+      <GrupoDoFormulario
+        legenda="Dia e horário"
+        icone="relogio"
+        tom="ouro"
+        dica="Duas turmas não dividem o mesmo horário da quadra."
+      >
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <label htmlFor="diaSemana" className={classeRotulo}>
+            Dia da semana
+          </label>
+          <select
+            id="diaSemana"
+            name="diaSemana"
+            className={classeCampo}
             required
-            minLength={2}
-            maxLength={80}
-            placeholder="Iniciantes da manhã"
-            defaultValue={valor("nome", turma?.nome)}
+            defaultValue={valor("diaSemana", turma?.diaSemana ?? 1)}
+          >
+            {DIAS_SEMANA.map((nome, dia) => (
+              <option key={dia} value={dia}>
+                {nome}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="horaInicio" className={classeRotulo}>
+            Início
+          </label>
+          <input
+            id="horaInicio"
+            name="horaInicio"
+            type="time"
+            min="05:00"
+            max="23:59"
+            required
+            className={classeCampo}
+            value={inicio}
+            onChange={(e) => setInicio(e.target.value)}
           />
         </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="horaFim" className={classeRotulo}>
+            Fim
+          </label>
+          <input
+            id="horaFim"
+            name="horaFim"
+            type="time"
+            min="05:00"
+            max="23:59"
+            required
+            className={classeCampo}
+            value={fim}
+            onChange={(e) => setFim(e.target.value)}
+          />
+        </div>
+        {invertido && (
+          <p className="text-ouro flex items-center gap-1.5 text-xs font-semibold sm:col-span-2">
+            <Icone nome="alerta" width={14} height={14} />O fim precisa ser depois do início.
+          </p>
+        )}
+      </GrupoDoFormulario>
+
+      <GrupoDoFormulario legenda="Nível e vagas" icone="aulas">
         <fieldset className="flex flex-col gap-2 sm:col-span-2">
           <legend className="text-suave mb-1.5 text-sm font-medium">Nível</legend>
           <div className="grid grid-cols-3 gap-2">
@@ -119,27 +136,6 @@ export function FormTurma({
             ))}
           </div>
         </fieldset>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="professorId" className={classeRotulo}>
-            Professor
-          </label>
-          <select
-            id="professorId"
-            name="professorId"
-            className={classeCampo}
-            required
-            defaultValue={valor("professorId", turma?.professor.id)}
-          >
-            <option value="" disabled>
-              Escolha
-            </option>
-            {professores.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
-        </div>
         <Campo
           rotulo="Vagas"
           id="vagas"
@@ -150,99 +146,6 @@ export function FormTurma({
           required
           defaultValue={valor("vagas", turma?.vagas ?? 10)}
         />
-      </GrupoDoFormulario>
-
-      <GrupoDoFormulario
-        legenda="Dias e horários"
-        icone="relogio"
-        tom="ouro"
-        dica="Um dia por linha; dias com o mesmo horário aparecem juntos."
-        colunas=""
-      >
-        <ol className="flex flex-col gap-2">
-          {linhas.map((l, i) => {
-            const inicio = minutosDe(l.inicio);
-            const fim = minutosDe(l.fim);
-            const invertido = inicio !== null && fim !== null && fim <= inicio;
-            return (
-              <li
-                key={l.chave}
-                className="bg-elevado/35 border-borda animate-surgir flex flex-col gap-2 rounded-2xl border p-3"
-              >
-                <div className="grid grid-cols-2 items-end gap-2 sm:flex">
-                  <label className={`${classeRotulo} col-span-2 flex flex-col gap-1.5 sm:flex-1`}>
-                    Dia {i + 1}
-                    <select
-                      className={classeCampo}
-                      value={l.diaSemana}
-                      onChange={(e) => atualizar(l.chave, { diaSemana: Number(e.target.value) })}
-                    >
-                      {DIAS_SEMANA.map((nome, dia) => (
-                        <option key={dia} value={dia}>
-                          {nome}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className={`${classeRotulo} flex flex-col gap-1.5`}>
-                    Início
-                    <input
-                      type="time"
-                      className={classeCampo}
-                      value={l.inicio}
-                      onChange={(e) => atualizar(l.chave, { inicio: e.target.value })}
-                      required
-                    />
-                  </label>
-                  <label className={`${classeRotulo} flex flex-col gap-1.5`}>
-                    Fim
-                    <input
-                      type="time"
-                      className={classeCampo}
-                      value={l.fim}
-                      onChange={(e) => atualizar(l.chave, { fim: e.target.value })}
-                      required
-                    />
-                  </label>
-                  {linhas.length > 1 && (
-                    <button
-                      type="button"
-                      className={`${classeBotaoIcone} hover:border-perigo/50 hover:text-perigo col-span-2 justify-self-end sm:mb-0.5`}
-                      onClick={() =>
-                        setLinhas((atuais) => atuais.filter((x) => x.chave !== l.chave))
-                      }
-                    >
-                      <Icone nome="lixeira" width={18} height={18} />
-                      <span className="sr-only">Remover este horário</span>
-                    </button>
-                  )}
-                </div>
-                {invertido && (
-                  <p className="text-ouro flex items-center gap-1.5 text-xs font-semibold">
-                    <Icone nome="alerta" width={14} height={14} />O fim precisa ser depois do
-                    início.
-                  </p>
-                )}
-              </li>
-            );
-          })}
-        </ol>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            className={classeBotaoSecundario}
-            onClick={() => setLinhas((atuais) => [...atuais, linha()])}
-          >
-            <Icone nome="mais" width={18} height={18} />
-            Adicionar dia
-          </button>
-          <div className="flex flex-col items-end gap-1.5">
-            <SemanaDaTurma horarios={validos} />
-            <p className="text-apagado text-right text-xs" aria-live="polite">
-              {validos.length > 0 ? descreverHorarios(validos) : "Nenhum horário completo ainda."}
-            </p>
-          </div>
-        </div>
       </GrupoDoFormulario>
 
       <div>

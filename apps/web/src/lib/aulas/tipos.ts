@@ -1,18 +1,19 @@
-import type { Horario, Nivel } from "./formatacao";
+import type { Nivel } from "./formatacao";
 
-export type Professor = { id: string; nome: string; perfil: string };
-
+/** Etapa 16: a turma é um dia e um horário (minutos), com nível e vagas; não tem nome. */
 export type TurmaResumo = {
   id: string;
-  nome: string;
+  diaSemana: number;
+  horaInicio: number;
+  horaFim: number;
   nivel: Nivel;
+  /** "Terça, 19:00 às 20:00 · Iniciante" */
+  descricao: string;
   vagas: number;
   ocupadas: number;
   livres: number;
   ativa: boolean;
   inicio: string;
-  professor: { id: string; nome: string };
-  horarios: Horario[];
 };
 
 export type TurmaDetalhe = TurmaResumo & {
@@ -46,7 +47,7 @@ export type AlunoDetalhe = {
     id: string;
     inicio: string;
     fim: string | null;
-    turma: { id: string; nome: string; nivel: Nivel; ativa: boolean };
+    turma: { id: string; descricao: string; nivel: Nivel; ativa: boolean };
   }[];
   // Só para o administrador:
   nascimento?: string | null;

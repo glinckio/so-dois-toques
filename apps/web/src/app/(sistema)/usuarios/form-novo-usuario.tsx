@@ -11,12 +11,11 @@ import { SenhaTemporaria } from "./senha-temporaria";
 
 const PERFIS_EM_BLOCOS = [
   { valor: "ADMINISTRADOR", rotulo: "Administrador", icone: "escudo", detalhe: "Tudo" },
-  { valor: "PROFESSOR", rotulo: "Professor", icone: "aulas", detalhe: "Aulas e agenda" },
   {
     valor: "ATENDENTE",
     rotulo: "Atendente",
     icone: "mensalidades",
-    detalhe: "Mensalidades e agenda",
+    detalhe: "Presença, mensalidades e agenda",
   },
 ] as const;
 

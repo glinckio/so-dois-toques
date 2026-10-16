@@ -3,7 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { LinkVoltar } from "@/components/aulas/link-voltar";
 import { encerrarMatricula, encerrarTurma, matricular } from "@/app/acoes/aulas";
-import { PilulasDeHorario, SemanaDaTurma } from "@/components/aulas/horarios";
+import { SemanaDaTurma } from "@/components/aulas/horarios";
 import { SeloNivel } from "@/components/aulas/selo-nivel";
 import { Anel } from "@/components/base/anel";
 import { Avatar } from "@/components/base/avatar";
@@ -23,12 +23,15 @@ import {
   SetaDoBotao,
 } from "@/components/ui";
 import {
+  DIAS_SEMANA,
   diaDaSemana,
   formatarData,
   formatarTelefone,
   hojeEmSaoPaulo,
+  horaDe,
 } from "@/lib/aulas/formatacao";
 import type { PaginaAlunos, TurmaDetalhe } from "@/lib/aulas/tipos";
+import { horariosDaTurma } from "@/lib/aulas/visual";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
 
@@ -52,7 +55,8 @@ export default async function PaginaTurma({
   const turma = resposta.dados;
   const admin = usuario.perfil === "ADMINISTRADOR";
   const diaDeHoje = diaDaSemana(hojeEmSaoPaulo());
-  const temAulaHoje = turma.ativa && turma.horarios.some((h) => h.diaSemana === diaDeHoje);
+  const temAulaHoje = turma.ativa && turma.diaSemana === diaDeHoje;
+  const horarios = horariosDaTurma(turma);
   const fracao = turma.vagas > 0 ? turma.ocupadas / turma.vagas : 0;
   const cheia = turma.vagas > 0 && turma.ocupadas >= turma.vagas;
 
@@ -89,21 +93,11 @@ export default async function PaginaTurma({
           </div>
           <div className="flex flex-col gap-3">
             <h1 className="text-3xl leading-[1.08] font-extrabold tracking-tight text-balance sm:text-[2.6rem]">
-              {turma.nome}
+              {DIAS_SEMANA[turma.diaSemana]}, {horaDe(turma.horaInicio)} às {horaDe(turma.horaFim)}
             </h1>
-            <p className="text-suave flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-              <span className="inline-flex items-center gap-2">
-                <Avatar nome={turma.professor.nome} tamanho="p" />
-                Professor: <strong className="text-texto">{turma.professor.nome}</strong>
-              </span>
-            </p>
           </div>
           <div className="flex flex-col gap-3">
-            <SemanaDaTurma horarios={turma.horarios} hoje={diaDeHoje} />
-            <PilulasDeHorario
-              horarios={turma.horarios}
-              destaqueDia={temAulaHoje ? diaDeHoje : undefined}
-            />
+            <SemanaDaTurma horarios={horarios} hoje={diaDeHoje} />
           </div>
           <div className="flex flex-wrap items-start gap-2">
             {turma.ativa && (

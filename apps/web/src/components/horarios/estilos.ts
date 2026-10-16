@@ -7,7 +7,6 @@ import type { SituacaoDoHorario } from "@/lib/horarios/agenda";
  */
 export const FUNDO_DA_SITUACAO: Record<SituacaoDoHorario, string> = {
   aula: "border-roxo/55 bg-cartao bg-linear-to-br from-roxo-forte/45 to-roxo/10 shadow-[0_14px_30px_-18px_rgb(124_58_237_/_0.95)]",
-  minha: "border-ouro/55 bg-cartao bg-linear-to-br from-ouro/30 to-ouro/5",
   bloqueio:
     "border-apagado/35 bg-elevado bg-[repeating-linear-gradient(135deg,rgb(157_150_187_/_0.16)_0_6px,transparent_6px_12px)]",
 };
@@ -15,7 +14,6 @@ export const FUNDO_DA_SITUACAO: Record<SituacaoDoHorario, string> = {
 /** Filete de cor à esquerda do bloco. */
 export const FILETE_DA_SITUACAO: Record<SituacaoDoHorario, string> = {
   aula: "bg-roxo",
-  minha: "bg-ouro",
   bloqueio: "bg-apagado/70",
 };
 

@@ -16,7 +16,6 @@ export type AnelDoDia = {
 
 const CONVITE: Record<Perfil, { antes: string; palavra: string; depois: string }> = {
   ADMINISTRADOR: { antes: "Como está a ", palavra: "quadra", depois: " hoje?" },
-  PROFESSOR: { antes: "Pronto para a próxima ", palavra: "aula", depois: "?" },
   ATENDENTE: { antes: "Bora fazer a ", palavra: "quadra", depois: " girar hoje?" },
 };
 

@@ -12,7 +12,7 @@ import { momentoDe } from "@/lib/painel/inicio";
 /**
  * FOCO-CA-10: aulas de hoje na quadra em linha do tempo. O ponto da aula em andamento
  * pulsa em dourado, as que já passaram ficam apagadas com um "check" e cada turma
- * mostra o professor e o quanto das vagas está ocupado.
+ * mostra o nível e o quanto das vagas está ocupado.
  */
 export function AulasDeHoje({
   aulas,
@@ -95,7 +95,7 @@ export function AulasDeHoje({
                       <span
                         className={`truncate font-semibold ${momento === "passou" ? "text-suave" : ""}`}
                       >
-                        {turma.nome}
+                        Turma {NIVEIS[turma.nivel].toLowerCase()}
                       </span>
                       {momento === "agora" && (
                         <Selo tom="ouro" pulsar>
@@ -104,11 +104,9 @@ export function AulasDeHoje({
                       )}
                     </span>
                     <span className="text-apagado mt-0.5 flex flex-wrap items-center gap-x-2 text-xs">
-                      <span className="inline-flex items-center gap-1">
-                        <Icone nome="pessoa" width={12} height={12} />
-                        {turma.professor.nome}
+                      <span>
+                        {turma.ocupadas} de {turma.vagas} alunos
                       </span>
-                      <span>{NIVEIS[turma.nivel]}</span>
                     </span>
                   </span>
                   <Anel

@@ -1,16 +1,14 @@
 import Link from "next/link";
 import { Anel } from "@/components/base/anel";
-import { Avatar } from "@/components/base/avatar";
 import { Selo } from "@/components/base/selo";
-import { horaDe } from "@/lib/aulas/formatacao";
+import { DIAS_SEMANA, horaDe } from "@/lib/aulas/formatacao";
 import type { TurmaResumo } from "@/lib/aulas/tipos";
-import { aulaDoDia } from "@/lib/aulas/visual";
-import { PilulasDeHorario } from "./horarios";
+import { aulaDoDia, horariosDaTurma } from "@/lib/aulas/visual";
 import { SeloNivel } from "./selo-nivel";
 
 /**
  * Cartão da turma: o nível no selo com sinal de barras e os horários em
- * pílulas, o professor com avatar e o anel de vagas ocupadas. Se a turma tem aula
+ * pílulas e o anel de vagas ocupadas. Se a turma tem aula
  * hoje, a hora aparece num selo dourado (pulsando enquanto a aula acontece).
  */
 export function CartaoTurma({
@@ -26,7 +24,7 @@ export function CartaoTurma({
 }) {
   const fracao = turma.vagas > 0 ? turma.ocupadas / turma.vagas : 0;
   const cheia = turma.vagas > 0 && turma.ocupadas >= turma.vagas;
-  const hoje = turma.ativa ? aulaDoDia(turma.horarios, diaDeHoje) : null;
+  const hoje = turma.ativa ? aulaDoDia(horariosDaTurma(turma), diaDeHoje) : null;
   const agora = hoje !== null && minutoAtual >= hoje.inicio && minutoAtual < hoje.fim;
   return (
     <li className={`animate-entrar atraso-${Math.min(24, indice * 2)}`}>
@@ -54,25 +52,18 @@ export function CartaoTurma({
           {cheia && turma.ativa && <Selo tom="sucesso">Turma cheia</Selo>}
         </div>
 
-        <div className="relative flex min-w-0 flex-col gap-2">
-          <h2 className="text-xl leading-tight font-extrabold tracking-tight">{turma.nome}</h2>
-        </div>
-
-        <div className="relative">
-          <PilulasDeHorario horarios={turma.horarios} destaqueDia={hoje ? diaDeHoje : undefined} />
+        <div className="relative flex min-w-0 flex-col gap-1">
+          <h2 className="text-xl leading-tight font-extrabold tracking-tight">
+            {DIAS_SEMANA[turma.diaSemana]}
+          </h2>
+          <p className="text-suave text-lg font-semibold tabular-nums">
+            {horaDe(turma.horaInicio)} às {horaDe(turma.horaFim)}
+          </p>
         </div>
 
         <div className="border-borda relative mt-auto flex items-center justify-between gap-3 border-t pt-4">
-          <span className="flex min-w-0 items-center gap-2.5">
-            <Avatar nome={turma.professor.nome} tamanho="m" />
-            <span className="flex min-w-0 flex-col">
-              <span className="text-apagado text-[0.68rem] font-bold tracking-[0.12em] uppercase">
-                Professor
-              </span>
-              <span className="truncate text-sm font-semibold">{turma.professor.nome}</span>
-            </span>
-          </span>
-          <span className="flex items-center gap-3">
+          <span className="sr-only">{turma.descricao}</span>
+          <span className="ml-auto flex items-center gap-3">
             <span className="flex flex-col items-end text-right">
               <span className="text-sm font-bold">
                 {turma.livres === 0

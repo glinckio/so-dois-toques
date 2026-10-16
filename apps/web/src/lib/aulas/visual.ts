@@ -8,6 +8,13 @@ export const DEGRAUS_DO_NIVEL: Record<Nivel, 1 | 2 | 3> = {
   AVANCADO: 3,
 };
 
+/** Etapa 16: a turma tem um só horário; este é ele no formato dos componentes de horário. */
+export function horariosDaTurma(
+  t: Pick<TurmaResumo, "diaSemana" | "horaInicio" | "horaFim">,
+): Horario[] {
+  return [{ diaSemana: t.diaSemana, inicio: t.horaInicio, fim: t.horaFim }];
+}
+
 /** A primeira aula da turma no dia da semana (0 = domingo), ou null se não houver. */
 export function aulaDoDia(horarios: readonly Horario[], diaSemana: number): Horario | null {
   return (
@@ -38,11 +45,8 @@ export function resumoDasTurmas(
   const ocupadas = turmas.reduce((t, x) => t + x.ocupadas, 0);
   const deHoje = turmas
     .filter((t) => t.ativa)
-    .flatMap((t) =>
-      t.horarios
-        .filter((h) => h.diaSemana === diaSemana)
-        .map((h) => ({ id: t.id, nome: t.nome, inicio: h.inicio, fim: h.fim })),
-    )
+    .filter((t) => t.diaSemana === diaSemana)
+    .map((t) => ({ id: t.id, nome: t.descricao, inicio: t.horaInicio, fim: t.horaFim }))
     .sort((a, b) => a.inicio - b.inicio);
   const seguinte = deHoje.find((a) => a.fim > minutoAtual);
   return {

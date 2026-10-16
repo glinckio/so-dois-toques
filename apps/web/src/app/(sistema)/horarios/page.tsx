@@ -21,21 +21,18 @@ const DATA = /^\d{4}-\d{2}-\d{2}$/;
 /**
  * FOCO-CA-05 e 08: a agenda do dia da quadra, com as aulas das turmas e os bloqueios.
  * A faixa de dias escolhe a data e o resumo mostra a ocupação e a legenda. Todos os
- * perfis veem; o professor vê as aulas dele em destaque e só o administrador bloqueia.
+ * perfis veem; só o administrador bloqueia.
  */
 export default async function PaginaAgenda({ searchParams }: PageProps<"/horarios">) {
   await connection();
   const { usuario } = await exigirArea("horarios");
   const admin = usuario.perfil === "ADMINISTRADOR";
-  const professor = usuario.perfil === "PROFESSOR";
   const { data: pedida } = await searchParams;
   const agora = new Date();
   const hoje = hojeEmSaoPaulo(agora);
   const data = typeof pedida === "string" && DATA.test(pedida) ? pedida : hoje;
   const resposta = await chamarApi<Grade>(`/horarios/grade?data=${data}`);
-  const agenda = resposta.ok
-    ? agendaDoDia(resposta.dados, hoje, minutoEmSaoPaulo(agora), professor ? usuario.id : undefined)
-    : null;
+  const agenda = resposta.ok ? agendaDoDia(resposta.dados, hoje, minutoEmSaoPaulo(agora)) : null;
 
   return (
     <>
@@ -77,7 +74,7 @@ export default async function PaginaAgenda({ searchParams }: PageProps<"/horario
 
       <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <FaixaDeDias data={data} hoje={hoje} caminho="/horarios" />
-        {agenda && <ResumoDoDia agenda={agenda} professor={professor} />}
+        {agenda && <ResumoDoDia agenda={agenda} />}
       </div>
 
       {!resposta.ok || !agenda ? (

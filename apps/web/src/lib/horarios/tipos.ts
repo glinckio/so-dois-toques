@@ -9,7 +9,6 @@ export type AulaNaGrade = {
   nivel: Nivel;
   inicio: number;
   fim: number;
-  professor: { id: string; nome: string };
   vagas: number;
   ocupadas: number;
 };
