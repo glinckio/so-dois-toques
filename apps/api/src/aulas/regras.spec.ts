@@ -91,14 +91,15 @@ describe("regras de Aulas", () => {
     expect(conflitosDeHorario([segunda7], existentes).map((e) => e.turma)).toEqual(["A"]);
   });
 
-  it("TURMA-CA-03: a turma aparece como dia, horário e nível", () => {
+  it("TURMA-CA-03 e TURMA-CA-08: a turma aparece como dia, horário, nível e categoria", () => {
     const turma = {
       diaSemana: 2,
       horaInicio: 19 * 60,
       horaFim: 20 * 60 + 30,
       nivel: "INTERMEDIARIO" as const,
+      categoria: "FEMININO" as const,
     };
-    expect(descreverTurma(turma)).toBe("Terça, 19:00 às 20:30 · Intermediário");
+    expect(descreverTurma(turma)).toBe("Terça, 19:00 às 20:30 · Intermediário · Feminino");
     expect(horarioDaTurma(turma)).toEqual({ diaSemana: 2, inicio: 1140, fim: 1230 });
   });
 

@@ -158,7 +158,7 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
     const data = semanaLivre();
     const dia = diaDaSemana(data);
     await bloquear({ repeticao: "AVULSO", data, horaInicio: 6, horaFim: 7 }).expect(201);
-    const base = { diaSemana: dia, nivel: "INICIANTE", vagas: 5 };
+    const base = { diaSemana: dia, nivel: "INICIANTE", categoria: "MISTO", vagas: 5 };
     const recusada = await api
       .post("/turmas", { ...base, horaInicio: 6 * 60 + 30, horaFim: 7 * 60 + 30 }, token)
       .expect(409);

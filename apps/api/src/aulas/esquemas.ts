@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  CATEGORIAS_TURMA,
   dataValida,
   HORARIO_MAXIMO,
   HORARIO_MINIMO,
@@ -105,7 +106,7 @@ export const consultaAlunosSchema = z.object({
   pagina: z.coerce.number().int().min(1).max(10000).default(1),
 });
 
-/** TURMA-CA-01: dia da semana, início e fim (minutos, 05:00 às 23:59), nível e vagas. */
+/** TURMA-CA-01 e 08: dia da semana, início e fim (minutos, 05:00 às 23:59), nível, categoria e vagas. */
 export const turmaSchema = z
   .object({
     diaSemana: z
@@ -116,6 +117,9 @@ export const turmaSchema = z
     horaInicio: z.number().int().min(HORARIO_MINIMO, "As aulas começam a partir das 05:00."),
     horaFim: z.number().int().max(HORARIO_MAXIMO, "As aulas terminam até as 23:59."),
     nivel: z.enum(NIVEIS),
+    categoria: z.enum(CATEGORIAS_TURMA, {
+      error: "Escolha se a turma é masculina, mista ou feminina.",
+    }),
     vagas: z
       .number()
       .int()

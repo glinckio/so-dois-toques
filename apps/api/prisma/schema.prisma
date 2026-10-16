@@ -94,6 +94,12 @@ enum Nivel {
   AVANCADO
 }
 
+enum CategoriaTurma {
+  MASCULINO
+  MISTO
+  FEMININO
+}
+
 enum Consentidor {
   ALUNO
   RESPONSAVEL
@@ -133,20 +139,22 @@ model Aluno {
 
 /// Etapa 16: a turma é um horário fixo da semana (dia, início e fim), com nível e vagas.
 model Turma {
-  id           String    @id @default(uuid()) @db.Uuid
+  id           String         @id @default(uuid()) @db.Uuid
   /// 0 = domingo ... 6 = sábado
-  diaSemana    Int       @db.SmallInt
+  diaSemana    Int            @db.SmallInt
   /// Minutos desde 00:00, das 05:00 às 23:59.
-  horaInicio   Int       @db.SmallInt
-  horaFim      Int       @db.SmallInt
+  horaInicio   Int            @db.SmallInt
+  horaFim      Int            @db.SmallInt
   nivel        Nivel
+  /// Etapa 16: quem a turma recebe.
+  categoria    CategoriaTurma @default(MISTO)
   vagas        Int
-  ativa        Boolean   @default(true)
+  ativa        Boolean        @default(true)
   /// Data (São Paulo) em que a turma passou a existir; presença só a partir dela.
-  inicio       DateTime  @db.Date
-  encerradaEm  DateTime? @db.Timestamptz(3)
-  criadaEm     DateTime  @default(now()) @db.Timestamptz(3)
-  atualizadaEm DateTime  @updatedAt @db.Timestamptz(3)
+  inicio       DateTime       @db.Date
+  encerradaEm  DateTime?      @db.Timestamptz(3)
+  criadaEm     DateTime       @default(now()) @db.Timestamptz(3)
+  atualizadaEm DateTime       @updatedAt @db.Timestamptz(3)
 
   matriculas Matricula[]
   presencas  Presenca[]

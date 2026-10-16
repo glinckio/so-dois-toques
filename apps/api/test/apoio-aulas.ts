@@ -59,12 +59,19 @@ export async function criarTurma(
     horaInicio?: number;
     horaFim?: number;
     nivel?: string;
+    categoria?: string;
     vagas?: number;
   } = {},
 ) {
   const resposta = await api.post(
     "/turmas",
-    { ...horarioUnico(dados.diaSemana), nivel: "INICIANTE", vagas: 10, ...dados },
+    {
+      ...horarioUnico(dados.diaSemana),
+      nivel: "INICIANTE",
+      categoria: "MISTO",
+      vagas: 10,
+      ...dados,
+    },
     token,
   );
   if (resposta.status !== 201) throw new Error(`turma: ${resposta.status} ${resposta.text}`);

@@ -21,6 +21,7 @@ export async function turmasNaAgenda(cliente: Cliente, filtro: { ativas?: boolea
     select: {
       id: true,
       nivel: true,
+      categoria: true,
       diaSemana: true,
       horaInicio: true,
       horaFim: true,

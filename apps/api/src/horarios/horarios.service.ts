@@ -104,6 +104,7 @@ export class HorariosService {
         select: {
           id: true,
           nivel: true,
+          categoria: true,
           vagas: true,
           diaSemana: true,
           horaInicio: true,
@@ -140,6 +141,7 @@ export class HorariosService {
       return {
         ...a,
         nivel: t.nivel,
+        categoria: t.categoria,
         vagas: t.vagas,
         ocupadas: t._count.matriculas,
       };

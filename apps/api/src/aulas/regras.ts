@@ -1,6 +1,9 @@
 /** Regras puras do módulo de Aulas (Etapa 2). Sem acesso a banco. */
 
 export const NIVEIS = ["INICIANTE", "INTERMEDIARIO", "AVANCADO"] as const;
+/** TURMA-CA-08: quem a turma recebe. */
+export const CATEGORIAS_TURMA = ["MASCULINO", "MISTO", "FEMININO"] as const;
+export type CategoriaTurma = (typeof CATEGORIAS_TURMA)[number];
 export type Nivel = (typeof NIVEIS)[number];
 
 export const VAGAS_MINIMO = 1;
@@ -86,9 +89,20 @@ const NOMES_DOS_NIVEIS: Record<Nivel, string> = {
   AVANCADO: "Avançado",
 };
 
-/** TURMA-CA-03: a turma não tem nome; aparece como "Terça, 19:00 às 20:00 · Iniciante". */
-export function descreverTurma(t: TurmaComHorario & { nivel: Nivel }): string {
-  return `${DIAS_DA_SEMANA[t.diaSemana]}, ${horaDe(t.horaInicio)} às ${horaDe(t.horaFim)} · ${NOMES_DOS_NIVEIS[t.nivel]}`;
+const NOMES_DAS_CATEGORIAS: Record<CategoriaTurma, string> = {
+  MASCULINO: "Masculino",
+  MISTO: "Misto",
+  FEMININO: "Feminino",
+};
+
+/**
+ * TURMA-CA-03 e 08: a turma não tem nome; aparece como
+ * "Terça, 19:00 às 20:00 · Iniciante · Misto".
+ */
+export function descreverTurma(
+  t: TurmaComHorario & { nivel: Nivel; categoria: CategoriaTurma },
+): string {
+  return `${DIAS_DA_SEMANA[t.diaSemana]}, ${horaDe(t.horaInicio)} às ${horaDe(t.horaFim)} · ${NOMES_DOS_NIVEIS[t.nivel]} · ${NOMES_DAS_CATEGORIAS[t.categoria]}`;
 }
 
 export function horarioValido(h: Horario): boolean {

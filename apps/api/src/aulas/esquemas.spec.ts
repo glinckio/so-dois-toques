@@ -70,12 +70,13 @@ describe("validação de entrada de Aulas", () => {
     );
   });
 
-  it("TURMA-CA-01: turma só com dia, início, fim, nível e vagas", () => {
+  it("TURMA-CA-01 e TURMA-CA-08: turma só com dia, início, fim, nível, categoria e vagas", () => {
     const turma = {
       diaSemana: 2,
       horaInicio: 19 * 60,
       horaFim: 20 * 60,
       nivel: "INICIANTE",
+      categoria: "MISTO",
       vagas: 10,
     };
     expect(turmaSchema.parse(turma)).toEqual(turma);
@@ -87,6 +88,8 @@ describe("validação de entrada de Aulas", () => {
       { vagas: 0 },
       { vagas: 41 },
       { nivel: "PRO" },
+      { categoria: "INFANTIL" },
+      { categoria: undefined },
     ]) {
       expect(turmaSchema.safeParse({ ...turma, ...errado }).success, JSON.stringify(errado)).toBe(
         false,

@@ -90,7 +90,7 @@ describe("Migração da Etapa 16", () => {
     cliente = undefined;
   });
 
-  it("TURMA-CA-06: divide a turma por dia, copia as matrículas, leva as presenças e troca Professor por Atendente", async () => {
+  it("TURMA-CA-06 e TURMA-CA-08: divide a turma por dia, copia as matrículas, leva as presenças e troca Professor por Atendente", async () => {
     cliente = await bancoAntesDaEtapa16();
     const { professor, aluno, turma } = await turmaDeDoisDias(cliente);
     await cliente.query(sql(ETAPA_16));
@@ -138,6 +138,11 @@ describe("Migração da Etapa 16", () => {
       expect(existe.rowCount, coluna).toBe(0);
     }
     expect((await cliente.query(`SELECT to_regclass('"HorarioTurma"') AS t`)).rows[0].t).toBeNull();
+
+    // TURMA-CA-08: as turmas que já existiam ficam mistas.
+    await cliente.query(sql("20261016130000_categoria_turma"));
+    const categorias = await cliente.query(`SELECT DISTINCT categoria::text FROM "Turma"`);
+    expect(categorias.rows).toEqual([{ categoria: "MISTO" }]);
   });
 
   it("TURMA-CA-06: com turmas ativas no mesmo horário, para sem mudar nada", async () => {

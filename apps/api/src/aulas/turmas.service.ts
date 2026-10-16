@@ -20,6 +20,7 @@ import {
   MENSAGENS_PRESENCA,
   paraDataDoBanco,
   validarDataDePresenca,
+  type CategoriaTurma,
   type Nivel,
 } from "./regras.js";
 
@@ -31,6 +32,7 @@ export type DadosTurma = {
   horaInicio: number;
   horaFim: number;
   nivel: Nivel;
+  categoria: CategoriaTurma;
   vagas: number;
 };
 
@@ -77,6 +79,7 @@ export class TurmasService {
       horaInicio: t.horaInicio,
       horaFim: t.horaFim,
       nivel: t.nivel,
+      categoria: t.categoria,
       descricao: descreverTurma(t),
       vagas: t.vagas,
       ocupadas,
@@ -199,6 +202,7 @@ export class TurmasService {
               horaInicio: atual.horaInicio,
               horaFim: atual.horaFim,
               nivel: atual.nivel,
+              categoria: atual.categoria,
               vagas: atual.vagas,
             },
             para: { ...dados },

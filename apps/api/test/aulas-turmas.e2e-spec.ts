@@ -22,9 +22,9 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
     await app.close();
   });
 
-  it("TURMA-CA-01 e AULAS-CA-10: turma só com dia, início, fim, nível e vagas; horários inválidos recusados", async () => {
+  it("TURMA-CA-01 e TURMA-CA-08: turma só com dia, início, fim, nível, categoria e vagas; dados inválidos recusados", async () => {
     const { api, token } = await logado(app, "ADMINISTRADOR");
-    const base = { ...horarioUnico(2), nivel: "INICIANTE", vagas: 12 };
+    const base = { ...horarioUnico(2), nivel: "INICIANTE", categoria: "FEMININO", vagas: 12 };
     const criada = await api.post("/turmas", base, token).expect(201);
     const turma = await api.get(`/turmas/${criada.body.id}`, token).expect(200);
     expect(turma.body).toMatchObject({
@@ -32,7 +32,7 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
       ocupadas: 0,
       livres: 12,
       ativa: true,
-      descricao: expect.stringMatching(/^Terça, 21:\d\d às 21:\d\d · Iniciante$/),
+      descricao: expect.stringMatching(/^Terça, 21:\d\d às 21:\d\d · Iniciante · Feminino$/),
     });
     expect(turma.body).not.toHaveProperty("nome");
     expect(turma.body).not.toHaveProperty("professor");
@@ -43,6 +43,8 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
       { diaSemana: 7 },
       { vagas: 0 },
       { vagas: 41 },
+      { categoria: "INFANTIL" },
+      { categoria: undefined },
     ]) {
       const resposta = await api.post("/turmas", { ...base, ...errado }, token);
       expect(resposta.status, JSON.stringify(errado)).toBe(400);
@@ -56,12 +58,12 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
       horaInicio: 18 * 60,
       horaFim: 19 * 60,
     });
-    const base = { diaSemana: 3, nivel: "AVANCADO", vagas: 5 };
+    const base = { diaSemana: 3, nivel: "AVANCADO", categoria: "MASCULINO", vagas: 5 };
     const conflito = await api
       .post("/turmas", { ...base, horaInicio: 18 * 60 + 30, horaFim: 20 * 60 }, token)
       .expect(409);
     expect(conflito.body.message).toBe(
-      "A quadra já tem a turma de Quarta, 18:00 às 19:00 · Iniciante.",
+      "A quadra já tem a turma de Quarta, 18:00 às 19:00 · Iniciante · Misto.",
     );
 
     // Logo em seguida pode; mudar para cima da primeira, não.
@@ -113,7 +115,7 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
     const ids = lista.map((t) => t.id);
     expect(ids.indexOf(segunda)).toBeLessThan(ids.indexOf(sabado));
     expect(lista.find((t) => t.id === segunda)).toMatchObject({
-      descricao: "Segunda, 08:00 às 09:00 · Avançado",
+      descricao: "Segunda, 08:00 às 09:00 · Avançado · Misto",
       ocupadas: 1,
       livres: 2,
     });
@@ -176,14 +178,14 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
     expect(turma.body).toMatchObject({ vagas: 5, ocupadas: 1, livres: 4 });
     const aluno = await api.get(`/alunos/${alunoId}`, token).expect(200);
     expect(aluno.body.matriculas).toHaveLength(2);
-    expect(aluno.body.matriculas[0].turma.descricao).toMatch(/ · Iniciante$/);
+    expect(aluno.body.matriculas[0].turma.descricao).toMatch(/ · Iniciante · Misto$/);
 
     // Depois de encerrar a matrícula, pode voltar para a mesma turma.
     await api.post(`/matriculas/${turma.body.matriculas[0].id}/encerrar`, {}, token).expect(200);
     await api.post(`/turmas/${t1}/matriculas`, { alunoId }, token).expect(201);
   });
 
-  it("AULAS-CA-16: vagas não podem ficar abaixo dos matriculados", async () => {
+  it("AULAS-CA-16 e TURMA-CA-08: vagas não ficam abaixo dos matriculados; categoria muda ao alterar", async () => {
     const { api, token } = await logado(app, "ADMINISTRADOR");
     const horario = horarioUnico();
     const turmaId = await criarTurma(api, token, { ...horario, vagas: 3 });
@@ -192,15 +194,19 @@ describe("Etapas 2 e 16: turmas (dia e horário), matrículas e presença", () =
         .post(`/turmas/${turmaId}/matriculas`, { alunoId: await criarAluno(api, token) }, token)
         .expect(201);
     }
-    const base = { ...horario, nivel: "INTERMEDIARIO" };
+    const base = { ...horario, nivel: "INTERMEDIARIO", categoria: "FEMININO" };
     const menos = await api.patch(`/turmas/${turmaId}`, { ...base, vagas: 1 }, token).expect(409);
+    await api.patch(`/turmas/${turmaId}`, { ...horario, vagas: 3 }, token).expect(400);
     expect(menos.body.message).toBe(
       "A turma tem 2 alunos matriculados; as vagas não podem ficar abaixo disso.",
     );
     await api.patch(`/turmas/${turmaId}`, { ...base, vagas: 2 }, token).expect(200);
+    // TURMA-CA-08: a categoria muda junto e aparece na descrição.
     expect((await api.get(`/turmas/${turmaId}`, token)).body).toMatchObject({
       nivel: "INTERMEDIARIO",
+      categoria: "FEMININO",
       vagas: 2,
+      descricao: expect.stringMatching(/ · Intermediário · Feminino$/),
     });
   });
 

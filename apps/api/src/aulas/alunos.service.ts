@@ -101,6 +101,7 @@ export class AlunosService {
               select: {
                 id: true,
                 nivel: true,
+                categoria: true,
                 ativa: true,
                 diaSemana: true,
                 horaInicio: true,
@@ -290,13 +291,29 @@ export class AlunosService {
       include: {
         matriculas: {
           include: {
-            turma: { select: { diaSemana: true, horaInicio: true, horaFim: true, nivel: true } },
+            turma: {
+              select: {
+                diaSemana: true,
+                horaInicio: true,
+                horaFim: true,
+                nivel: true,
+                categoria: true,
+              },
+            },
           },
           orderBy: { inicio: "asc" },
         },
         presencas: {
           include: {
-            turma: { select: { diaSemana: true, horaInicio: true, horaFim: true, nivel: true } },
+            turma: {
+              select: {
+                diaSemana: true,
+                horaInicio: true,
+                horaFim: true,
+                nivel: true,
+                categoria: true,
+              },
+            },
           },
           orderBy: { data: "asc" },
         },

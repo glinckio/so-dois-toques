@@ -12,7 +12,7 @@ Em 16/10/2026 o dono explicou que as turmas são divididas por dia e horário, n
 
 ## Como fica a turma
 
-- Campos: **dia da semana**, **início** e **fim** (horas e minutos, das 05:00 às 23:59), **nível** e **vagas** (1 a 40).
+- Campos: **dia da semana**, **início** e **fim** (horas e minutos, das 05:00 às 23:59), **nível**, **categoria** (masculino, misto ou feminino) e **vagas** (1 a 40).
 - Não tem nome: na tela, a turma aparece como dia, horário e nível, por exemplo "Terça, 19:00 às 20:00 · Iniciante".
 - Uma turma tem um único dia. Quem treina duas vezes por semana é matriculado em duas turmas.
 - Continua valendo: duas turmas ativas não dividem a quadra no mesmo horário (FOCO-CA-04), nem caem sobre bloqueio futuro (FOCO-CA-06); vagas não ficam abaixo dos matriculados; encerrar a turma encerra as matrículas.
@@ -52,6 +52,7 @@ Em 16/10/2026 o dono explicou que as turmas são divididas por dia e horário, n
 - **TURMA-CA-04**: O perfil Professor não existe mais: não aparece no cadastro de usuário e a API recusa criar usuário com ele.
 - **TURMA-CA-05**: O atendente vê as turmas e os alunos matriculados e marca a presença de qualquer turma, mas não cadastra, altera nem encerra turma, nem matricula, pela tela e pela API.
 - **TURMA-CA-06**: A migração divide a turma de vários dias em uma turma por dia, copia as matrículas, leva cada presença para a turma do dia certo, troca Professor por Atendente e mantém o resto; com turmas ativas no mesmo horário depois de dividir, para sem mudar nada.
+- **TURMA-CA-08**: A turma tem categoria masculino, misto ou feminino, obrigatória ao cadastrar e alterar; aparece junto do dia, do horário e do nível; as turmas que já existiam ficam como misto.
 - **TURMA-CA-07** [manual]: As telas de turmas, presença e agenda funcionam no celular e no computador, em português.
 
 ## Efeito em outras etapas
@@ -65,4 +66,5 @@ Ganham a marca `[removido]`, com o critério que os substitui ao lado: AULAS-CA-
 
 ## Decisões registradas
 
+- 16/10/2026, depois da implementação: o dono pediu para informar se a turma é masculina, mista ou feminina. Entra como categoria obrigatória; as turmas que já existiam ficam como mista. A matrícula não confere o sexo do aluno, porque o cadastro do aluno não tem esse dado.
 - 16/10/2026, respostas do dono: tirar o perfil Professor do sistema; admin e atendente marcam presença; a turma tem início e fim; turmas de vários dias são divididas na migração, com alunos e presenças.
