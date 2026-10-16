@@ -79,6 +79,7 @@ test("ACESSO-CA-12, ACESSO-CA-13, ACESSO-CA-11 e ACESSO-CA-10: nova atendente tr
       "Aulas",
       "Mensalidades",
       "Horários",
+      "Chat",
     ]);
 
     await professor.goto("/usuarios");
@@ -118,6 +119,7 @@ test("ACESSO-CA-11 e FOCO-CA-02: atendente vê Mensalidades e Horários, sem Est
       "Aulas",
       "Mensalidades",
       "Horários",
+      "Chat",
     ]);
     for (const rota of ["/caixa", "/estoque", "/aulas/locais", "/horarios/faixas"]) {
       const resposta = await atendente.goto(rota);

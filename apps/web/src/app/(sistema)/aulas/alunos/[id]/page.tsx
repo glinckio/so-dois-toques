@@ -32,6 +32,7 @@ import {
   formatarReais,
   nomeDoMes,
 } from "@/lib/mensalidades/formatacao";
+import { numeroDoTelefone } from "@/lib/chat/conversa";
 import { linkDoWhatsapp } from "@/lib/mensalidades/painel";
 import type { Assinaturas, Plano } from "@/lib/mensalidades/tipos";
 import { chamarApi } from "@/lib/servidor/api";
@@ -137,6 +138,15 @@ export default async function PaginaAluno({
                   WhatsApp
                   <span className="sr-only"> (abre em nova aba)</span>
                 </a>
+                {usuario.areas.includes("chat") && (
+                  <Link
+                    href={`/chat?numero=${numeroDoTelefone(aluno.telefone)}`}
+                    className={`${classeAtalho} border-roxo/40 bg-roxo/15 text-roxo-claro hover:bg-roxo/25 border`}
+                  >
+                    <Icone nome="chat" width={19} height={19} />
+                    Conversar no sistema
+                  </Link>
+                )}
                 <a
                   href={`tel:+55${aluno.telefone.replace(/\D/g, "")}`}
                   className={`${classeAtalho} border-borda bg-elevado/60 hover:border-roxo/50 border`}
