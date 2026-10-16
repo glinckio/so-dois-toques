@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 /** Telas que ocupam toda a área ao lado do menu, sem a barra do topo (CHAT-CA-15). */
 const TELAS_CHEIAS = ["/chat"];
@@ -22,9 +22,20 @@ export function AreaDeConteudo({
   children: ReactNode;
 }) {
   const cheia = telaCheia(usePathname());
+  // Na tela cheia a página não rola: só as listas de dentro (conversas e mensagens).
+  useEffect(() => {
+    if (!cheia) return;
+    const raiz = document.documentElement;
+    raiz.classList.add("overflow-hidden");
+    document.body.classList.add("overflow-hidden");
+    return () => {
+      raiz.classList.remove("overflow-hidden");
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [cheia]);
   return (
     <div
-      className={`lg:border-borda/70 lg:bg-fundo/80 flex min-h-full flex-1 flex-col lg:rounded-[2rem] lg:border lg:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.03)] ${cheia ? "lg:h-[calc(100dvh-2rem)] lg:min-h-0 lg:overflow-hidden" : ""}`}
+      className={`lg:border-borda/70 lg:bg-fundo/80 flex min-h-full flex-1 flex-col lg:rounded-[2rem] lg:border lg:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.03)] ${cheia ? "lg:h-[calc(100dvh-2rem)] lg:min-h-0 lg:flex-none lg:overflow-hidden" : ""}`}
     >
       {!cheia && barraDoTopo}
       <main

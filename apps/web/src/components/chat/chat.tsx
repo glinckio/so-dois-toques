@@ -301,7 +301,7 @@ export function Chat({
     : null;
 
   return (
-    <div className="superficie grid h-[calc(100dvh-10rem)] min-h-[24rem] grid-cols-1 overflow-hidden rounded-[1.75rem] lg:h-full lg:min-h-0 lg:grid-cols-[22rem_minmax(0,1fr)]">
+    <div className="superficie grid h-[calc(100dvh-10.75rem)] min-h-[24rem] grid-cols-1 grid-rows-[minmax(0,1fr)] overflow-hidden rounded-[1.75rem] lg:h-full lg:min-h-0 lg:grid-cols-[22rem_minmax(0,1fr)]">
       {/* Lista de conversas */}
       <section
         aria-label="Conversas"

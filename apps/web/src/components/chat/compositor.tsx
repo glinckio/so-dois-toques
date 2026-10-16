@@ -166,17 +166,19 @@ export function Compositor({
           type="button"
           className={classeBotaoIcone}
           aria-label="Anexar foto, vídeo, documento ou áudio"
+          title="Anexar: foto, vídeo, documento ou áudio (até 10 MB)"
           onClick={() => seletorAnexo.current?.click()}
         >
           <Icone nome="clipe" width={20} height={20} />
         </button>
         <button
           type="button"
-          className={`${classeBotaoIcone} text-lg`}
+          className={classeBotaoIcone}
           aria-label="Enviar figurinha"
+          title="Figurinha: escolha uma imagem e ela vai como figurinha"
           onClick={() => seletorFigurinha.current?.click()}
         >
-          <span aria-hidden="true">🌟</span>
+          <Icone nome="figurinha" width={20} height={20} />
         </button>
         <input
           ref={seletorAnexo}

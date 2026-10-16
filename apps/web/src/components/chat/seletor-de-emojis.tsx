@@ -39,6 +39,7 @@ export function SeletorDeEmojis({ aoEscolher }: { aoEscolher: (emoji: string) =>
         type="button"
         className={classeBotaoIcone}
         aria-label="Emojis"
+        title="Emojis"
         aria-expanded={aberto}
         onClick={() => setAberto((a) => !a)}
       >

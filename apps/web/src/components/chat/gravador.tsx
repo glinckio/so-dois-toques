@@ -84,6 +84,7 @@ export function Gravador({
           type="button"
           className={classeBotaoIcone}
           aria-label="Gravar áudio"
+          title="Gravar áudio de voz"
           onClick={comecar}
           disabled={desabilitado}
         >

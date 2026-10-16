@@ -16,14 +16,32 @@ async function receber(page: Page, numero: string, texto: string, nome?: string)
   expect(r.ok()).toBe(true);
 }
 
+/** CHAT-CA-15: a página não rola; as mensagens rolam dentro do quadro. */
+async function conferirRolagem(page: Page) {
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const pagina = document.scrollingElement!;
+        const mensagens = document.querySelector('[aria-label="Mensagens"]')!.parentElement!;
+        return {
+          paginaRola: pagina.scrollHeight > pagina.clientHeight + 1,
+          mensagensRolam: mensagens.scrollHeight > mensagens.clientHeight,
+        };
+      }),
+    )
+    .toEqual({ paginaRola: false, mensagensRolam: true });
+}
+
 // O número da escola é um só para o servidor de testes inteiro: o fluxo roda no desktop,
 // de ponta a ponta, e no fim confere o layout do celular.
-test("CHAT-CA-03, CHAT-CA-04, CHAT-CA-06, CHAT-CA-08, CHAT-CA-11 e CHAT-CA-14: conecta, conversa, recebe ao vivo e sem tempo real", async ({
+test("CHAT-CA-03, CHAT-CA-04, CHAT-CA-06, CHAT-CA-08, CHAT-CA-11, CHAT-CA-14 e CHAT-CA-15: conecta, conversa, recebe ao vivo e sem tempo real", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "um número só por servidor de testes");
   test.slow();
   const numero = `55519${String(Date.now()).slice(-8)}`;
+  for (let i = 1; i <= 30; i++)
+    await receber(page, numero, `Mensagem antiga ${i}`, "Interessada E2E");
   await receber(page, numero, "Oi, tem vaga na turma de sábado?", "Interessada E2E");
 
   await entrarComoAdmin(page);
@@ -53,6 +71,7 @@ test("CHAT-CA-03, CHAT-CA-04, CHAT-CA-06, CHAT-CA-08, CHAT-CA-11 e CHAT-CA-14: c
   await expect(conversa).toBeVisible();
   await conversa.click();
   await expect(page.getByTestId("titulo-conversa")).toHaveText("Interessada E2E");
+  await conferirRolagem(page);
   await expect(
     page.getByRole("list", { name: "Mensagens" }).getByText("Oi, tem vaga na turma de sábado?"),
   ).toBeVisible();
@@ -130,6 +149,7 @@ test("CHAT-CA-03, CHAT-CA-04, CHAT-CA-06, CHAT-CA-08, CHAT-CA-11 e CHAT-CA-14: c
   await page.goto(`/chat?numero=${numero}`);
   await expect(page.getByTestId("titulo-conversa")).toBeVisible();
   await expect(page.getByLabel("Buscar conversa")).toBeHidden();
+  await conferirRolagem(page);
   await page.getByRole("button", { name: "Voltar para as conversas" }).click();
   await expect(page.getByLabel("Buscar conversa")).toBeVisible();
 });
