@@ -58,6 +58,8 @@ describe("regras de Aulas", () => {
     expect(idadeEm("2008-11-01", "2026-10-06")).toBe(17);
     expect(exigeResponsavel("2008-10-07", "2026-10-06")).toBe(true);
     expect(exigeResponsavel("2008-10-06", "2026-10-06")).toBe(false);
+    // ALU-CA-01: sem data de nascimento não se sabe a idade; o responsável não é exigido.
+    expect(exigeResponsavel(null, "2026-10-06")).toBe(false);
   });
 
   it("AULAS-CA-10: horário entre 05:00 e 23:59, com fim depois do início", () => {

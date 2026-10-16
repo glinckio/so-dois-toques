@@ -37,11 +37,10 @@ export function FormAluno({ aluno }: { aluno?: AlunoDetalhe }) {
           defaultValue={valor("telefone", formatarTelefone(aluno?.telefone))}
         />
         <Campo
-          rotulo="Data de nascimento"
+          rotulo="Data de nascimento (opcional)"
           id="nascimento"
           icone="calendario"
           type="date"
-          required
           defaultValue={valor("nascimento", aluno?.nascimento)}
         />
         <Campo
@@ -56,22 +55,20 @@ export function FormAluno({ aluno }: { aluno?: AlunoDetalhe }) {
       </Grupo>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         <Grupo
-          legenda="Contato de emergência"
+          legenda="Contato de emergência (opcional)"
           icone="alerta"
           tom="perigo"
-          dica="Quem avisar se algo acontecer na quadra."
+          dica="Quem avisar se algo acontecer na quadra. Se preencher, informe nome e telefone."
         >
           <Campo
             rotulo="Nome do contato"
             id="emergenciaNome"
-            required
             maxLength={120}
             defaultValue={valor("emergenciaNome", aluno?.emergenciaNome)}
           />
           <CampoTelefone
             rotulo="Telefone do contato"
             id="emergenciaTelefone"
-            required
             defaultValue={valor("emergenciaTelefone", formatarTelefone(aluno?.emergenciaTelefone))}
           />
         </Grupo>

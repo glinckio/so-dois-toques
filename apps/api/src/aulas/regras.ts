@@ -64,7 +64,9 @@ export function idadeEm(nascimento: string, data: string): number {
 }
 
 /** AULAS-CA-03: menor de 18 anos na data do cadastro precisa de responsável. */
-export function exigeResponsavel(nascimento: string, hoje: string): boolean {
+export function exigeResponsavel(nascimento: string | null, hoje: string): boolean {
+  // ALU-CA-01: sem data de nascimento não dá para saber a idade; o responsável fica opcional.
+  if (nascimento === null) return false;
   return idadeEm(nascimento, hoje) < MAIORIDADE;
 }
 

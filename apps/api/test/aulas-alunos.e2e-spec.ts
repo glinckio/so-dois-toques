@@ -35,6 +35,38 @@ describe("Etapa 2: alunos", () => {
     expect(Date.now() - new Date(aluno.body.consentimentoEm).getTime()).toBeLessThan(60_000);
   });
 
+  it("ALU-CA-01 e ALU-CA-02: aluno sem data de nascimento e sem contato de emergência é cadastrado", async () => {
+    const { api, token } = await logado(app, "ADMINISTRADOR");
+    const dados = dadosAluno({ nascimento: "", emergenciaNome: "", emergenciaTelefone: "" });
+    const criado = await api.post("/alunos", dados, token).expect(201);
+    const aluno = await api.get(`/alunos/${criado.body.id}`, token).expect(200);
+    expect(aluno.body).toMatchObject({
+      nascimento: null,
+      emergenciaNome: null,
+      emergenciaTelefone: null,
+      // Sem data não se sabe a idade: o consentimento é do próprio aluno.
+      consentimentoPor: "ALUNO",
+    });
+
+    // Na alteração também pode tirar os dois.
+    await api
+      .patch(
+        `/alunos/${criado.body.id}`,
+        { ...dados, nascimento: null, emergenciaNome: null, emergenciaTelefone: null },
+        token,
+      )
+      .expect(200);
+
+    // Contato pela metade é recusado.
+    const metade = await api
+      .post("/alunos", dadosAluno({ emergenciaTelefone: "" }), token)
+      .expect(400);
+    expect(metade.body.campos).toContainEqual({
+      campo: "emergenciaNome",
+      mensagem: "Informe o nome e o telefone do contato de emergência, ou deixe os dois em branco.",
+    });
+  });
+
   it("AULAS-CA-02: sem consentimento o cadastro é recusado", async () => {
     const { api, token } = await logado(app, "ADMINISTRADOR");
     for (const consentimento of [false, undefined]) {

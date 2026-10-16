@@ -24,7 +24,7 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 
 - **Turmas:** cada turma tem professor, nível, vagas e horários da semana, e acontece na quadra. Duas turmas ativas não podem ter aula no mesmo horário, nem com professores diferentes. Abra a turma para matricular alunos (respeitando as vagas) e para a **presença**.
 - **Presença (professor):** abra a turma → Presença, escolha a data da aula e marque presente ou ausente. Dá para corrigir depois.
-- **Alunos (administrador):** cadastro com consentimento obrigatório; menor de 18 anos exige responsável. A busca acha por parte do nome (sem acento) ou do telefone. Na ficha do aluno ficam o plano, a exportação de dados e a anonimização (ver [LGPD](lgpd.md)).
+- **Alunos (administrador):** cadastro com nome, telefone e consentimento obrigatórios; data de nascimento e contato de emergência são opcionais. Com a data informada, menor de 18 anos exige responsável. A busca acha por parte do nome (sem acento) ou do telefone. Na ficha do aluno ficam o plano, a exportação de dados e a anonimização (ver [LGPD](lgpd.md)).
 - **Planos:** valor mensal por quantidade de aulas na semana. Na ficha do aluno, escolha o plano, o dia de vencimento e um desconto, se houver.
 
 ## Mensalidades
