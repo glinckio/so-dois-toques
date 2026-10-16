@@ -21,9 +21,10 @@ describe("FOCO-CA-09: recebido, estornos e conferência", () => {
       entrada("MENSALIDADE", 15000),
       saida("ESTORNO", 15000),
     ]);
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       recebido: 30000,
       estornos: 15000,
+      totalGastos: 0,
       resultado: 15000,
       naoClassificado: 0,
       entradas: 30000,
@@ -36,6 +37,32 @@ describe("FOCO-CA-09: recebido, estornos e conferência", () => {
     const r = resumoFinanceiro([entrada("NOVA", 100), saida("OUTRA", 30)]);
     expect(r.naoClassificado).toBe(70);
     expect(r.resultado).toBe(0);
+    expect(r.confere).toBe(true);
+  });
+
+  it("GASTO-CA-08: gastos por tipo descontam os estornos; saldo inicial não é receita", () => {
+    const r = resumoFinanceiro([
+      entrada("SALDO_INICIAL", 60000),
+      entrada("MENSALIDADE", 20000),
+      saida("ALUGUEL_MENSAL", 8000),
+      saida("LOCACAO_AVULSA", 3000),
+      saida("EQUIPAMENTO", 5000),
+      entrada("EQUIPAMENTO", 5000),
+      saida("INVESTIMENTO", 1000),
+      saida("OUTRO_GASTO", 500),
+    ]);
+    expect(r.recebido).toBe(20000);
+    expect(r.saldoInicial).toBe(60000);
+    expect(r.gastos).toEqual({
+      ALUGUEL_MENSAL: 8000,
+      LOCACAO_AVULSA: 3000,
+      EQUIPAMENTO: 0,
+      INVESTIMENTO: 1000,
+      OUTRO_GASTO: 500,
+    });
+    expect(r.totalGastos).toBe(12500);
+    expect(r.resultado).toBe(7500);
+    expect(r.naoClassificado).toBe(0);
     expect(r.confere).toBe(true);
   });
 

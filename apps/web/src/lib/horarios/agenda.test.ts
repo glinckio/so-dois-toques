@@ -16,7 +16,7 @@ const aula = (turmaId: string, inicio: number, fim: number): AulaNaGrade => ({
 const grade = (extra: Partial<Grade> = {}): Grade => ({
   data: "2026-10-20",
   diaSemana: 2,
-  quadra: { id: "q", nome: "Quadra" },
+  quadra: { id: "q", nome: "Quadra", ativa: true },
   aulas: [],
   bloqueios: [],
   ...extra,

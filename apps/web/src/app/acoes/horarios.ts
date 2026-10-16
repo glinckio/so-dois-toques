@@ -18,6 +18,7 @@ function erroDe(resposta: Extract<RespostaApi<unknown>, { ok: false }>): EstadoF
 }
 
 const CAMPOS_BLOQUEIO = [
+  "quadraId",
   "repeticao",
   "data",
   "dataFim",
@@ -36,6 +37,7 @@ export async function bloquear(_: EstadoFormulario, form: FormData): Promise<Est
     metodo: "POST",
     corpo: {
       ...quando,
+      quadraId: texto(form, "quadraId"),
       horaInicio: numero(form, "horaInicio"),
       horaFim: numero(form, "horaFim"),
       motivo: texto(form, "motivo"),
@@ -80,16 +82,29 @@ export async function encerrarSerie(
   };
 }
 
-/** FOCO-CA-08 */
-export async function renomearQuadra(
-  _: EstadoFormulario,
-  form: FormData,
-): Promise<EstadoFormulario> {
-  const resposta = await chamarApi("/horarios/quadra", {
-    metodo: "PATCH",
+/** GASTO-CA-01: quadra nova. */
+export async function criarQuadra(_: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
+  const resposta = await chamarApi("/horarios/quadras", {
+    metodo: "POST",
     corpo: { nome: texto(form, "nome") },
   });
   if (!resposta.ok) return erroComValores(erroDe(resposta), form, ["nome"]);
   refresh();
-  return { sucesso: "Nome da quadra salvo." };
+  return { sucesso: "Quadra cadastrada." };
+}
+
+/** GASTO-CA-01: renomear, desativar ou reativar a quadra. */
+export async function alterarQuadra(
+  _: EstadoFormulario,
+  form: FormData,
+): Promise<EstadoFormulario> {
+  const quadraId = id.safeParse(form.get("quadraId"));
+  if (!quadraId.success) return { erro: "Quadra inválida." };
+  const resposta = await chamarApi(`/horarios/quadras/${quadraId.data}`, {
+    metodo: "PATCH",
+    corpo: { nome: texto(form, "nome"), ativa: form.get("ativa") === "on" },
+  });
+  if (!resposta.ok) return erroComValores(erroDe(resposta), form, ["nome"]);
+  refresh();
+  return { sucesso: "Quadra salva." };
 }

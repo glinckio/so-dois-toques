@@ -3,7 +3,7 @@ import { diaDaSemana, hojeEmSaoPaulo } from "../src/aulas/regras.js";
 import { somarDias } from "../src/horarios/regras.js";
 import { PrismaService } from "../src/prisma/prisma.service.js";
 import { criarApp } from "./apoio.js";
-import { criarAluno, criarTurma, logado } from "./apoio-aulas.js";
+import { criarAluno, criarTurma, logado, quadraPadrao } from "./apoio-aulas.js";
 
 const hoje = () => hojeEmSaoPaulo(new Date());
 
@@ -25,8 +25,17 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
     await app.close();
   });
 
+  let quadraId: string;
+  beforeAll(async () => {
+    quadraId = await quadraPadrao();
+  });
+
   const bloquear = (dados: Record<string, unknown>) =>
-    admin.api.post("/horarios/bloqueios", { motivo: "Manutenção", ...dados }, admin.token);
+    admin.api.post(
+      "/horarios/bloqueios",
+      { motivo: "Manutenção", quadraId, ...dados },
+      admin.token,
+    );
 
   it("FOCO-CA-05: a grade mostra as aulas das turmas no dia e os bloqueios valendo", async () => {
     const { api, token } = admin;
@@ -158,7 +167,7 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
     const data = semanaLivre();
     const dia = diaDaSemana(data);
     await bloquear({ repeticao: "AVULSO", data, horaInicio: 6, horaFim: 7 }).expect(201);
-    const base = { diaSemana: dia, nivel: "INICIANTE", categoria: "MISTO", vagas: 5 };
+    const base = { quadraId, diaSemana: dia, nivel: "INICIANTE", categoria: "MISTO", vagas: 5 };
     const recusada = await api
       .post("/turmas", { ...base, horaInicio: 6 * 60 + 30, horaFim: 7 * 60 + 30 }, token)
       .expect(409);
@@ -201,6 +210,7 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
 
     const passado = await prisma.bloqueio.create({
       data: {
+        quadraId,
         data: new Date(`${somarDias(hoje(), -1)}T00:00:00.000Z`),
         horaInicio: 8,
         horaFim: 9,
@@ -232,7 +242,7 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
     await api.post(`/horarios/series/${semanal.body.serieId}/encerrar`, {}, token).expect(409);
   });
 
-  it("FOCO-CA-08: todos veem a grade; só o administrador bloqueia, cancela e renomeia a quadra", async () => {
+  it("FOCO-CA-08: todos veem a grade; só o administrador bloqueia, cancela e mexe nas quadras", async () => {
     const data = semanaLivre();
     const bloqueio = await bloquear({
       repeticao: "AVULSO",
@@ -243,17 +253,18 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
     for (const perfil of ["ATENDENTE"] as const) {
       const { api, token } = await logado(app, perfil);
       await api.get(`/horarios/grade?data=${data}`, token).expect(200);
-      await api.get("/horarios/quadra", token).expect(200);
+      await api.get("/horarios/quadras", token).expect(200);
       await api.get(`/horarios/bloqueios/${bloqueio.body.id}`, token).expect(200);
       await api.get("/horarios/series", token).expect(200);
       const tentativas = [
         api.post(
           "/horarios/bloqueios",
-          { repeticao: "AVULSO", data, horaInicio: 11, horaFim: 12, motivo: "x" },
+          { repeticao: "AVULSO", quadraId, data, horaInicio: 11, horaFim: 12, motivo: "x" },
           token,
         ),
         api.post(`/horarios/bloqueios/${bloqueio.body.id}/cancelar`, { motivo: "x" }, token),
-        api.patch("/horarios/quadra", { nome: "Minha" }, token),
+        api.post("/horarios/quadras", { nome: "Minha" }, token),
+        api.patch(`/horarios/quadras/${quadraId}`, { nome: "Minha", ativa: true }, token),
       ];
       for (const resposta of await Promise.all(tentativas)) {
         expect(resposta.status, perfil).toBe(403);
@@ -263,18 +274,17 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
 
   it("FOCO-CA-13: renomear a quadra, bloquear e cancelar ficam na auditoria com autor, data e IP", async () => {
     const { api, token, usuario } = await logado(app, "ADMINISTRADOR");
-    const atual = (await api.get("/horarios/quadra", token).expect(200)).body;
-    await api.patch("/horarios/quadra", { nome: "Quadra Central" }, token).expect(200);
-    expect((await api.get("/horarios/quadra", token).expect(200)).body).toEqual({
-      id: atual.id,
-      nome: "Quadra Central",
-    });
-    await api.patch("/horarios/quadra", { nome: "x" }, token).expect(400);
+    await api
+      .patch(`/horarios/quadras/${quadraId}`, { nome: "Quadra Central", ativa: true }, token)
+      .expect(200);
+    const quadras = (await api.get("/horarios/quadras", token).expect(200)).body;
+    expect(quadras).toContainEqual({ id: quadraId, nome: "Quadra Central", ativa: true });
+    await api.patch(`/horarios/quadras/${quadraId}`, { nome: "x", ativa: true }, token).expect(400);
     const data = semanaLivre();
     const bloqueio = await api
       .post(
         "/horarios/bloqueios",
-        { repeticao: "AVULSO", data, horaInicio: 13, horaFim: 14, motivo: "Pintura" },
+        { repeticao: "AVULSO", quadraId, data, horaInicio: 13, horaFim: 14, motivo: "Pintura" },
         token,
       )
       .expect(201);
@@ -286,6 +296,7 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
         "/horarios/bloqueios",
         {
           repeticao: "SEMANAL",
+          quadraId,
           dataInicio: data,
           dataFim: somarDias(data, 7),
           horaInicio: 16,
@@ -301,7 +312,7 @@ describe("Etapa 14: agenda da quadra (aulas e bloqueios)", () => {
       orderBy: { id: "asc" },
     });
     expect(registros.map((r) => r.acao)).toEqual([
-      "QUADRA_RENOMEADA",
+      "QUADRA_ALTERADA",
       "BLOQUEIO_CRIADO",
       "BLOQUEIO_CANCELADO",
       "SERIE_CRIADA",

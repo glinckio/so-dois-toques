@@ -1,7 +1,7 @@
 import pg from "pg";
 
 /**
- * A quadra é uma só (FOCO-CA-04): duas turmas ativas não dividem horário. Os arquivos de
+ * Duas turmas ativas não dividem horário na mesma quadra (GASTO-CA-02). Os arquivos de
  * teste usam o mesmo banco, então cada um começa com a agenda livre: turmas ativas são
  * encerradas e bloqueios valendo, cancelados.
  */

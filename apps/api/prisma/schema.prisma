@@ -30,17 +30,19 @@ model Usuario {
   atualizadoEm DateTime @updatedAt @db.Timestamptz(3)
 
   sessoes                Sessao[]
-  consentimentos         Aluno[]         @relation("ConsentimentoRegistradoPor")
+  consentimentos         Aluno[]          @relation("ConsentimentoRegistradoPor")
   presencasRegistradas   Presenca[]
   assinaturasCriadas     Assinatura[]
   mensalidadesCanceladas Mensalidade[]
-  pagamentosRecebidos    Pagamento[]     @relation("PagamentoRecebidoPor")
-  pagamentosEstornados   Pagamento[]     @relation("PagamentoEstornadoPor")
+  pagamentosRecebidos    Pagamento[]      @relation("PagamentoRecebidoPor")
+  pagamentosEstornados   Pagamento[]      @relation("PagamentoEstornadoPor")
   lancamentos            Lancamento[]
-  bloqueiosCriados       Bloqueio[]      @relation("BloqueioCriadoPor")
-  bloqueiosCancelados    Bloqueio[]      @relation("BloqueioCanceladoPor")
-  seriesCriadas          SerieBloqueio[] @relation("SerieCriadaPor")
-  seriesEncerradas       SerieBloqueio[] @relation("SerieEncerradaPor")
+  bloqueiosCriados       Bloqueio[]       @relation("BloqueioCriadoPor")
+  bloqueiosCancelados    Bloqueio[]       @relation("BloqueioCanceladoPor")
+  seriesCriadas          SerieBloqueio[]  @relation("SerieCriadaPor")
+  seriesEncerradas       SerieBloqueio[]  @relation("SerieEncerradaPor")
+  contratosCriados       ContratoQuadra[] @relation("ContratoCriadoPor")
+  contratosEncerrados    ContratoQuadra[] @relation("ContratoEncerradoPor")
 
   @@index([perfil, ativo])
 }
@@ -140,6 +142,9 @@ model Aluno {
 /// Etapa 16: a turma é um horário fixo da semana (dia, início e fim), com nível e vagas.
 model Turma {
   id           String         @id @default(uuid()) @db.Uuid
+  /// Etapa 17: a quadra onde a turma acontece.
+  quadraId     String         @db.Uuid
+  quadra       Quadra         @relation(fields: [quadraId], references: [id], onDelete: Restrict)
   /// 0 = domingo ... 6 = sábado
   diaSemana    Int            @db.SmallInt
   /// Minutos desde 00:00, das 05:00 às 23:59.
@@ -159,7 +164,7 @@ model Turma {
   matriculas Matricula[]
   presencas  Presenca[]
 
-  @@index([diaSemana, ativa])
+  @@index([quadraId, diaSemana, ativa])
 }
 
 model Matricula {
@@ -215,6 +220,13 @@ enum TipoLancamento {
 enum CategoriaLancamento {
   MENSALIDADE
   ESTORNO
+  /// Etapa 17
+  SALDO_INICIAL
+  ALUGUEL_MENSAL
+  LOCACAO_AVULSA
+  EQUIPAMENTO
+  INVESTIMENTO
+  OUTRO_GASTO
 }
 
 model Plano {
@@ -328,15 +340,52 @@ model Lancamento {
 // Etapa 7 e 14: agenda da quadra
 
 /// A quadra do local. Uma só, criada na migração.
+/// Etapa 17: as quadras alugadas onde as turmas acontecem.
 model Quadra {
   id       String   @id @default(uuid()) @db.Uuid
   nome     String   @unique @db.VarChar(40)
+  ativa    Boolean  @default(true)
   criadaEm DateTime @default(now()) @db.Timestamptz(3)
+
+  turmas    Turma[]
+  bloqueios Bloqueio[]
+  series    SerieBloqueio[]
+  contratos ContratoQuadra[]
+}
+
+/// Etapa 17: aluguel mensal fixo de um horário da semana numa quadra.
+model ContratoQuadra {
+  id             String         @id @default(uuid()) @db.Uuid
+  quadraId       String         @db.Uuid
+  quadra         Quadra         @relation(fields: [quadraId], references: [id], onDelete: Restrict)
+  /// 0 = domingo ... 6 = sábado
+  diaSemana      Int            @db.SmallInt
+  /// Minutos desde 00:00.
+  horaInicio     Int            @db.SmallInt
+  horaFim        Int            @db.SmallInt
+  valorCentavos  Int
+  /// Dia do mês em que o aluguel é lançado (1 a 28).
+  diaPagamento   Int            @db.SmallInt
+  forma          FormaPagamento
+  /// Primeiro dia do primeiro mês pago.
+  inicio         DateTime       @db.Date
+  /// Primeiro dia do primeiro mês que não é mais pago.
+  fim            DateTime?      @db.Date
+  criadoPorId    String         @db.Uuid
+  criadoPor      Usuario        @relation("ContratoCriadoPor", fields: [criadoPorId], references: [id], onDelete: Restrict)
+  criadoEm       DateTime       @default(now()) @db.Timestamptz(3)
+  encerradoPorId String?        @db.Uuid
+  encerradoPor   Usuario?       @relation("ContratoEncerradoPor", fields: [encerradoPorId], references: [id], onDelete: Restrict)
+  encerradoEm    DateTime?      @db.Timestamptz(3)
+
+  @@index([fim])
 }
 
 /// Bloqueio semanal. Gera os bloqueios de uma vez.
 model SerieBloqueio {
   id             String    @id @default(uuid()) @db.Uuid
+  quadraId       String    @db.Uuid
+  quadra         Quadra    @relation(fields: [quadraId], references: [id], onDelete: Restrict)
   /// 0 = domingo ... 6 = sábado
   diaSemana      Int       @db.SmallInt
   horaInicio     Int       @db.SmallInt
@@ -360,6 +409,8 @@ model SerieBloqueio {
 /// sobrepõem na mesma data (restrição de exclusão na migração).
 model Bloqueio {
   id                 String         @id @default(uuid()) @db.Uuid
+  quadraId           String         @db.Uuid
+  quadra             Quadra         @relation(fields: [quadraId], references: [id], onDelete: Restrict)
   data               DateTime       @db.Date
   /// Horas inteiras: início de 5 a 23, fim de 6 a 24.
   horaInicio         Int            @db.SmallInt
@@ -375,6 +426,6 @@ model Bloqueio {
   canceladoPor       Usuario?       @relation("BloqueioCanceladoPor", fields: [canceladoPorId], references: [id], onDelete: Restrict)
   motivoCancelamento String?        @db.VarChar(200)
 
-  @@index([data])
+  @@index([quadraId, data])
   @@index([serieId])
 }

@@ -13,13 +13,21 @@ type Painel = {
   periodo: { de: string; ate: string };
   recebido: number;
   estornos: number;
+  totalGastos: number;
   resultado: number;
+  saldoInicial: number;
   naoClassificado: number;
   entradas: number;
   saidas: number;
   confere: boolean;
   porForma: Record<string, { entradas: number; saidas: number; saldo: number }>;
-  comparativo: { competencia: string; recebido: number; estornos: number; resultado: number }[];
+  comparativo: {
+    competencia: string;
+    recebido: number;
+    estornos: number;
+    gastos: number;
+    resultado: number;
+  }[];
   aReceber: { quantidade: number; valorCentavos: number };
 };
 
@@ -73,7 +81,7 @@ describe("Etapa 8 e 12: painel contábil das mensalidades", () => {
     expect(depois.recebido - antes.recebido).toBe(24000);
     expect(depois.estornos - antes.estornos).toBe(9000);
     expect(depois.resultado - antes.resultado).toBe(15000);
-    expect(depois.resultado).toBe(depois.recebido - depois.estornos);
+    expect(depois.resultado).toBe(depois.recebido - depois.estornos - depois.totalGastos);
     expect(depois.naoClassificado).toBe(0);
 
     // A conferência bate com a soma direta do livro-razão no período.
@@ -86,7 +94,7 @@ describe("Etapa 8 e 12: painel contábil das mensalidades", () => {
     const soma = (tipo: string) => somas.find((s) => s.tipo === tipo)?._sum.valorCentavos ?? 0;
     expect(depois.entradas).toBe(soma("ENTRADA"));
     expect(depois.saidas).toBe(soma("SAIDA"));
-    expect(depois.resultado).toBe(depois.entradas - depois.saidas);
+    expect(depois.resultado + depois.saldoInicial).toBe(depois.entradas - depois.saidas);
     expect(depois.confere).toBe(true);
 
     // Totais por forma.
@@ -138,6 +146,7 @@ describe("Etapa 8 e 12: painel contábil das mensalidades", () => {
       competencia: competenciaAtual(new Date()),
       recebido: atual.recebido,
       estornos: atual.estornos,
+      gastos: atual.totalGastos,
       resultado: atual.resultado,
     });
     const fevereiro = await painel("?competencia=2026-02");

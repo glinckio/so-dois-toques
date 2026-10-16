@@ -41,6 +41,9 @@ export function CartaoTurma({
         <div className="relative flex flex-wrap items-center gap-2">
           <SeloNivel nivel={turma.nivel} />
           <SeloCategoria categoria={turma.categoria} />
+          <Selo tom="areia" semPonto>
+            {turma.quadra.nome}
+          </Selo>
           {!turma.ativa && <Selo tom="neutro">Encerrada</Selo>}
           {hoje &&
             (agora ? (

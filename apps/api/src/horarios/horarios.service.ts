@@ -54,29 +54,76 @@ export class HorariosService {
     private readonly auditoria: AuditoriaService,
   ) {}
 
-  // ---------- Quadra ----------
+  // ---------- Quadras (GASTO-CA-01) ----------
 
-  async quadra() {
-    return this.prisma.quadra.findFirstOrThrow({ select: { id: true, nome: true } });
+  /** As quadras, as ativas primeiro, na ordem do cadastro (a primeira é a principal). */
+  quadras() {
+    return this.prisma.quadra.findMany({
+      orderBy: [{ ativa: "desc" }, { criadaEm: "asc" }],
+      select: { id: true, nome: true, ativa: true },
+    });
   }
 
-  async renomearQuadra(ator: Ator, nome: string) {
+  /** A quadra pedida ou, sem pedido, a ativa mais antiga. */
+  async quadra(id?: string) {
+    const quadra = id
+      ? await this.prisma.quadra.findUnique({
+          where: { id },
+          select: { id: true, nome: true, ativa: true },
+        })
+      : await this.prisma.quadra.findFirst({
+          where: { ativa: true },
+          orderBy: { criadaEm: "asc" },
+          select: { id: true, nome: true, ativa: true },
+        });
+    if (!quadra) throw new NotFoundException("Quadra não encontrada.");
+    return quadra;
+  }
+
+  async criarQuadra(ator: Ator, nome: string) {
     try {
       return await this.prisma.$transaction(async (tx) => {
-        const quadra = await tx.quadra.findFirstOrThrow();
-        await tx.quadra.update({ where: { id: quadra.id }, data: { nome } });
+        const quadra = await tx.quadra.create({
+          data: { nome },
+          select: { id: true, nome: true, ativa: true },
+        });
         await this.auditoria.registrar(
           {
-            acao: "QUADRA_RENOMEADA",
+            acao: "QUADRA_CRIADA",
             atorId: ator.id,
             ip: ator.ip,
             alvoTipo: "Quadra",
             alvoId: quadra.id,
-            detalhes: { nomeAnterior: quadra.nome, nomeNovo: nome },
+            detalhes: { nome },
           },
           tx,
         );
-        return { id: quadra.id, nome };
+        return quadra;
+      });
+    } catch (erro) {
+      if (ehUnico(erro)) throw new ConflictException("Já existe uma quadra com esse nome.");
+      throw erro;
+    }
+  }
+
+  async alterarQuadra(ator: Ator, id: string, dados: { nome: string; ativa: boolean }) {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const atual = await tx.quadra.findUnique({ where: { id } });
+        if (!atual) throw new NotFoundException("Quadra não encontrada.");
+        await tx.quadra.update({ where: { id }, data: dados });
+        await this.auditoria.registrar(
+          {
+            acao: "QUADRA_ALTERADA",
+            atorId: ator.id,
+            ip: ator.ip,
+            alvoTipo: "Quadra",
+            alvoId: id,
+            detalhes: { de: { nome: atual.nome, ativa: atual.ativa }, para: dados },
+          },
+          tx,
+        );
+        return { id, ...dados };
       });
     } catch (erro) {
       if (ehUnico(erro)) throw new ConflictException("Já existe uma quadra com esse nome.");
@@ -86,13 +133,14 @@ export class HorariosService {
 
   // ---------- Grade (FOCO-CA-05) ----------
 
-  async grade(dataPedida?: string) {
+  async grade(dataPedida?: string, quadraId?: string) {
     const data = dataPedida ?? hojeEmSaoPaulo(new Date());
     const dia = paraDataDoBanco(data);
-    const [quadra, turmas, bloqueios] = await Promise.all([
-      this.quadra(),
+    const quadra = await this.quadra(quadraId);
+    const [turmas, bloqueios] = await Promise.all([
       this.prisma.turma.findMany({
         where: {
+          quadraId: quadra.id,
           inicio: { lte: dia },
           diaSemana: diaDaSemana(data),
           // Encerrada no dia D: dá aula até o dia anterior.
@@ -121,7 +169,7 @@ export class HorariosService {
         },
       }),
       this.prisma.bloqueio.findMany({
-        where: { data: dia, canceladoEm: null },
+        where: { quadraId: quadra.id, data: dia, canceladoEm: null },
         orderBy: { horaInicio: "asc" },
         select: { id: true, horaInicio: true, horaFim: true, motivo: true, serieId: true },
       }),
@@ -153,6 +201,7 @@ export class HorariosService {
     const b = await this.prisma.bloqueio.findUnique({
       where: { id },
       include: {
+        quadra: { select: { id: true, nome: true } },
         criadoPor: { select: { nome: true } },
         canceladoPor: { select: { nome: true } },
         serie: { select: { id: true, dataInicio: true, dataFim: true, encerradaEm: true } },
@@ -162,6 +211,7 @@ export class HorariosService {
     const data = deDataDoBanco(b.data);
     return {
       id: b.id,
+      quadra: b.quadra,
       data,
       horaInicio: b.horaInicio,
       horaFim: b.horaFim,
@@ -207,18 +257,21 @@ export class HorariosService {
 
     try {
       return await this.prisma.$transaction(async (tx) => {
-        await travarAgenda(tx);
+        const quadra = await tx.quadra.findUnique({ where: { id: dados.quadraId } });
+        if (!quadra || !quadra.ativa) throw new BadRequestException("Escolha uma quadra ativa.");
+        await travarAgenda(tx, quadra.id);
         const comAula = datasComAula(
           datas,
           horaInicio,
           horaFim,
-          await turmasNaAgenda(tx, { ativas: true }),
+          await turmasNaAgenda(tx, { quadraId: quadra.id, ativas: true }),
         );
         if (comAula.length > 0) {
           throw new ConflictException(`Tem aula nesse horário em ${listaDeDatas(comAula)}.`);
         }
         const ocupadas = await tx.bloqueio.findMany({
           where: {
+            quadraId: quadra.id,
             data: { in: datas.map(paraDataDoBanco) },
             canceladoEm: null,
             horaInicio: { lt: horaFim },
@@ -237,6 +290,7 @@ export class HorariosService {
           await tx.serieBloqueio.create({
             data: {
               id: serieId,
+              quadraId: quadra.id,
               diaSemana,
               horaInicio,
               horaFim,
@@ -249,6 +303,7 @@ export class HorariosService {
         }
         const criados = await tx.bloqueio.createManyAndReturn({
           data: datas.map((data) => ({
+            quadraId: quadra.id,
             data: paraDataDoBanco(data),
             horaInicio,
             horaFim,
@@ -265,7 +320,7 @@ export class HorariosService {
             ip: ator.ip,
             alvoTipo: serieId ? "SerieBloqueio" : "Bloqueio",
             alvoId: serieId ?? criados[0]?.id,
-            detalhes: { datas, horaInicio, horaFim, motivo },
+            detalhes: { quadraId: quadra.id, datas, horaInicio, horaFim, motivo },
           },
           tx,
         );
@@ -313,11 +368,13 @@ export class HorariosService {
       where: { encerradaEm: null, dataFim: { gte: hoje } },
       orderBy: [{ diaSemana: "asc" }, { horaInicio: "asc" }],
       include: {
+        quadra: { select: { id: true, nome: true } },
         bloqueios: { where: { canceladoEm: null, data: { gte: hoje } }, select: { id: true } },
       },
     });
     return series.map((s) => ({
       id: s.id,
+      quadra: s.quadra,
       diaSemana: s.diaSemana,
       horaInicio: s.horaInicio,
       horaFim: s.horaFim,

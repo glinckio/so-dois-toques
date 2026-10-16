@@ -2,10 +2,16 @@ import { formatarData } from "@/lib/aulas/formatacao";
 import { competenciaValida, FORMAS } from "@/lib/mensalidades/formatacao";
 import type { LancamentoExportado } from "./tipos";
 
-/** O livro-razão só tem mensalidades e estornos (Etapa 14). */
+/** As categorias do livro-razão na planilha (GASTO-CA-08). */
 export const CATEGORIAS: Record<string, string> = {
   MENSALIDADE: "Mensalidade",
   ESTORNO: "Estorno",
+  SALDO_INICIAL: "Saldo inicial",
+  ALUGUEL_MENSAL: "Aluguel mensal de quadra",
+  LOCACAO_AVULSA: "Locação avulsa de quadra",
+  EQUIPAMENTO: "Equipamento",
+  INVESTIMENTO: "Investimento",
+  OUTRO_GASTO: "Outro gasto",
 };
 
 export function nomeDaCategoria(categoria: string): string {

@@ -17,7 +17,10 @@ const TELAS = [
   "/horarios",
   "/horarios/bloquear",
   "/horarios/semanais",
+  "/horarios/quadras",
   "/contabil",
+  "/contabil/gastos",
+  "/contabil/contratos",
   "/usuarios",
   "/auditoria",
   "/trocar-senha",
@@ -272,9 +275,7 @@ test("VIVO-CA-12: anéis, roscas e barras têm texto para leitor de tela", async
   expect(await semRotulo()).toEqual([]);
 
   await page.goto("/contabil");
-  await expect(
-    page.getByRole("img", { name: /Recebido e estornos por mês/ }).first(),
-  ).toBeAttached();
+  await expect(page.getByRole("img", { name: /Recebido e saídas por mês/ }).first()).toBeAttached();
   await expect(page.getByRole("table", { name: "Formas de pagamento" })).toBeVisible();
   await expect(page.getByRole("table", { name: "Comparativo mensal" })).toBeVisible();
   expect(await semRotulo()).toEqual([]);

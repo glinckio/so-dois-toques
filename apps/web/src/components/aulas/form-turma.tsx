@@ -16,6 +16,8 @@ import {
   type Nivel,
 } from "@/lib/aulas/formatacao";
 import type { TurmaResumo } from "@/lib/aulas/tipos";
+import { SeletorDeQuadra } from "@/components/horarios/seletor-de-quadra";
+import type { Quadra } from "@/lib/horarios/tipos";
 import { GrupoDoFormulario } from "./grupo-do-formulario";
 import { SinalDoNivel } from "./selo-nivel";
 
@@ -26,10 +28,17 @@ const DICAS_DO_NIVEL: Record<Nivel, string> = {
 };
 
 /**
- * TURMA-CA-01: a turma é um dia, um horário, um nível e as vagas. Quem treina mais de
- * uma vez por semana é matriculado em mais de uma turma.
+ * TURMA-CA-01 e GASTO-CA-02: a turma é uma quadra, um dia, um horário, um nível e as
+ * vagas. Quem treina mais de uma vez por semana é matriculado em mais de uma turma.
  */
-export function FormTurma({ turma }: { turma?: TurmaResumo }) {
+export function FormTurma({
+  turma,
+  quadras,
+}: {
+  turma?: TurmaResumo;
+  /** Quadras ativas, mais a da turma se ela estiver desativada. */
+  quadras: readonly Quadra[];
+}) {
   const [estado, acao, enviando] = useActionState(salvarTurma, ESTADO_INICIAL);
   // Depois de um erro, os campos voltam ao que foi digitado, não à turma salva.
   const valor = (campo: string, salvo?: string | number) =>
@@ -56,11 +65,16 @@ export function FormTurma({ turma }: { turma?: TurmaResumo }) {
       {turma && <input type="hidden" name="id" value={turma.id} />}
 
       <GrupoDoFormulario
-        legenda="Dia e horário"
+        legenda="Quadra, dia e horário"
         icone="relogio"
         tom="ouro"
-        dica="Duas turmas não dividem o mesmo horário da quadra."
+        dica="Duas turmas não dividem o mesmo horário na mesma quadra."
       >
+        <SeletorDeQuadra
+          quadras={quadras}
+          padrao={valor("quadraId", turma?.quadraId)}
+          className="sm:col-span-2"
+        />
         <div className="flex flex-col gap-1.5 sm:col-span-2">
           <label htmlFor="diaSemana" className={classeRotulo}>
             Dia da semana

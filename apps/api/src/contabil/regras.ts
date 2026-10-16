@@ -1,4 +1,5 @@
 import { dataValida } from "../aulas/regras.js";
+import { ehTipoDeSaida, TIPOS_DE_SAIDA, type TipoDeSaida } from "../gastos/regras.js";
 import { somarDias } from "../horarios/regras.js";
 import { competenciaDe, primeiroDia, proximaCompetencia } from "../mensalidades/regras.js";
 
@@ -16,8 +17,14 @@ export type ResumoFinanceiro = {
   recebido: number;
   /** Estornos de mensalidade feitos no período. */
   estornos: number;
+  /** GASTO-CA-08: cada tipo de saída, já descontados os estornos dele. */
+  gastos: Record<TipoDeSaida, number>;
+  totalGastos: number;
+  /** Mensalidades (menos estornos) menos os gastos. */
   resultado: number;
-  /** Lançamento que não é mensalidade nem estorno; entra só na conferência. */
+  /** Saldo inicial do caixa: aparece à parte e não é receita. */
+  saldoInicial: number;
+  /** Lançamento que não é de nenhum tipo conhecido; entra só na conferência. */
   naoClassificado: number;
   entradas: number;
   saidas: number;
@@ -31,31 +38,46 @@ export function porcentagem(parte: number, total: number): number | null {
 }
 
 /**
- * FOCO-CA-09: o livro-razão só tem mensalidades (entradas) e estornos de mensalidade
- * (saídas). O resultado é o recebido menos os estornos e confere com entradas − saídas.
+ * FOCO-CA-09 e GASTO-CA-08: entradas são as mensalidades (menos os estornos delas);
+ * saídas são os gastos por tipo, e o estorno de um gasto é uma entrada do mesmo tipo,
+ * que desconta dele. O saldo inicial fica à parte. O resultado confere com
+ * entradas − saídas do livro-razão.
  */
 export function resumoFinanceiro(lancamentos: readonly LancamentoContabil[]): ResumoFinanceiro {
   let recebido = 0;
   let estornos = 0;
+  let saldoInicial = 0;
   let naoClassificado = 0;
   let entradas = 0;
   let saidas = 0;
+  const gastos = Object.fromEntries(TIPOS_DE_SAIDA.map((t) => [t, 0])) as Record<
+    TipoDeSaida,
+    number
+  >;
   for (const l of lancamentos) {
+    const sinal = l.tipo === "ENTRADA" ? 1 : -1;
     if (l.tipo === "ENTRADA") entradas += l.valorCentavos;
     else saidas += l.valorCentavos;
     if (l.tipo === "ENTRADA" && l.categoria === "MENSALIDADE") recebido += l.valorCentavos;
     else if (l.tipo === "SAIDA" && l.categoria === "ESTORNO") estornos += l.valorCentavos;
-    else naoClassificado += l.tipo === "ENTRADA" ? l.valorCentavos : -l.valorCentavos;
+    else if (l.tipo === "ENTRADA" && l.categoria === "SALDO_INICIAL")
+      saldoInicial += l.valorCentavos;
+    else if (ehTipoDeSaida(l.categoria)) gastos[l.categoria] -= sinal * l.valorCentavos;
+    else naoClassificado += sinal * l.valorCentavos;
   }
-  const resultado = recebido - estornos;
+  const totalGastos = TIPOS_DE_SAIDA.reduce((total, t) => total + gastos[t], 0);
+  const resultado = recebido - estornos - totalGastos;
   return {
     recebido,
     estornos,
+    gastos,
+    totalGastos,
     resultado,
+    saldoInicial,
     naoClassificado,
     entradas,
     saidas,
-    confere: resultado + naoClassificado === entradas - saidas,
+    confere: resultado + saldoInicial + naoClassificado === entradas - saidas,
   };
 }
 

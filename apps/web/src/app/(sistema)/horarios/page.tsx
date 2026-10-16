@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { connection } from "next/server";
 import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { FaixaDeDias } from "@/components/base/faixa-de-dias";
 import { AgendaDaQuadra } from "@/components/horarios/agenda-da-quadra";
-import { FormQuadra } from "@/components/horarios/form-quadra";
+import { EscolhaDaQuadra } from "@/components/horarios/escolha-da-quadra";
 import { ResumoDoDia } from "@/components/horarios/resumo-do-dia";
 import { Icone } from "@/components/icones";
-import { Aviso, classeBotaoIcone, classeCampo } from "@/components/ui";
+import { Aviso, classeBotaoIcone, classeBotaoSecundario, classeCampo } from "@/components/ui";
 import { DIAS_SEMANA, formatarData, hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
 import { agendaDoDia } from "@/lib/horarios/agenda";
-import type { Grade } from "@/lib/horarios/tipos";
+import type { Grade, Quadra } from "@/lib/horarios/tipos";
 import { minutoEmSaoPaulo } from "@/lib/painel/inicio";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
@@ -18,8 +19,11 @@ export const metadata: Metadata = { title: "Horários | Só Dois Toques" };
 
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
- * FOCO-CA-05 e 08: a agenda do dia da quadra, com as aulas das turmas e os bloqueios.
+ * FOCO-CA-05 e 08, GASTO-CA-02: a agenda do dia de uma quadra, com as aulas das turmas
+ * e os bloqueios; as quadras ativas aparecem no topo para trocar.
  * A faixa de dias escolhe a data e o resumo mostra a ocupação e a legenda. Todos os
  * perfis veem; só o administrador bloqueia.
  */
@@ -27,11 +31,19 @@ export default async function PaginaAgenda({ searchParams }: PageProps<"/horario
   await connection();
   const { usuario } = await exigirArea("horarios");
   const admin = usuario.perfil === "ADMINISTRADOR";
-  const { data: pedida } = await searchParams;
+  const { data: pedida, quadra: quadraPedida } = await searchParams;
   const agora = new Date();
   const hoje = hojeEmSaoPaulo(agora);
   const data = typeof pedida === "string" && DATA.test(pedida) ? pedida : hoje;
-  const resposta = await chamarApi<Grade>(`/horarios/grade?data=${data}`);
+  const quadraId =
+    typeof quadraPedida === "string" && UUID.test(quadraPedida) ? quadraPedida : null;
+  const [resposta, quadras] = await Promise.all([
+    chamarApi<Grade>(`/horarios/grade?data=${data}${quadraId ? `&quadra=${quadraId}` : ""}`),
+    chamarApi<Quadra[]>("/horarios/quadras"),
+  ]);
+  const ativas = quadras.ok ? quadras.dados.filter((q) => q.ativa) : [];
+  const atual = resposta.ok ? resposta.dados.quadra.id : (quadraId ?? "");
+  const parametros = quadraId ? `&quadra=${quadraId}` : "";
   const agenda = resposta.ok ? agendaDoDia(resposta.dados, hoje, minutoEmSaoPaulo(agora)) : null;
 
   return (
@@ -53,6 +65,7 @@ export default async function PaginaAgenda({ searchParams }: PageProps<"/horario
         testIdDescricao="dia-da-grade"
         acoes={
           <form action="/horarios" className="flex items-center gap-2">
+            {quadraId && <input type="hidden" name="quadra" value={quadraId} />}
             <label htmlFor="ir-para-data" className="sr-only">
               Ir para a data
             </label>
@@ -72,8 +85,10 @@ export default async function PaginaAgenda({ searchParams }: PageProps<"/horario
         }
       />
 
+      {ativas.length > 1 && <EscolhaDaQuadra quadras={ativas} atual={atual} data={data} />}
+
       <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-        <FaixaDeDias data={data} hoje={hoje} caminho="/horarios" />
+        <FaixaDeDias data={data} hoje={hoje} caminho="/horarios" parametros={parametros} />
         {agenda && <ResumoDoDia agenda={agenda} />}
       </div>
 
@@ -98,6 +113,7 @@ export default async function PaginaAgenda({ searchParams }: PageProps<"/horario
           </div>
           <AgendaDaQuadra
             agenda={agenda}
+            quadraId={resposta.dados.quadra.id}
             data={data}
             admin={admin}
             linkDaTurma={usuario.areas.includes("aulas")}
@@ -105,16 +121,13 @@ export default async function PaginaAgenda({ searchParams }: PageProps<"/horario
         </section>
       )}
 
-      {admin && resposta.ok && (
-        <details className="group superficie max-w-xl rounded-[1.5rem] p-4">
-          <summary className="text-suave hover:text-texto flex min-h-10 list-none items-center gap-2 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+      {admin && (
+        <div>
+          <Link href="/horarios/quadras" className={classeBotaoSecundario}>
             <Icone nome="editar" width={16} height={16} />
-            Mudar o nome da quadra
-          </summary>
-          <div className="animate-entrar pt-3">
-            <FormQuadra quadra={resposta.dados.quadra} />
-          </div>
-        </details>
+            Quadras alugadas
+          </Link>
+        </div>
       )}
     </>
   );

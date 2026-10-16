@@ -11,6 +11,9 @@ export default async function LayoutHorarios({ children }: LayoutProps<"/horario
       ? [{ href: "/horarios/bloquear", rotulo: "Bloquear horário" }]
       : []),
     { href: "/horarios/semanais", rotulo: "Bloqueios semanais" },
+    ...(usuario.perfil === "ADMINISTRADOR"
+      ? [{ href: "/horarios/quadras", rotulo: "Quadras" }]
+      : []),
   ];
   return (
     <div className="flex flex-col gap-6">

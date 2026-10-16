@@ -109,6 +109,7 @@ export const consultaAlunosSchema = z.object({
 /** TURMA-CA-01 e 08: dia da semana, início e fim (minutos, 05:00 às 23:59), nível, categoria e vagas. */
 export const turmaSchema = z
   .object({
+    quadraId: z.uuid("Escolha a quadra."),
     diaSemana: z
       .number()
       .int()

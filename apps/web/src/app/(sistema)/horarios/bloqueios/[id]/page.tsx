@@ -38,7 +38,7 @@ export default async function PaginaBloqueio({
   return (
     <>
       <Cabecalho
-        etiqueta="Bloqueio"
+        etiqueta={b.quadra.nome}
         icone="bloqueio"
         titulo={
           <>
@@ -47,7 +47,10 @@ export default async function PaginaBloqueio({
         }
         descricao={`${dia} · ${faixaDeHoras(b.horaInicio, b.horaFim)}`}
         acoes={
-          <Link href={`/horarios?data=${b.data}`} className={classeBotaoSecundario}>
+          <Link
+            href={`/horarios?data=${b.data}&quadra=${b.quadra.id}`}
+            className={classeBotaoSecundario}
+          >
             <Icone nome="grade" width={18} height={18} />
             Ver na agenda
           </Link>

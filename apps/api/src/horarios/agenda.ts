@@ -6,18 +6,21 @@ import type { TurmaNaAgenda } from "./regras.js";
 type Cliente = Prisma.TransactionClient | PrismaService;
 
 /**
- * Turmas, bloqueios e o nome da quadra dividem uma só agenda. Quem cria ou muda turma
- * ou bloqueio trava a agenda até o fim da transação, para que duas mudanças ao mesmo
- * tempo não ocupem o mesmo horário (FOCO-CA-04 e 06).
+ * Turmas e bloqueios de uma quadra dividem a agenda dela. Quem cria ou muda turma ou
+ * bloqueio trava a agenda daquela quadra até o fim da transação, para que duas mudanças
+ * ao mesmo tempo não ocupem o mesmo horário (FOCO-CA-04 e 06, GASTO-CA-02).
  */
-export async function travarAgenda(tx: Prisma.TransactionClient) {
-  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('agenda-quadra'))`;
+export async function travarAgenda(tx: Prisma.TransactionClient, quadraId: string) {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`agenda-quadra:${quadraId}`}))`;
 }
 
 /** Turmas que dão aula a partir de `desde` (as encerradas antes disso ficam de fora). */
-export async function turmasNaAgenda(cliente: Cliente, filtro: { ativas?: boolean } = {}) {
+export async function turmasNaAgenda(
+  cliente: Cliente,
+  filtro: { quadraId: string; ativas?: boolean },
+) {
   const turmas = await cliente.turma.findMany({
-    where: filtro.ativas ? { ativa: true } : {},
+    where: { quadraId: filtro.quadraId, ...(filtro.ativas ? { ativa: true } : {}) },
     select: {
       id: true,
       nivel: true,

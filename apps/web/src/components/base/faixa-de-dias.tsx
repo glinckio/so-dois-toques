@@ -14,6 +14,7 @@ export function FaixaDeDias({
   caminho,
   rotulo = "Escolher dia",
   ateHoje = false,
+  parametros = "",
 }: {
   data: string;
   hoje: string;
@@ -22,9 +23,11 @@ export function FaixaDeDias({
   rotulo?: string;
   /** Não deixa escolher dias depois de hoje (caixa). */
   ateHoje?: boolean;
+  /** Outros parâmetros mantidos ao trocar de dia ("&quadra=..."). */
+  parametros?: string;
 }) {
   const semana = semanaDe(data);
-  const href = (d: string) => `${caminho}?data=${d}`;
+  const href = (d: string) => `${caminho}?data=${d}${parametros}`;
   const anterior = deslocar(data, -7);
   const proxima = deslocar(data, 7);
   const mes = nomeDoMes(data.slice(0, 7));

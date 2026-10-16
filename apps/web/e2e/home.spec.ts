@@ -17,7 +17,7 @@ test("FUND-CA-01 e FOCO-CA-10: a página inicial abre em português com os módu
   await expect(
     page.getByRole("heading", { level: 1, name: `Olá, ${ADMIN_E2E.nome}.` }),
   ).toBeVisible();
-  for (const modulo of ["Recebido e estornos", "Aulas de hoje", "Mensalidades em atraso"]) {
+  for (const modulo of ["Recebido e saídas", "Aulas de hoje", "Mensalidades em atraso"]) {
     await expect(page.getByRole("heading", { level: 2, name: modulo })).toBeVisible();
   }
   for (const fora of ["Caixa de hoje", "Quadras hoje", "Estoque"]) {

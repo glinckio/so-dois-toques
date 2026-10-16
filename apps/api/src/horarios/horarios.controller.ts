@@ -15,7 +15,12 @@ import { ExigeArea, IpCliente, SomenteAdministrador, UsuarioAtual } from "../com
 import type { UsuarioAutenticado } from "../comum/requisicao.js";
 import { ZodPipe } from "../comum/zod.pipe.js";
 import { motivoSchema } from "../mensalidades/esquemas.js";
-import { bloqueioSchema, consultaGradeSchema, quadraSchema } from "./esquemas.js";
+import {
+  alterarQuadraSchema,
+  bloqueioSchema,
+  consultaGradeSchema,
+  quadraSchema,
+} from "./esquemas.js";
 import { HorariosService } from "./horarios.service.js";
 
 const ator = (u: UsuarioAutenticado, ip?: string): Ator => ({ id: u.id, perfil: u.perfil, ip });
@@ -26,24 +31,35 @@ const ator = (u: UsuarioAutenticado, ip?: string): Ator => ({ id: u.id, perfil: 
 export class HorariosController {
   constructor(private readonly horarios: HorariosService) {}
 
-  @Get("quadra")
-  quadra() {
-    return this.horarios.quadra();
+  @Get("quadras")
+  quadras() {
+    return this.horarios.quadras();
   }
 
   @SomenteAdministrador()
-  @Patch("quadra")
-  renomearQuadra(
+  @Post("quadras")
+  criarQuadra(
     @Body(new ZodPipe(quadraSchema)) dados: z.infer<typeof quadraSchema>,
     @UsuarioAtual() usuario: UsuarioAutenticado,
     @IpCliente() ip: string | undefined,
   ) {
-    return this.horarios.renomearQuadra(ator(usuario, ip), dados.nome);
+    return this.horarios.criarQuadra(ator(usuario, ip), dados.nome);
+  }
+
+  @SomenteAdministrador()
+  @Patch("quadras/:id")
+  alterarQuadra(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(alterarQuadraSchema)) dados: z.infer<typeof alterarQuadraSchema>,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+    @IpCliente() ip: string | undefined,
+  ) {
+    return this.horarios.alterarQuadra(ator(usuario, ip), id, dados);
   }
 
   @Get("grade")
   grade(@Query(new ZodPipe(consultaGradeSchema)) filtro: z.infer<typeof consultaGradeSchema>) {
-    return this.horarios.grade(filtro.data);
+    return this.horarios.grade(filtro.data, filtro.quadra);
   }
 
   @SomenteAdministrador()

@@ -141,7 +141,6 @@ describe("Inventário de rotas da API (LANC-CA-03)", () => {
       "POST /custos/pagamentos",
       "GET /horarios/faixas",
       "POST /horarios/reservas",
-      "GET /horarios/quadras",
       "GET /horarios/clientes/anonimizaveis",
       "POST /horarios/clientes/anonimizar",
     ];

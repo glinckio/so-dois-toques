@@ -53,7 +53,7 @@ test("VIS-CA-04: o Início do administrador mostra o mês e o gráfico de 12 mes
   const grafico = page.getByTestId("grafico-mensal");
   await expect(grafico).toBeVisible();
   await expect(grafico.getByText("Recebido", { exact: true })).toBeVisible();
-  await expect(grafico.getByText("Estornos", { exact: true })).toBeVisible();
+  await expect(grafico.getByText("Saídas", { exact: true })).toBeVisible();
 
   await page.getByText("Ver em tabela").click();
   const tabela = page.getByRole("table", { name: "Comparativo mensal" });

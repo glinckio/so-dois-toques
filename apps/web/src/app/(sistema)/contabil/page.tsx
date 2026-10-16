@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { connection } from "next/server";
 import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { Cartao, CabecalhoCartao } from "@/components/base/cartao";
@@ -17,7 +18,14 @@ import {
 } from "@/components/ui";
 import { mesCurto } from "@/lib/graficos/escala";
 import { consultaDoPeriodo, descreverPeriodo } from "@/lib/contabil/formatacao";
-import { mesesDoGrafico, NOMES_DO_GRAFICO, type Painel } from "@/lib/contabil/tipos";
+import {
+  mesesDoGrafico,
+  NOMES_DO_GRAFICO,
+  TIPOS_DE_SAIDA,
+  type Painel,
+  type TipoDeSaida,
+} from "@/lib/contabil/tipos";
+import { formatarData } from "@/lib/aulas/formatacao";
 import {
   competenciaAtual,
   deslocarMes,
@@ -32,7 +40,10 @@ export const metadata: Metadata = { title: "Contábil | Só Dois Toques" };
 
 const numero = "text-right tabular-nums";
 
-/** FOCO-CA-09: painel das mensalidades no período, só para o administrador (CONT-CA-10). */
+/**
+ * FOCO-CA-09 e GASTO-CA-08: mensalidades, gastos por tipo, resultado e saldo em caixa no
+ * período, só para o administrador (CONT-CA-10).
+ */
 export default async function PaginaContabil({ searchParams }: PageProps<"/contabil">) {
   await connection();
   const { permitido } = await exigirArea("contabil");
@@ -55,7 +66,7 @@ export default async function PaginaContabil({ searchParams }: PageProps<"/conta
             <Destaque>Contábil</Destaque> do Só Dois Toques
           </>
         }
-        descricao="Mensalidades recebidas, estornos e o que falta receber, pelo dia em que o dinheiro entrou ou saiu."
+        descricao="Mensalidades recebidas, gastos, resultado e o saldo em caixa, pelo dia em que o dinheiro entrou ou saiu."
         acoes={
           resposta.ok && (
             <a
@@ -172,7 +183,20 @@ function Conteudo({ painel: p }: { painel: Painel }) {
   const vencidas = p.aReceber.quantidade;
   return (
     <>
-      <section aria-label="Resumo" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Resumo" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <CartaoNumero
+          rotulo="Saldo em caixa"
+          icone="dinheiro"
+          tom="sucesso"
+          valor={p.caixa.saldoCentavos}
+          nota={
+            p.caixa.saldoInicial
+              ? `Hoje, a partir de ${formatarReais(p.caixa.saldoInicial.valorCentavos)} em ${formatarData(p.caixa.saldoInicial.data)}`
+              : "Hoje, soma de tudo que entrou e saiu"
+          }
+          testId="indicador-Saldo-em-caixa"
+          destaque
+        />
         <CartaoNumero
           rotulo="Recebido"
           icone="subir"
@@ -188,8 +212,18 @@ function Conteudo({ painel: p }: { painel: Painel }) {
           tom="ouro"
           valor={p.estornos}
           serie={p.comparativo.map((m) => m.estornos)}
-          nota="Pagamentos devolvidos no período"
+          nota="Mensalidades devolvidas no período"
           testId="indicador-Estornos"
+          subirEhRuim
+        />
+        <CartaoNumero
+          rotulo="Gastos"
+          icone="descer"
+          tom="perigo"
+          valor={p.totalGastos}
+          serie={p.comparativo.map((m) => m.gastos)}
+          nota="Quadras, equipamentos, investimentos e outros"
+          testId="indicador-Gastos"
           subirEhRuim
         />
         <CartaoNumero
@@ -198,9 +232,8 @@ function Conteudo({ painel: p }: { painel: Painel }) {
           tom="sucesso"
           valor={p.resultado}
           serie={p.comparativo.map((m) => m.resultado)}
-          nota="Recebido menos estornos"
+          nota="Recebido menos estornos e gastos"
           testId="indicador-Resultado"
-          destaque
         />
         <CartaoNumero
           rotulo="A receber"
@@ -211,6 +244,44 @@ function Conteudo({ painel: p }: { painel: Painel }) {
           testId="indicador-A-receber"
         />
       </section>
+
+      <Cartao aria-labelledby="titulo-saidas" className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <CabecalhoCartao
+            id="titulo-saidas"
+            icone="descer"
+            titulo="Saídas por tipo"
+            descricao="O que saiu do caixa no período, já descontados os estornos"
+          />
+          <Link href="/contabil/gastos" className={classeBotaoSecundario}>
+            <Icone nome="mais" width={16} height={16} />
+            Lançar gasto
+          </Link>
+        </div>
+        <table
+          className="w-full border-separate border-spacing-y-1.5 text-sm"
+          aria-label="Saídas por tipo"
+        >
+          <tbody>
+            {(Object.keys(TIPOS_DE_SAIDA) as TipoDeSaida[]).map((tipo) => (
+              <tr key={tipo}>
+                <th scope="row" className="text-left font-semibold">
+                  {TIPOS_DE_SAIDA[tipo]}
+                </th>
+                <td className={`${numero} text-perigo`}>{formatarReais(p.gastos[tipo])}</td>
+              </tr>
+            ))}
+            <tr>
+              <th scope="row" className="border-borda border-t pt-2 text-left font-bold">
+                Total
+              </th>
+              <td className={`${numero} border-borda border-t pt-2 font-bold`}>
+                {formatarReais(p.totalGastos)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </Cartao>
 
       <Conferencia painel={p} />
 
@@ -272,7 +343,7 @@ function Conteudo({ painel: p }: { painel: Painel }) {
           id="titulo-12-meses"
           icone="contabil"
           titulo="Últimos 12 meses"
-          descricao="Mensalidades recebidas e estornos de cada mês, regime de caixa"
+          descricao="Mensalidades recebidas e saídas (estornos e gastos) de cada mês, regime de caixa"
         />
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:items-start">
           <BarrasMensais meses={meses} nomes={NOMES_DO_GRAFICO} />
@@ -290,6 +361,9 @@ function Conteudo({ painel: p }: { painel: Painel }) {
 function Conferencia({ painel: p }: { painel: Painel }) {
   const termos: { rotulo: string; valor: number; sinal?: string }[] = [
     { rotulo: "Resultado", valor: p.resultado },
+    ...(p.saldoInicial !== 0
+      ? [{ rotulo: "Saldo inicial", valor: p.saldoInicial, sinal: "+" }]
+      : []),
     ...(p.naoClassificado !== 0
       ? [{ rotulo: "Outros", valor: p.naoClassificado, sinal: "+" }]
       : []),

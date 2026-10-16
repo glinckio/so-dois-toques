@@ -26,8 +26,9 @@ import {
 
 type Tx = Prisma.TransactionClient;
 
-/** TURMA-CA-01: a turma é um dia, um horário (minutos), um nível e as vagas. */
+/** TURMA-CA-01 e GASTO-CA-02: a turma é uma quadra, um dia, um horário (minutos), um nível e as vagas. */
 export type DadosTurma = {
+  quadraId: string;
   diaSemana: number;
   horaInicio: number;
   horaFim: number;
@@ -36,7 +37,8 @@ export type DadosTurma = {
   vagas: number;
 };
 
-type TurmaDoBanco = Prisma.TurmaGetPayload<object>;
+const COM_QUADRA = { quadra: { select: { id: true, nome: true } } } as const;
+type TurmaDoBanco = Prisma.TurmaGetPayload<{ include: typeof COM_QUADRA }>;
 
 export const MENSAGEM_SEM_VAGAS = "Turma sem vagas";
 const MENSAGEM_TURMA_ENCERRADA = "Esta turma está encerrada.";
@@ -63,6 +65,7 @@ export class TurmasService {
   async listar(situacao: "ativas" | "encerradas" | "todas") {
     const turmas = await this.prisma.turma.findMany({
       where: situacao === "todas" ? {} : { ativa: situacao === "ativas" },
+      include: COM_QUADRA,
       orderBy: [{ ativa: "desc" }, { diaSemana: "asc" }, { horaInicio: "asc" }],
     });
     const ocupadas = await this.ocupadas(
@@ -75,6 +78,8 @@ export class TurmasService {
   private resumo(t: TurmaDoBanco, ocupadas: number) {
     return {
       id: t.id,
+      quadraId: t.quadraId,
+      quadra: t.quadra,
       diaSemana: t.diaSemana,
       horaInicio: t.horaInicio,
       horaFim: t.horaFim,
@@ -90,7 +95,7 @@ export class TurmasService {
   }
 
   private async turmaPorId(id: string) {
-    const turma = await this.prisma.turma.findUnique({ where: { id } });
+    const turma = await this.prisma.turma.findUnique({ where: { id }, include: COM_QUADRA });
     if (!turma) throw new NotFoundException("Turma não encontrada.");
     return turma;
   }
@@ -113,14 +118,25 @@ export class TurmasService {
   }
 
   /**
-   * TURMA-CA-02, FOCO-CA-04 e 06: o horário não divide a quadra com outra turma ativa
-   * nem cai sobre bloqueio a partir de hoje.
+   * TURMA-CA-02, FOCO-CA-04 e 06, GASTO-CA-02: o horário não divide a quadra com outra
+   * turma ativa nem cai sobre bloqueio dela a partir de hoje. Quadra desativada não
+   * recebe turma (GASTO-CA-01); a turma que já está nela pode continuar.
    */
-  private async validarTurma(tx: Tx, dados: DadosTurma, turmaId: string | null) {
+  private async validarTurma(
+    tx: Tx,
+    dados: DadosTurma,
+    atual: { id: string; quadraId: string } | null,
+  ) {
+    const quadra = await tx.quadra.findUnique({ where: { id: dados.quadraId } });
+    if (!quadra || (!quadra.ativa && quadra.id !== atual?.quadraId)) {
+      throw new BadRequestException("Escolha uma quadra ativa.");
+    }
     const horario = horarioDaTurma(dados);
-    await travarAgenda(tx);
+    await travarAgenda(tx, quadra.id);
+    const turmaId = atual?.id;
     const existentes = await tx.turma.findMany({
       where: {
+        quadraId: quadra.id,
         ativa: true,
         diaSemana: dados.diaSemana,
         ...(turmaId ? { id: { not: turmaId } } : {}),
@@ -134,7 +150,11 @@ export class TurmasService {
       throw new ConflictException(`A quadra já tem a turma de ${descreverTurma(conflito.turma)}.`);
     }
     const bloqueios = await tx.bloqueio.findMany({
-      where: { canceladoEm: null, data: { gte: paraDataDoBanco(hojeEmSaoPaulo(new Date())) } },
+      where: {
+        quadraId: quadra.id,
+        canceladoEm: null,
+        data: { gte: paraDataDoBanco(hojeEmSaoPaulo(new Date())) },
+      },
       select: { data: true, horaInicio: true, horaFim: true },
     });
     const datas = datasDeBloqueioSobreHorarios(
@@ -181,7 +201,7 @@ export class TurmasService {
     return this.prisma.$transaction(async (tx) => {
       const atual = await this.travarTurma(tx, id);
       if (!atual.ativa) throw new ConflictException(MENSAGEM_TURMA_ENCERRADA);
-      await this.validarTurma(tx, dados, id);
+      await this.validarTurma(tx, dados, atual);
       const ocupadas = (await this.ocupadas(tx, [id])).get(id) ?? 0;
       if (dados.vagas < ocupadas) {
         throw new ConflictException(
@@ -198,6 +218,7 @@ export class TurmasService {
           alvoId: id,
           detalhes: {
             de: {
+              quadraId: atual.quadraId,
               diaSemana: atual.diaSemana,
               horaInicio: atual.horaInicio,
               horaFim: atual.horaFim,
