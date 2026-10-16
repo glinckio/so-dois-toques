@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { LinkVoltar } from "@/components/aulas/link-voltar";
 import { encerrarMatricula, encerrarTurma, matricular } from "@/app/acoes/aulas";
 import { SemanaDaTurma } from "@/components/aulas/horarios";
-import { SeloNivel } from "@/components/aulas/selo-nivel";
+import { SeloCategoria, SeloNivel } from "@/components/aulas/selo-nivel";
 import { Anel } from "@/components/base/anel";
 import { Avatar } from "@/components/base/avatar";
 import { Cartao, CabecalhoCartao } from "@/components/base/cartao";
@@ -84,6 +84,7 @@ export default async function PaginaTurma({
         <div className="relative flex min-w-0 flex-col gap-5">
           <div className="flex flex-wrap items-center gap-2">
             <SeloNivel nivel={turma.nivel} />
+            <SeloCategoria categoria={turma.categoria} />
             {!turma.ativa && <Selo tom="neutro">Turma encerrada</Selo>}
             {temAulaHoje && (
               <Selo tom="ouro" pulsar>

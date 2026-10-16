@@ -6,7 +6,15 @@ import { ESTADO_INICIAL } from "@/app/acoes/estado";
 import { BotaoEnviar } from "@/components/base/enviar";
 import { Icone } from "@/components/icones";
 import { Aviso, Campo, classeCampo, classeRotulo } from "@/components/ui";
-import { DIAS_SEMANA, horaDe, minutosDe, NIVEIS, type Nivel } from "@/lib/aulas/formatacao";
+import {
+  CATEGORIAS,
+  DIAS_SEMANA,
+  horaDe,
+  minutosDe,
+  NIVEIS,
+  type Categoria,
+  type Nivel,
+} from "@/lib/aulas/formatacao";
 import type { TurmaResumo } from "@/lib/aulas/tipos";
 import { GrupoDoFormulario } from "./grupo-do-formulario";
 import { SinalDoNivel } from "./selo-nivel";
@@ -34,6 +42,7 @@ export function FormTurma({ turma }: { turma?: TurmaResumo }) {
   const minutosFim = minutosDe(fim);
   const invertido = minutosInicio !== null && minutosFim !== null && minutosFim <= minutosInicio;
   const nivelEscolhido = valor("nivel", turma?.nivel ?? "INICIANTE");
+  const categoriaEscolhida = valor("categoria", turma?.categoria ?? "");
 
   return (
     <form
@@ -109,7 +118,7 @@ export function FormTurma({ turma }: { turma?: TurmaResumo }) {
         )}
       </GrupoDoFormulario>
 
-      <GrupoDoFormulario legenda="Nível e vagas" icone="aulas">
+      <GrupoDoFormulario legenda="Nível, categoria e vagas" icone="aulas">
         <fieldset className="flex flex-col gap-2 sm:col-span-2">
           <legend className="text-suave mb-1.5 text-sm font-medium">Nível</legend>
           <div className="grid grid-cols-3 gap-2">
@@ -132,6 +141,29 @@ export function FormTurma({ turma }: { turma?: TurmaResumo }) {
                   <SinalDoNivel nivel={n} />
                 </span>
                 <span className="text-apagado text-xs max-sm:hidden">{DICAS_DO_NIVEL[n]}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset className="flex flex-col gap-2 sm:col-span-2">
+          <legend className="text-suave mb-1.5 text-sm font-medium">Categoria</legend>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(CATEGORIAS) as Categoria[]).map((c) => (
+              <label
+                key={c}
+                htmlFor={`categoria-${c}`}
+                className="border-borda bg-elevado/40 has-checked:border-roxo has-checked:bg-roxo-forte/20 has-focus-visible:outline-ouro flex min-h-12 cursor-pointer items-center justify-center rounded-2xl border px-3 text-sm font-bold transition duration-200 hover:border-[#3a2f6b] active:scale-[0.98] has-focus-visible:outline-2 has-focus-visible:outline-offset-2"
+              >
+                <input
+                  id={`categoria-${c}`}
+                  type="radio"
+                  name="categoria"
+                  value={c}
+                  required
+                  defaultChecked={categoriaEscolhida === c}
+                  className="sr-only"
+                />
+                {CATEGORIAS[c]}
               </label>
             ))}
           </div>

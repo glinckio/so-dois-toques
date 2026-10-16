@@ -30,7 +30,7 @@ const CAMPOS_ALUNO = [
   "consentimento",
 ] as const;
 
-const CAMPOS_TURMA = ["diaSemana", "horaInicio", "horaFim", "nivel", "vagas"] as const;
+const CAMPOS_TURMA = ["diaSemana", "horaInicio", "horaFim", "nivel", "categoria", "vagas"] as const;
 
 export async function salvarAluno(_: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
   const alunoId = texto(form, "id");
@@ -98,6 +98,7 @@ export async function salvarTurma(_: EstadoFormulario, form: FormData): Promise<
     horaInicio,
     horaFim,
     nivel: texto(form, "nivel"),
+    categoria: texto(form, "categoria"),
     vagas: Number(texto(form, "vagas")),
   };
   const resposta = turmaId

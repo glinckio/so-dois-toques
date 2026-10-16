@@ -16,6 +16,14 @@ export const NIVEIS = {
 } as const;
 export type Nivel = keyof typeof NIVEIS;
 
+/** TURMA-CA-08: quem a turma recebe. */
+export const CATEGORIAS = {
+  MASCULINO: "Masculino",
+  MISTO: "Misto",
+  FEMININO: "Feminino",
+} as const;
+export type Categoria = keyof typeof CATEGORIAS;
+
 export type Horario = { diaSemana: number; inicio: number; fim: number };
 
 /** "21998765432" → "(21) 99876-5432". */

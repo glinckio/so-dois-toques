@@ -24,8 +24,13 @@ test("AULAS-CA-01, TURMA-CA-01, AULAS-CA-15, AULAS-CA-17 e TURMA-CA-05: da turma
   });
 
   // Turma com aula hoje: dia, horário, nível e vagas.
-  const { url: urlTurma, inicio } = await criarTurmaPelaTela(page, { vagas: 2 });
+  const { url: urlTurma, inicio } = await criarTurmaPelaTela(page, {
+    vagas: 2,
+    categoria: "Feminino",
+  });
   await expect(page.getByRole("heading", { level: 1 })).toContainText(inicio);
+  // TURMA-CA-08: a categoria aparece junto do nível.
+  await expect(page.getByText("Feminino", { exact: true }).first()).toBeVisible();
 
   // Aluno: sem consentimento é recusado; com consentimento, salvo.
   await page.goto("/aulas/alunos/novo");

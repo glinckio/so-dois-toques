@@ -22,7 +22,7 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 
 ## Aulas
 
-- **Turmas:** cada turma é um horário fixo da semana: um dia, o início e o fim, o nível e as vagas. Não tem nome nem professor; aparece como "Terça, 19:00 às 20:00 · Iniciante". Quem treina duas vezes por semana é matriculado em duas turmas. Duas turmas ativas não podem ter aula no mesmo horário. Abra a turma para matricular alunos (respeitando as vagas) e para a **presença**.
+- **Turmas:** cada turma é um horário fixo da semana: um dia, o início e o fim, o nível, a categoria (masculino, misto ou feminino) e as vagas. Não tem nome nem professor; aparece como "Terça, 19:00 às 20:00 · Iniciante · Misto". Quem treina duas vezes por semana é matriculado em duas turmas. Duas turmas ativas não podem ter aula no mesmo horário. Abra a turma para matricular alunos (respeitando as vagas) e para a **presença**.
 - **Presença (administrador e atendente):** abra a turma → Presença, escolha a data da aula e marque presente ou ausente. Dá para corrigir depois.
 - **Alunos (administrador):** cadastro com nome, telefone e consentimento obrigatórios; data de nascimento e contato de emergência são opcionais. Com a data informada, menor de 18 anos exige responsável. A busca acha por parte do nome (sem acento) ou do telefone. Na ficha do aluno ficam o plano, a exportação de dados e a anonimização (ver [LGPD](lgpd.md)).
 - **Planos:** valor mensal por quantidade de aulas na semana. Na ficha do aluno, escolha o plano, o dia de vencimento e um desconto, se houver.

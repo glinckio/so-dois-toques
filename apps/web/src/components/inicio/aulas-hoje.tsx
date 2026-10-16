@@ -5,7 +5,7 @@ import { Selo } from "@/components/base/selo";
 import { Vazio } from "@/components/base/vazio";
 import { Icone } from "@/components/icones";
 import { Aviso } from "@/components/ui";
-import { horaDe, NIVEIS } from "@/lib/aulas/formatacao";
+import { horaDe, NIVEIS, CATEGORIAS } from "@/lib/aulas/formatacao";
 import type { AulaNaGrade } from "@/lib/horarios/tipos";
 import { momentoDe } from "@/lib/painel/inicio";
 
@@ -95,7 +95,8 @@ export function AulasDeHoje({
                       <span
                         className={`truncate font-semibold ${momento === "passou" ? "text-suave" : ""}`}
                       >
-                        Turma {NIVEIS[turma.nivel].toLowerCase()}
+                        Turma {NIVEIS[turma.nivel].toLowerCase()} ·{" "}
+                        {CATEGORIAS[turma.categoria].toLowerCase()}
                       </span>
                       {momento === "agora" && (
                         <Selo tom="ouro" pulsar>

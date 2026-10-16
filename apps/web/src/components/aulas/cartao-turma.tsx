@@ -4,7 +4,7 @@ import { Selo } from "@/components/base/selo";
 import { DIAS_SEMANA, horaDe } from "@/lib/aulas/formatacao";
 import type { TurmaResumo } from "@/lib/aulas/tipos";
 import { aulaDoDia, horariosDaTurma } from "@/lib/aulas/visual";
-import { SeloNivel } from "./selo-nivel";
+import { SeloCategoria, SeloNivel } from "./selo-nivel";
 
 /**
  * Cartão da turma: o nível no selo com sinal de barras e os horários em
@@ -40,6 +40,7 @@ export function CartaoTurma({
         />
         <div className="relative flex flex-wrap items-center gap-2">
           <SeloNivel nivel={turma.nivel} />
+          <SeloCategoria categoria={turma.categoria} />
           {!turma.ativa && <Selo tom="neutro">Encerrada</Selo>}
           {hoje &&
             (agora ? (

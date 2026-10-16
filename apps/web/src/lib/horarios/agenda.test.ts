@@ -6,6 +6,7 @@ const aula = (turmaId: string, inicio: number, fim: number): AulaNaGrade => ({
   turmaId,
   nome: `Turma ${turmaId}`,
   nivel: "INICIANTE",
+  categoria: "MISTO",
   inicio,
   fim,
   vagas: 8,
@@ -71,7 +72,7 @@ describe("FOCO-CA-05: agenda da quadra na tela", () => {
     expect(agendaDoDia(grade(), "2026-10-20", 4 * 60).agora).toBeNull();
   });
 
-  it("FOCO-CA-05: descreve o bloco em texto", () => {
+  it("FOCO-CA-05 e TURMA-CA-08: descreve o bloco em texto, com nível e categoria", () => {
     const [primeiro, segundo] = agendaDoDia(
       grade({
         aulas: [aula("a", 18 * 60 + 30, 19 * 60 + 30)],
@@ -81,6 +82,6 @@ describe("FOCO-CA-05: agenda da quadra na tela", () => {
       0,
     ).blocos;
     expect(descreverBloco(primeiro!)).toBe("Bloqueado: Pintura, 07:00 às 09:00");
-    expect(descreverBloco(segundo!)).toBe("Aula Iniciante, 18:30 às 19:30, 5 de 8 alunos");
+    expect(descreverBloco(segundo!)).toBe("Aula Iniciante · Misto, 18:30 às 19:30, 5 de 8 alunos");
   });
 });

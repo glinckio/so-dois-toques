@@ -4,7 +4,7 @@ import { LinkVoltar } from "@/components/aulas/link-voltar";
 import { PilulasDeHorario } from "@/components/aulas/horarios";
 import { ListaPresenca } from "@/components/aulas/lista-presenca";
 import { SemanaDaPresenca } from "@/components/aulas/semana-da-presenca";
-import { SeloNivel } from "@/components/aulas/selo-nivel";
+import { SeloCategoria, SeloNivel } from "@/components/aulas/selo-nivel";
 import { Cabecalho, Destaque } from "@/components/base/cabecalho";
 import { Vazio } from "@/components/base/vazio";
 import { Icone } from "@/components/icones";
@@ -64,6 +64,7 @@ export default async function PaginaPresenca({
         descricao={
           <span className="flex flex-wrap items-center gap-2">
             <SeloNivel nivel={turma.dados.nivel} />
+            <SeloCategoria categoria={turma.dados.categoria} />
           </span>
         }
       />

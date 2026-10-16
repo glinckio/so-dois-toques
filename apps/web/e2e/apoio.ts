@@ -87,7 +87,11 @@ export function diaDeHojeSP() {
  */
 export async function criarTurmaPelaTela(
   page: Page,
-  dados: { diaSemana?: number; vagas?: number } = {},
+  dados: {
+    diaSemana?: number;
+    vagas?: number;
+    categoria?: "Masculino" | "Misto" | "Feminino";
+  } = {},
 ) {
   const inicio = 5 * 60 + Math.floor(Math.random() * (19 * 60 - 1));
   await page.goto("/aulas/turmas/nova");
@@ -96,6 +100,8 @@ export async function criarTurmaPelaTela(
     .selectOption({ label: DIAS[dados.diaSemana ?? diaDeHojeSP()]! });
   await page.getByLabel("Início", { exact: true }).fill(hhmm(inicio));
   await page.getByLabel("Fim", { exact: true }).fill(hhmm(inicio + 1));
+  // TURMA-CA-08: a categoria é obrigatória.
+  await page.getByText(dados.categoria ?? "Misto", { exact: true }).click();
   if (dados.vagas !== undefined) await page.getByLabel("Vagas").fill(String(dados.vagas));
   await page.getByRole("button", { name: "Salvar turma" }).click();
   await expect(page.getByText("Turma salva.")).toBeVisible();

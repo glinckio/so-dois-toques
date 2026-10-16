@@ -1,4 +1,4 @@
-import { NIVEIS, type Nivel } from "@/lib/aulas/formatacao";
+import { NIVEIS, type Nivel, CATEGORIAS, type Categoria } from "@/lib/aulas/formatacao";
 import { DEGRAUS_DO_NIVEL } from "@/lib/aulas/visual";
 
 /** Cor própria de cada nível (fora das cores de situação: verde, vermelho e dourado de "a pagar"). */
@@ -21,6 +21,23 @@ export function SinalDoNivel({ nivel }: { nivel: Nivel }) {
           className={`w-1 rounded-full ${altura} ${i < degraus ? CORES[nivel].barra : "bg-current opacity-25"}`}
         />
       ))}
+    </span>
+  );
+}
+
+/** TURMA-CA-08: selo da categoria da turma (masculino, misto ou feminino). */
+export function SeloCategoria({
+  categoria,
+  className = "",
+}: {
+  categoria: Categoria;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`border-borda bg-elevado/60 text-suave inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold whitespace-nowrap ${className}`}
+    >
+      {CATEGORIAS[categoria]}
     </span>
   );
 }

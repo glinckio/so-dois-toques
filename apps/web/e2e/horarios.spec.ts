@@ -92,7 +92,7 @@ test("FOCO-CA-05 e FOCO-CA-08: a aula da turma aparece na agenda; a atendente s�
 
   // Turma com aula hoje: aparece na agenda com o nível e o horário.
   const { inicio, fim } = await criarTurmaPelaTela(page, { vagas: 6 });
-  const nomeDaAula = new RegExp(`Aula Iniciante, ${inicio} às ${fim}`);
+  const nomeDaAula = new RegExp(`Aula Iniciante · Misto, ${inicio} às ${fim}`);
   await page.goto(`/horarios?data=${hoje}`);
   const agenda = page.getByRole("list", { name: `Agenda da quadra em ${hoje}` });
   await expect(agenda.getByRole("link", { name: nomeDaAula })).toHaveCount(1);

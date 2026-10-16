@@ -17,6 +17,7 @@ const turma = (dados: Partial<TurmaResumo>): TurmaResumo => ({
   horaInicio: 480,
   horaFim: 540,
   nivel: "INICIANTE",
+  categoria: "MISTO",
   descricao: "Sábado, 08:00 às 09:00 · Iniciante",
   vagas: 10,
   ocupadas: 0,

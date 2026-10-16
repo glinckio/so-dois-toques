@@ -1,4 +1,4 @@
-import type { Nivel } from "./formatacao";
+import type { Categoria, Nivel } from "./formatacao";
 
 /** Etapa 16: a turma é um dia e um horário (minutos), com nível e vagas; não tem nome. */
 export type TurmaResumo = {
@@ -7,7 +7,8 @@ export type TurmaResumo = {
   horaInicio: number;
   horaFim: number;
   nivel: Nivel;
-  /** "Terça, 19:00 às 20:00 · Iniciante" */
+  categoria: Categoria;
+  /** "Terça, 19:00 às 20:00 · Iniciante · Misto" */
   descricao: string;
   vagas: number;
   ocupadas: number;

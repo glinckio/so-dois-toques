@@ -1,4 +1,4 @@
-import { NIVEIS as NOMES_DOS_NIVEIS } from "@/lib/aulas/formatacao";
+import { CATEGORIAS, NIVEIS as NOMES_DOS_NIVEIS } from "@/lib/aulas/formatacao";
 import { faixaDeMinutos, HORA_ABRE, HORA_FECHA } from "./formatacao";
 import type { AulaNaGrade, BloqueioNaGrade, Grade } from "./tipos";
 
@@ -78,7 +78,7 @@ export function descreverBloco(bloco: BlocoDaAgenda): string {
   const horario = faixaDeMinutos(bloco.inicio, bloco.fim);
   if (bloco.tipo === "bloqueio") return `Bloqueado: ${bloco.bloqueio.motivo}, ${horario}`;
   const a = bloco.aula;
-  return `Aula ${NOMES_DOS_NIVEIS[a.nivel]}, ${horario}, ${a.ocupadas} de ${a.vagas} alunos`;
+  return `Aula ${NOMES_DOS_NIVEIS[a.nivel]} · ${CATEGORIAS[a.categoria]}, ${horario}, ${a.ocupadas} de ${a.vagas} alunos`;
 }
 
 /**
