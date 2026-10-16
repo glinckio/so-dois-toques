@@ -47,7 +47,7 @@ Em 16/10/2026 o dono pediu "uma tela de chat interno no sistema" para "mandar á
   - **áudio gravado no navegador** (botão segurar/gravar, cancelar e enviar), que chega como mensagem de voz;
   - imagem e vídeo com legenda opcional;
   - documento (PDF e outros);
-  - **figurinha** a partir de uma imagem (PNG, JPG ou WebP) ou reenviando uma figurinha recebida;
+  - **figurinha** reenviando uma figurinha recebida;
   - reação com emoji numa mensagem;
   - responder citando uma mensagem.
 - Arquivos de até **10 MB**; maior que isso é recusado com aviso antes de enviar. Tipos aceitos: imagem (JPG, PNG, WebP), vídeo (MP4), áudio (gravação do navegador, OGG, MP3, M4A) e documento (PDF, DOC/DOCX, XLS/XLSX, TXT).
@@ -99,4 +99,5 @@ Em 16/10/2026 o dono pediu "uma tela de chat interno no sistema" para "mandar á
 
 - 16/10/2026, respostas do dono: administrador e atendente usam o chat, só o administrador conecta o número; o chat fala com qualquer número (não só alunos); o fix de LID entra como patch sobre a v2.3.7 oficial.
 - 16/10/2026, pedido do dono depois da implementação: Chat em tela cheia (sem busca e data no topo) e **Nova conversa** numa janela para escolher contato existente ou adicionar um na hora.
+- 16/10/2026, pedido do dono: sai o botão de mandar uma imagem como figurinha (confundia com o anexo); figurinha só reenviando uma recebida.
 - Padrões propostos nesta spec (o dono pode mudar na aprovação): um número só; grupos de fora; arquivos até 10 MB; as conversas ficam no Evolution e o banco do sistema guarda só o autor de cada envio.

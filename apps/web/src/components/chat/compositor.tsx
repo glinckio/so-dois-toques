@@ -5,7 +5,6 @@ import { Icone } from "@/components/icones";
 import { classeBotaoIcone, classeCampo } from "@/components/ui";
 import {
   ACEITA_NO_ANEXO,
-  FORMATOS_ACEITOS,
   problemaDoArquivo,
   resumoDaMensagem,
   tamanhoLegivel,
@@ -75,7 +74,7 @@ function PreviaDoAnexo({
 
 /**
  * CHAT-CA-06: escrever e enviar. Enter envia e Shift+Enter quebra a linha; anexo (foto,
- * vídeo, documento ou áudio), figurinha a partir de imagem, áudio gravado e emojis.
+ * vídeo, documento ou áudio), áudio gravado e emojis.
  */
 export function Compositor({
   citada,
@@ -93,21 +92,19 @@ export function Compositor({
   const [erro, setErro] = useState<string | null>(null);
   const campo = useRef<HTMLTextAreaElement>(null);
   const seletorAnexo = useRef<HTMLInputElement>(null);
-  const seletorFigurinha = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (citada) campo.current?.focus();
   }, [citada]);
 
-  function escolher(arquivo: File | undefined, figurinha: boolean) {
+  function escolher(arquivo: File | undefined) {
     setErro(null);
     if (!arquivo) return;
-    const tipo = figurinha ? "figurinha" : tipoDoAnexo(arquivo.type);
+    const tipo = tipoDoAnexo(arquivo.type);
     if (!tipo) return setErro("Tipo de arquivo não aceito.");
     const problema = problemaDoArquivo(tipo, arquivo.type, arquivo.size);
     if (problema) return setErro(problema);
-    if (figurinha) aoEnviarArquivo({ tipo, arquivo });
-    else setAnexo({ tipo, arquivo, legenda: texto.trim() || undefined });
+    setAnexo({ tipo, arquivo, legenda: texto.trim() || undefined });
   }
 
   function enviar() {
@@ -171,15 +168,6 @@ export function Compositor({
         >
           <Icone nome="clipe" width={20} height={20} />
         </button>
-        <button
-          type="button"
-          className={classeBotaoIcone}
-          aria-label="Enviar figurinha"
-          title="Figurinha: escolha uma imagem e ela vai como figurinha"
-          onClick={() => seletorFigurinha.current?.click()}
-        >
-          <Icone nome="figurinha" width={20} height={20} />
-        </button>
         <input
           ref={seletorAnexo}
           type="file"
@@ -187,18 +175,7 @@ export function Compositor({
           className="hidden"
           data-testid="arquivo-anexo"
           onChange={(e) => {
-            escolher(e.currentTarget.files?.[0], false);
-            e.currentTarget.value = "";
-          }}
-        />
-        <input
-          ref={seletorFigurinha}
-          type="file"
-          accept={FORMATOS_ACEITOS.figurinha.join(",")}
-          className="hidden"
-          data-testid="arquivo-figurinha"
-          onChange={(e) => {
-            escolher(e.currentTarget.files?.[0], true);
+            escolher(e.currentTarget.files?.[0]);
             e.currentTarget.value = "";
           }}
         />

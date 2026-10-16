@@ -32,7 +32,7 @@
 
 - `/chat`: lista de conversas e a conversa aberta (no celular, uma tela de cada vez). `/chat/conexao`: estado, QR code e desconectar.
 - Route handlers: `/chat/eventos` (repasse do SSE), `/chat/midias/[id]` (mídia binária, sem cache público), `/chat/fotos/[numero]` (foto de perfil buscada no servidor, só de `*.whatsapp.net`) e `/chat/[numero]/enviar` (arquivo em `multipart`, até 10 MB).
-- Gravação de áudio com `MediaRecorder`; seletor de emojis próprio; figurinha a partir de imagem ou de uma recebida.
+- Gravação de áudio com `MediaRecorder`; seletor de emojis próprio; reenviar uma figurinha recebida.
 - `Permissions-Policy` libera `microphone=(self)`; CSP ganha `media-src 'self' blob:`; `proxyClientMaxBodySize` sobe para 11 MB.
 - Botão "Conversar no WhatsApp" na ficha do aluno.
 
