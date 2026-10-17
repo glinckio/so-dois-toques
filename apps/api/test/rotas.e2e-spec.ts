@@ -18,7 +18,7 @@ type Rota = {
 /** Rotas que respondem sem a chave interna (LANC-CA-03). */
 const SEM_CHAVE = ["GET /health"];
 /** Rotas que respondem sem sessão. */
-const SEM_SESSAO = ["POST /auth/login"];
+const SEM_SESSAO = ["POST /auth/login", "GET /feedback/formulario", "POST /feedback/respostas"];
 /** Rotas da própria conta: exigem sessão, mas nenhuma área. */
 const DA_PROPRIA_CONTA = [
   "POST /auth/logout",

@@ -129,6 +129,7 @@ describe("permissões", () => {
   it("ACESSO-CA-10: administrador acessa tudo", () => {
     expect(podeAcessar("ADMINISTRADOR", "contabil")).toBe(true);
     expect(podeAcessar("ADMINISTRADOR", "usuarios")).toBe(true);
+    expect(podeAcessar("ADMINISTRADOR", "feedback")).toBe(true);
   });
 
   it("ACESSO-CA-10 e TURMA-CA-04: só há administrador e atendente; o atendente vê aulas, sem contábil e usuários", () => {
@@ -137,5 +138,6 @@ describe("permissões", () => {
     expect(podeAcessar("ATENDENTE", "contabil")).toBe(false);
     expect(podeAcessar("ATENDENTE", "usuarios")).toBe(false);
     expect(podeAcessar("ATENDENTE", "auditoria")).toBe(false);
+    expect(podeAcessar("ATENDENTE", "feedback")).toBe(false);
   });
 });

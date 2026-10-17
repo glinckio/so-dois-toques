@@ -4,6 +4,7 @@ import { BarrasMensais } from "@/components/graficos/barras-mensais";
 import { TabelaMensal } from "@/components/graficos/tabela-mensal";
 import type { NomeIcone } from "@/components/icones";
 import { AulasDeHoje } from "@/components/inicio/aulas-hoje";
+import { FeedbackNovo } from "@/components/inicio/feedback-novo";
 import { CartaoNumero } from "@/components/inicio/kpi";
 import { LeituraDoMes } from "@/components/inicio/leitura";
 import { MensalidadesEmAtraso } from "@/components/inicio/mensalidades-hoje";
@@ -57,10 +58,11 @@ export default async function Inicio({ searchParams }: PageProps<"/">) {
   const hoje = hojeEmSaoPaulo(agora);
   const minutoAtual = minutoEmSaoPaulo(agora);
 
-  const [painel, inadimplentes, grade] = await Promise.all([
+  const [painel, inadimplentes, grade, feedback] = await Promise.all([
     talvez(pode("contabil"), () => chamarApi<Painel>("/contabil/painel")),
     talvez(pode("mensalidades"), () => chamarApi<Inadimplentes>("/mensalidades/inadimplentes")),
     talvez(pode("horarios"), () => chamarApi<Grade>(`/horarios/grade?data=${hoje}`)),
+    talvez(pode("feedback"), () => chamarApi<{ quantidade: number }>("/feedback/nao-lidas")),
   ]);
 
   const aulas = grade?.ok ? grade.dados.aulas : [];
@@ -122,6 +124,7 @@ export default async function Inicio({ searchParams }: PageProps<"/">) {
         aneis={aneis.slice(0, 3)}
       />
       {senha === "trocada" && <Aviso tipo="sucesso">Senha alterada com sucesso.</Aviso>}
+      {feedback?.ok && <FeedbackNovo naoLidas={feedback.dados.quantidade} />}
 
       {painel && <Financeiro resposta={painel} />}
 

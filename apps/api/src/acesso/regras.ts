@@ -169,6 +169,7 @@ export const AREAS = [
   "mensalidades",
   "horarios",
   "contabil",
+  "feedback",
   "usuarios",
   "auditoria",
 ] as const;

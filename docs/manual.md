@@ -18,6 +18,7 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 | Mensalidades         | Tudo          | Ver e receber, sem estornos           |
 | Horários             | Tudo          | Ver a agenda de cada quadra           |
 | Contábil e gastos    | Sim           | Não                                   |
+| Feedback             | Sim           | Não                                   |
 | Usuários e Auditoria | Sim           | Não                                   |
 
 ## Aulas
@@ -47,6 +48,13 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 - **Saldo em caixa:** começou com R$ 600,00 em 16/10/2026 (o que sobrou até ali) e sobe ou desce com tudo o que entra e sai a partir dessa data. O saldo inicial não conta como receita do mês.
 - **Gastos:** lance a **locação avulsa** de quadra (quadra, dia, valor e forma) e os **outros gastos** (equipamento, investimento ou outro, com descrição). A data é hoje ou antes. Lançamento errado não se apaga: abra-o na lista de saídas e **estorne** com motivo; o valor volta para o caixa.
 - **Aluguel mensal:** registre o horário fixo pago por mês (quadra, dia, início e fim, valor, dia do pagamento de 1 a 28, forma e o primeiro mês). Todo mês, no dia do pagamento, o aluguel sai do caixa sozinho, uma vez só. Se o dia do pagamento do primeiro mês já passou, ele sai no dia do registro. Para mudar o valor, encerre o contrato a partir de um mês e registre outro.
+
+## Feedback (administrador)
+
+- **Link do formulário:** em Feedback, copie o link (termina em `/avaliar`) e mande para os alunos, no grupo da turma ou no Instagram. O formulário abre sem login: nota de 1 a 5 em estrelas, o que estão achando, o que pode melhorar, a turma e o nome, todos opcionais menos a nota. Sem nome, a resposta é anônima.
+- **Painel:** nota média, quantidade e distribuição das notas do período (padrão: últimos 30 dias), a média de cada mês e a lista das respostas. Filtre por período, turma e nota. Respostas novas aparecem como **Nova**; marque como lida uma por uma ou todas de uma vez. O Início avisa quando há respostas não lidas.
+- **Remover:** spam ou ofensa pode ser removido (fica na auditoria, sem o texto). **Pausar** fecha o formulário até você retomar.
+- Cada aparelho envia até 5 respostas por hora.
 
 ## Usuários e Auditoria (administrador)
 
