@@ -64,6 +64,8 @@ export const ROTULOS_ACOES = {
   FEEDBACK_REMOVIDO: "Resposta de feedback removida",
   FEEDBACK_PAUSADO: "Formulário de feedback pausado",
   FEEDBACK_RETOMADO: "Formulário de feedback retomado",
+  WHATSAPP_CONEXAO_INICIADA: "Conexão do WhatsApp iniciada (QR code)",
+  WHATSAPP_DESCONECTADO: "WhatsApp desconectado",
 } as const;
 
 export const TAMANHO_PAGINA = 50;
@@ -154,7 +156,8 @@ type IconeDoEvento =
   | "contabil"
   | "escudo"
   | "fechar"
-  | "feedback";
+  | "feedback"
+  | "chat";
 
 /** O que foi feito, em poucas palavras, para agrupar e colorir a linha do tempo. */
 const ASSUNTOS = [
@@ -167,6 +170,7 @@ const ASSUNTOS = [
   { prefixos: ["PRODUTO_", "COMPRA_", "VENDA_", "ESTOQUE_"], assunto: "Estoque" },
   { prefixos: ["FAIXA", "QUADRA_", "RESERVA_", "SERIE_", "BLOQUEIO_"], assunto: "Horários" },
   { prefixos: ["FEEDBACK_"], assunto: "Feedback" },
+  { prefixos: ["WHATSAPP_"], assunto: "Chat" },
   { prefixos: ["CONTABIL_", "CLIENTES_"], assunto: "Dados" },
 ] as const;
 
@@ -179,6 +183,7 @@ const ICONE_DO_ASSUNTO: Record<AssuntoDoEvento, IconeDoEvento> = {
   Estoque: "estoque",
   Horários: "horarios",
   Feedback: "feedback",
+  Chat: "chat",
   Dados: "contabil",
 };
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AreaDeConteudo } from "@/components/layout/area-de-conteudo";
 import { BotaoBusca, BuscaRapida } from "@/components/layout/busca-rapida";
 import { Marca } from "@/components/layout/marca";
 import { AvatarDoTopo, CartaoDaPessoa, MenuDaPessoa } from "@/components/layout/menu-pessoa";
@@ -64,18 +65,19 @@ export default async function LayoutSistema({ children }: LayoutProps<"/">) {
           </div>
         </header>
 
-        <div className="lg:border-borda/70 lg:bg-fundo/80 flex min-h-full flex-1 flex-col lg:rounded-[2rem] lg:border lg:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.03)]">
-          <div className="hidden items-center justify-between gap-4 px-8 pt-6 lg:flex print:hidden">
-            <BotaoBusca />
-            <span className="superficie text-suave inline-flex min-h-12 items-center gap-2 rounded-full px-4 text-sm font-semibold first-letter:uppercase">
-              <Icone nome="calendario" width={17} height={17} className="text-ouro" />
-              <span className="first-letter:uppercase">{hoje}</span>
-            </span>
-          </div>
-          <main className="mx-auto flex w-full max-w-[84rem] min-w-0 flex-1 flex-col gap-6 px-4 pt-5 pb-32 sm:px-6 lg:px-8 lg:pt-6 lg:pb-10 print:p-0">
-            {children}
-          </main>
-        </div>
+        <AreaDeConteudo
+          barraDoTopo={
+            <div className="hidden items-center justify-between gap-4 px-8 pt-6 lg:flex print:hidden">
+              <BotaoBusca />
+              <span className="superficie text-suave inline-flex min-h-12 items-center gap-2 rounded-full px-4 text-sm font-semibold first-letter:uppercase">
+                <Icone nome="calendario" width={17} height={17} className="text-ouro" />
+                <span className="first-letter:uppercase">{hoje}</span>
+              </span>
+            </div>
+          }
+        >
+          {children}
+        </AreaDeConteudo>
       </div>
 
       <MenuInferior itens={menu} />

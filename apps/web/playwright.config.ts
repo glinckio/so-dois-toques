@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { ADMIN_E2E } from "./e2e/dados";
+import { ADMIN_E2E, EVOLUTION_FALSO } from "./e2e/dados";
 
 const port = Number(process.env.PORT ?? 3000);
 const portaApi = Number(process.env.API_PORT ?? 3001);
@@ -12,6 +12,9 @@ const bancoBase = new URL(
 bancoBase.pathname = `${bancoBase.pathname.replace(/_(test|e2e)$/, "")}_e2e`;
 // Chave usada só entre o web e a API dos testes.
 const chaveInterna = "chave-interna-dos-testes-ponta-a-ponta-0000";
+// Etapa 20: microserviço do WhatsApp falso (em memória), no lugar do services/evolution.
+const portaEvolution = new URL(EVOLUTION_FALSO).port;
+const chaveEvolution = "chave-do-evolution-falso-dos-testes-0000";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -33,6 +36,13 @@ export default defineConfig({
 
   webServer: [
     {
+      command: "node ../api/test/evolution-falso.ts",
+      url: `${EVOLUTION_FALSO}/__teste/saude`,
+      reuseExistingServer: false,
+      timeout: 30_000,
+      env: { PORTA_EVOLUTION_FALSO: portaEvolution, CHAVE_EVOLUTION_FALSO: chaveEvolution },
+    },
+    {
       command: "pnpm --filter @sdt/api e2e:servidor",
       url: `http://127.0.0.1:${portaApi}/health`,
       reuseExistingServer: false,
@@ -44,6 +54,8 @@ export default defineConfig({
         DATABASE_URL: bancoBase.toString(),
         WEB_ORIGIN: baseURL,
         INTERNAL_API_KEY: chaveInterna,
+        EVOLUTION_URL: EVOLUTION_FALSO,
+        EVOLUTION_CHAVE: chaveEvolution,
         ADMIN_NOME: ADMIN_E2E.nome,
         ADMIN_EMAIL: ADMIN_E2E.email,
         ADMIN_SENHA: ADMIN_E2E.senha,

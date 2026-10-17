@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { COOKIE_SESSAO } from "@/lib/acesso/cookie";
 import { ipDoCliente } from "@/lib/acesso/ip";
+import { urlDaApi } from "@/lib/config/rota-da-api";
 import { envServidor } from "./env";
 
 export type CampoInvalido = { campo: string; mensagem: string };
@@ -16,6 +17,8 @@ type Opcoes = {
   corpo?: unknown;
   /** Com sessão (padrão), 401 leva ao login e a troca de senha pendente leva à tela de troca. */
   sessao?: boolean;
+  /** Tempo máximo de espera (padrão 10 s); o envio de arquivo do Chat espera mais. */
+  tempoMs?: number;
 };
 
 const MENSAGEM_FALHA = "Não foi possível falar com o servidor. Tente de novo em instantes.";
@@ -39,12 +42,12 @@ export async function chamarApi<T>(rota: string, opcoes: Opcoes = {}): Promise<R
 
   let resposta: Response;
   try {
-    resposta = await fetch(new URL(rota, API_URL), {
+    resposta = await fetch(urlDaApi(API_URL, rota), {
       method: opcoes.metodo ?? "GET",
       headers: cabecalhos,
       body: opcoes.corpo === undefined ? undefined : JSON.stringify(opcoes.corpo),
       cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(opcoes.tempoMs ?? 10_000),
     });
   } catch {
     return { ok: false, status: 503, mensagem: MENSAGEM_FALHA };
@@ -69,4 +72,30 @@ export async function chamarApi<T>(rota: string, opcoes: Opcoes = {}): Promise<R
     codigo: erro.codigo,
     campos: erro.campos,
   };
+}
+
+/**
+ * CHAT-CA-08: abre um stream (Server-Sent Events) da API com a sessão atual, para o
+ * route handler repassar ao navegador. Sem sessão, devolve `null`.
+ */
+export async function abrirStreamDaApi(rota: string, sinal: AbortSignal): Promise<Response | null> {
+  const { API_URL, INTERNAL_API_KEY, IP_SALTOS_CONFIAVEIS } = envServidor();
+  const token = (await cookies()).get(COOKIE_SESSAO)?.value;
+  if (!token) return null;
+  const cabecalhos: Record<string, string> = {
+    "X-Chave-Interna": INTERNAL_API_KEY,
+    Authorization: `Bearer ${token}`,
+    Accept: "text/event-stream",
+  };
+  const ip = ipDoCliente(await headers(), IP_SALTOS_CONFIAVEIS);
+  if (ip) cabecalhos["X-IP-Cliente"] = ip;
+  try {
+    return await fetch(urlDaApi(API_URL, rota), {
+      headers: cabecalhos,
+      signal: sinal,
+      cache: "no-store",
+    });
+  } catch {
+    return null;
+  }
 }

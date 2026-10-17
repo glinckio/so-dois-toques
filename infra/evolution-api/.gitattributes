@@ -1,0 +1,4 @@
+# O patch e os scripts vão para dentro do Linux do Docker: sempre LF.
+*.patch text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf

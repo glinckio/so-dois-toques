@@ -77,6 +77,9 @@ export const ACOES = [
   "FEEDBACK_REMOVIDO",
   "FEEDBACK_PAUSADO",
   "FEEDBACK_RETOMADO",
+  // Etapa 20
+  "WHATSAPP_CONEXAO_INICIADA",
+  "WHATSAPP_DESCONECTADO",
 ] as const;
 export type Acao = (typeof ACOES)[number];
 

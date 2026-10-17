@@ -64,12 +64,13 @@ describe("Etapa 1: perfis e gestão de usuários", () => {
         "aulas",
         "mensalidades",
         "horarios",
+        "chat",
         "contabil",
         "feedback",
         "usuarios",
         "auditoria",
       ],
-      ATENDENTE: ["inicio", "aulas", "mensalidades", "horarios"],
+      ATENDENTE: ["inicio", "aulas", "mensalidades", "horarios", "chat"],
     } as const;
     for (const [perfil, areas] of Object.entries(esperado)) {
       const usuario = await criarUsuario(app, perfil as keyof typeof esperado);

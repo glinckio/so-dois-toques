@@ -24,6 +24,8 @@ export function buildCsp(nonce: string, { isDev }: { isDev: boolean }): string {
     `style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`}`,
     ...(isDev ? [] : [`style-src-attr 'unsafe-hashes' '${HASH_ESTILO_OCULTO}'`]),
     "img-src 'self' blob: data:",
+    // Áudio e vídeo do Chat: servidos pelo próprio sistema; blob: é a prévia da gravação.
+    "media-src 'self' blob:",
     "font-src 'self'",
     "connect-src 'self'",
     "object-src 'none'",

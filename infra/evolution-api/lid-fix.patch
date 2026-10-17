@@ -1,0 +1,202 @@
+diff --git a/src/api/dto/sendMessage.dto.ts b/src/api/dto/sendMessage.dto.ts
+index ba9ecf5..d4b7ea2 100644
+--- a/src/api/dto/sendMessage.dto.ts
++++ b/src/api/dto/sendMessage.dto.ts
+@@ -14,6 +14,8 @@ export class Options {
+   mentionsEveryOne?: boolean;
+   mentioned?: string[];
+   webhookUrl?: string;
++  /** Marca a mensagem como encaminhada (contextInfo.isForwarded + forwardingScore). */
++  isForwarded?: boolean;
+ }
+ 
+ export class MediaMessage {
+@@ -45,6 +47,8 @@ export class Metadata {
+   mentioned?: string[];
+   encoding?: boolean;
+   notConvertSticker?: boolean;
++  /** Marca a mensagem como encaminhada (contextInfo.isForwarded + forwardingScore). */
++  isForwarded?: boolean;
+ }
+ 
+ export class SendTextDto extends Metadata {
+diff --git a/src/api/integrations/channel/whatsapp/whatsapp.baileys.service.ts b/src/api/integrations/channel/whatsapp/whatsapp.baileys.service.ts
+index 60e857f..1e3aef7 100644
+--- a/src/api/integrations/channel/whatsapp/whatsapp.baileys.service.ts
++++ b/src/api/integrations/channel/whatsapp/whatsapp.baileys.service.ts
+@@ -143,7 +143,6 @@ import Long from 'long';
+ import mimeTypes from 'mime-types';
+ import NodeCache from 'node-cache';
+ import cron from 'node-cron';
+-import { release } from 'os';
+ import { join } from 'path';
+ import P from 'pino';
+ import qrcode, { QRCodeToDataURLOptions } from 'qrcode';
+@@ -585,7 +584,7 @@ export class BaileysStartupService extends ChannelStartupService {
+ 
+       this.logger.info(`Phone number: ${number}`);
+     } else {
+-      const browser: WABrowserDescription = [session.CLIENT, session.NAME, release()];
++      const browser: WABrowserDescription = [session.CLIENT, session.NAME, session.VERSION];
+       browserOptions = { browser };
+ 
+       this.logger.info(`Browser: ${browser}`);
+@@ -806,10 +805,10 @@ export class BaileysStartupService extends ChannelStartupService {
+   };
+ 
+   private readonly contactHandle = {
+-    'contacts.upsert': async (contacts: Contact[]) => {
++    'contacts.upsert': async (contacts: any[]) => {
+       try {
+         const contactsRaw: any = contacts.map((contact) => ({
+-          remoteJid: contact.id,
++          remoteJid: contact.id?.includes('@lid') && contact.lidJidAlt ? contact.lidJidAlt : contact.id,
+           pushName: contact?.name || contact?.verifiedName || contact.id.split('@')[0],
+           profilePicUrl: null,
+           instanceId: this.instanceId,
+@@ -844,8 +843,8 @@ export class BaileysStartupService extends ChannelStartupService {
+         }
+ 
+         const updatedContacts = await Promise.all(
+-          contacts.map(async (contact) => ({
+-            remoteJid: contact.id,
++          contacts.map(async (contact: any) => ({
++            remoteJid: contact.id?.includes('@lid') && contact.lidJidAlt ? contact.lidJidAlt : contact.id,
+             pushName: contact?.name || contact?.verifiedName || contact.id.split('@')[0],
+             profilePicUrl: (await this.profilePicture(contact.id)).profilePictureUrl,
+             instanceId: this.instanceId,
+@@ -898,8 +897,11 @@ export class BaileysStartupService extends ChannelStartupService {
+       const contactsRaw: { remoteJid: string; pushName?: string; profilePicUrl?: string; instanceId: string }[] = [];
+       for await (const contact of contacts) {
+         this.logger.debug(`Updating contact: ${JSON.stringify(contact, null, 2)}`);
++        const resolvedJid = (contact as any).id?.includes('@lid') && (contact as any).lidJidAlt
++          ? (contact as any).lidJidAlt
++          : contact.id;
+         contactsRaw.push({
+-          remoteJid: contact.id,
++          remoteJid: resolvedJid,
+           pushName: contact?.name ?? contact?.verifiedName,
+           profilePicUrl: (await this.profilePicture(contact.id)).profilePictureUrl,
+           instanceId: this.instanceId,
+@@ -949,13 +951,27 @@ export class BaileysStartupService extends ChannelStartupService {
+ 
+         const instance: InstanceDto = { instanceName: this.instance.name };
+ 
+-        let timestampLimitToImport = null;
++        // Cap history sync to the last HISTORY_SYNC_DAYS_LIMIT days. A full,
++        // unbounded sync (syncFullHistory) dumps the phone's entire chat/media
++        // history at once — bulk DB writes + concurrent media downloads/uploads
++        // to MinIO — which has crashed the bundled MinIO (disk/OOM) and left the
++        // sync pending in Baileys. This hard cap protects the infra regardless
++        // of chatwoot/instance settings.
++        const HISTORY_SYNC_DAYS_LIMIT = 60;
++
++        const globalLimitDate = new Date();
++        globalLimitDate.setDate(globalLimitDate.getDate() - HISTORY_SYNC_DAYS_LIMIT);
++        let timestampLimitToImport = globalLimitDate.getTime() / 1000;
+ 
+         if (this.configService.get<Chatwoot>('CHATWOOT').ENABLED) {
+           const daysLimitToImport = this.localChatwoot?.enabled ? this.localChatwoot.daysLimitImportMessages : 1000;
+ 
+-          const date = new Date();
+-          timestampLimitToImport = new Date(date.setDate(date.getDate() - daysLimitToImport)).getTime() / 1000;
++          // Chatwoot may be stricter than the global cap; take the smaller window.
++          if (daysLimitToImport < HISTORY_SYNC_DAYS_LIMIT) {
++            const chatwootDate = new Date();
++            chatwootDate.setDate(chatwootDate.getDate() - daysLimitToImport);
++            timestampLimitToImport = chatwootDate.getTime() / 1000;
++          }
+ 
+           const maxBatchTimestamp = Math.max(...messages.map((message) => message.messageTimestamp as number));
+ 
+@@ -1024,10 +1040,8 @@ export class BaileysStartupService extends ChannelStartupService {
+             m.messageTimestamp = m.messageTimestamp?.toNumber();
+           }
+ 
+-          if (this.configService.get<Chatwoot>('CHATWOOT').ENABLED) {
+-            if (m.messageTimestamp <= timestampLimitToImport) {
+-              continue;
+-            }
++          if (m.messageTimestamp <= timestampLimitToImport) {
++            continue;
+           }
+ 
+           if (messagesRepository?.has(m.key.id)) {
+@@ -1171,6 +1185,11 @@ export class BaileysStartupService extends ChannelStartupService {
+             received.messageTimestamp = received.messageTimestamp?.toNumber();
+           }
+ 
++          // Resolve @lid to @s.whatsapp.net EARLY so all downstream DB queries use the real phone number
++          if (received.key.remoteJid?.includes('@lid') && (received.key as any)?.remoteJidAlt) {
++            received.key.remoteJid = (received.key as any).remoteJidAlt;
++          }
++
+           if (settings?.groupsIgnore && received.key.remoteJid.includes('@g.us')) {
+             continue;
+           }
+@@ -2405,6 +2424,9 @@ export class BaileysStartupService extends ChannelStartupService {
+             unsigned: false,
+           },
+           disappearingMode: { initiator: 0 },
++          // Encaminhamento nativo: WhatsApp exibe "Encaminhada" quando isForwarded=true
++          // e forwardingScore>=1 no contextInfo da mensagem enviada.
++          ...(options?.isForwarded ? { isForwarded: true, forwardingScore: 1 } : {}),
+         };
+         messageSent = await this.sendMessage(
+           sender,
+@@ -2643,6 +2665,7 @@ export class BaileysStartupService extends ChannelStartupService {
+         linkPreview: data?.linkPreview,
+         mentionsEveryOne: data?.mentionsEveryOne,
+         mentioned: data?.mentioned,
++        isForwarded: data?.isForwarded,
+       },
+       isIntegration,
+     );
+@@ -2994,6 +3017,7 @@ export class BaileysStartupService extends ChannelStartupService {
+         quoted: data?.quoted,
+         mentionsEveryOne: data?.mentionsEveryOne,
+         mentioned: data?.mentioned,
++        isForwarded: data?.isForwarded,
+       },
+       isIntegration,
+     );
+@@ -3224,7 +3248,8 @@ export class BaileysStartupService extends ChannelStartupService {
+         const result = this.sendMessageWithTyping<AnyMessageContent>(
+           data.number,
+           { audio: convert, ptt: true, mimetype: 'audio/ogg; codecs=opus' },
+-          { presence: 'recording', delay: data?.delay },
++          // quoted: reply nativo (upstream não repassava — áudio saía sem citação).
++          { presence: 'recording', delay: data?.delay, quoted: data?.quoted },
+           isIntegration,
+         );
+ 
+@@ -3241,7 +3266,7 @@ export class BaileysStartupService extends ChannelStartupService {
+         ptt: true,
+         mimetype: 'audio/ogg; codecs=opus',
+       },
+-      { presence: 'recording', delay: data?.delay },
++      { presence: 'recording', delay: data?.delay, quoted: data?.quoted },
+       isIntegration,
+     );
+   }
+diff --git a/src/config/env.config.ts b/src/config/env.config.ts
+index 7c4e382..30814b0 100644
+--- a/src/config/env.config.ts
++++ b/src/config/env.config.ts
+@@ -312,7 +312,7 @@ export type Webhook = {
+   };
+ };
+ export type Pusher = { ENABLED: boolean; GLOBAL?: GlobalPusher; EVENTS: EventsPusher };
+-export type ConfigSessionPhone = { CLIENT: string; NAME: string };
++export type ConfigSessionPhone = { CLIENT: string; NAME: string; VERSION: string };
+ export type QrCode = { LIMIT: number; COLOR: string };
+ export type Typebot = { ENABLED: boolean; API_VERSION: string; SEND_MEDIA_BASE64: boolean };
+ export type Chatwoot = {
+@@ -799,6 +799,7 @@ export class ConfigService {
+       CONFIG_SESSION_PHONE: {
+         CLIENT: process.env?.CONFIG_SESSION_PHONE_CLIENT || 'Evolution API',
+         NAME: process.env?.CONFIG_SESSION_PHONE_NAME || 'Chrome',
++        VERSION: process.env?.CONFIG_SESSION_PHONE_VERSION || '10.0',
+       },
+       QRCODE: {
+         LIMIT: Number.parseInt(process.env.QRCODE_LIMIT) || 30,

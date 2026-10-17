@@ -30,19 +30,21 @@ model Usuario {
   atualizadoEm DateTime @updatedAt @db.Timestamptz(3)
 
   sessoes                Sessao[]
-  consentimentos         Aluno[]          @relation("ConsentimentoRegistradoPor")
+  consentimentos         Aluno[]           @relation("ConsentimentoRegistradoPor")
   presencasRegistradas   Presenca[]
   assinaturasCriadas     Assinatura[]
   mensalidadesCanceladas Mensalidade[]
-  pagamentosRecebidos    Pagamento[]      @relation("PagamentoRecebidoPor")
-  pagamentosEstornados   Pagamento[]      @relation("PagamentoEstornadoPor")
+  pagamentosRecebidos    Pagamento[]       @relation("PagamentoRecebidoPor")
+  pagamentosEstornados   Pagamento[]       @relation("PagamentoEstornadoPor")
   lancamentos            Lancamento[]
-  bloqueiosCriados       Bloqueio[]       @relation("BloqueioCriadoPor")
-  bloqueiosCancelados    Bloqueio[]       @relation("BloqueioCanceladoPor")
-  seriesCriadas          SerieBloqueio[]  @relation("SerieCriadaPor")
-  seriesEncerradas       SerieBloqueio[]  @relation("SerieEncerradaPor")
-  contratosCriados       ContratoQuadra[] @relation("ContratoCriadoPor")
-  contratosEncerrados    ContratoQuadra[] @relation("ContratoEncerradoPor")
+  bloqueiosCriados       Bloqueio[]        @relation("BloqueioCriadoPor")
+  bloqueiosCancelados    Bloqueio[]        @relation("BloqueioCanceladoPor")
+  seriesCriadas          SerieBloqueio[]   @relation("SerieCriadaPor")
+  seriesEncerradas       SerieBloqueio[]   @relation("SerieEncerradaPor")
+  contratosCriados       ContratoQuadra[]  @relation("ContratoCriadoPor")
+  contratosEncerrados    ContratoQuadra[]  @relation("ContratoEncerradoPor")
+  mensagensEnviadas      MensagemEnviada[]
+  contatosDoChat         ContatoChat[]
 
   @@index([perfil, ativo])
 }
@@ -465,4 +467,30 @@ model FormularioFeedback {
   id         Int      @id @default(1)
   pausado    Boolean  @default(false)
   alteradoEm DateTime @default(now()) @updatedAt @db.Timestamptz(3)
+}
+
+// Etapa 20: chat do WhatsApp. As conversas ficam no Evolution; aqui só quem da equipe enviou.
+
+/// Mensagem enviada pelo sistema: o identificador dela no WhatsApp e quem enviou (CHAT-CA-09).
+model MensagemEnviada {
+  /// Identificador da mensagem no WhatsApp (key.id).
+  id        String   @id @db.VarChar(64)
+  /// Número da conversa, só dígitos com DDI.
+  numero    String   @db.VarChar(20)
+  usuarioId String   @db.Uuid
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  enviadaEm DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([numero, enviadaEm])
+}
+
+/// Contato adicionado na hora pela janela de nova conversa do Chat (CHAT-CA-14).
+model ContatoChat {
+  /// Só dígitos, com DDI.
+  numero       String   @id @db.VarChar(20)
+  nome         String   @db.VarChar(120)
+  criadoPorId  String   @db.Uuid
+  criadoPor    Usuario  @relation(fields: [criadoPorId], references: [id], onDelete: Restrict)
+  criadoEm     DateTime @default(now()) @db.Timestamptz(3)
+  atualizadoEm DateTime @updatedAt @db.Timestamptz(3)
 }

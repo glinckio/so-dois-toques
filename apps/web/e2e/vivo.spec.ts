@@ -117,7 +117,7 @@ test("VIVO-CA-02: menu em grupos no computador e barra com Mais no celular", asy
     for (const grupo of ["Visão geral", "Operação", "Gestão"]) {
       await expect(menu.getByText(grupo, { exact: true })).toBeVisible();
     }
-    await expect(menu.getByRole("link")).toHaveCount(8);
+    await expect(menu.getByRole("link")).toHaveCount(9);
     await menu.getByRole("link", { name: "Auditoria" }).click();
     await expect(page).toHaveURL("/auditoria");
     await expect(menu.getByRole("link", { name: "Auditoria" })).toHaveAttribute(

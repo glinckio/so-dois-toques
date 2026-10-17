@@ -8,6 +8,7 @@ Monorepo pnpm:
 
 - `apps/web`: Next.js 16 (telas). Leia `apps/web/AGENTS.md` antes de mexer: a versão do Next.js é mais nova que o seu conhecimento; a documentação está em `apps/web/node_modules/next/dist/docs/`.
 - `apps/api`: NestJS 12 em ESM (regras de negócio, login, banco com Prisma 7). Imports relativos com extensão `.js`.
+- `services/evolution`: microserviço do WhatsApp (NestJS 11, CommonJS) que fala com o servidor Evolution API; só a API chama, com a chave interna. `infra/evolution-api`: o servidor Evolution em Docker (v2.3.7 + `lid-fix.patch`).
 - `specs/`: specs SDD de cada etapa. `scripts/`: verificações do CI.
 
 ## Fluxo SDD (obrigatório)

@@ -1,0 +1,45 @@
+# Servidor Evolution API (WhatsApp) com PostgreSQL e Redis próprios.
+# Uso: cd infra/evolution-api && cp .env.example .env && docker compose up -d --build
+# Banco e Redis ficam só na rede interna; a API do Evolution só em 127.0.0.1:8080.
+name: sdt-evolution
+
+services:
+  evolution-api:
+    build: .
+    image: sdt/evolution-api:2.3.7-lid
+    restart: unless-stopped
+    depends_on:
+      - evolution-postgres
+      - evolution-redis
+    ports:
+      # EVOLUTION_PORTA no .env muda a porta no computador (ex.: 8090 se a 8080 já está em uso).
+      - "127.0.0.1:${EVOLUTION_PORTA:-8080}:8080"
+    env_file:
+      - .env
+    # O microserviço roda no computador (fora do Docker) em desenvolvimento.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - evolution_instances:/evolution/instances
+
+  evolution-postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: evolution
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  evolution-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+volumes:
+  evolution_instances:
+  postgres_data:
+  redis_data:

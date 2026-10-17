@@ -170,6 +170,7 @@ describe("VIVO-CA-02: menu agrupado e barra do celular", () => {
       "aulas",
       "mensalidades",
       "horarios",
+      "chat",
       "contabil",
       "feedback",
       "usuarios",
@@ -177,7 +178,13 @@ describe("VIVO-CA-02: menu agrupado e barra do celular", () => {
     ]);
     const { barra, mais } = separarMenuDoCelular(admin);
     expect(barra.map((i) => i.rotulo)).toEqual(["Início", "Aulas", "Mensalidades", "Horários"]);
-    expect(mais.map((i) => i.rotulo)).toEqual(["Contábil", "Feedback", "Usuários", "Auditoria"]);
+    expect(mais.map((i) => i.rotulo)).toEqual([
+      "Chat",
+      "Contábil",
+      "Feedback",
+      "Usuários",
+      "Auditoria",
+    ]);
   });
 });
 
