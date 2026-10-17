@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { COOKIE_SESSAO } from "@/lib/acesso/cookie";
 import { ipDoCliente } from "@/lib/acesso/ip";
+import { urlDaApi } from "@/lib/config/rota-da-api";
 import { envServidor } from "./env";
 
 export type CampoInvalido = { campo: string; mensagem: string };
@@ -41,7 +42,7 @@ export async function chamarApi<T>(rota: string, opcoes: Opcoes = {}): Promise<R
 
   let resposta: Response;
   try {
-    resposta = await fetch(new URL(rota, API_URL), {
+    resposta = await fetch(urlDaApi(API_URL, rota), {
       method: opcoes.metodo ?? "GET",
       headers: cabecalhos,
       body: opcoes.corpo === undefined ? undefined : JSON.stringify(opcoes.corpo),
@@ -89,7 +90,7 @@ export async function abrirStreamDaApi(rota: string, sinal: AbortSignal): Promis
   const ip = ipDoCliente(await headers(), IP_SALTOS_CONFIAVEIS);
   if (ip) cabecalhos["X-IP-Cliente"] = ip;
   try {
-    return await fetch(new URL(rota, API_URL), {
+    return await fetch(urlDaApi(API_URL, rota), {
       headers: cabecalhos,
       signal: sinal,
       cache: "no-store",
