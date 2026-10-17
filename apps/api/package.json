@@ -35,7 +35,7 @@
     "oxlint-tsgolint": "^7.0.2003",
     "prisma": "7.10.0",
     "supertest": "^7.3.1",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   },
   "dependencies": {
