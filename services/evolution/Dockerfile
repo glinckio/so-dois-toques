@@ -1,18 +1,18 @@
-# Microserviço do WhatsApp. Build a partir da raiz do repositório:
-#   docker build -f services/evolution/Dockerfile -t sdt-evolution .
-FROM node:22-bookworm-slim AS builder
-WORKDIR /repo
-RUN corepack enable
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY services/evolution/package.json services/evolution/
-RUN pnpm install --frozen-lockfile --filter @sdt/evolution...
-COPY services/evolution services/evolution
-RUN pnpm --filter @sdt/evolution build && pnpm --filter @sdt/evolution deploy --prod --legacy /app
-
+# Microserviço do WhatsApp (NestJS). Build a partir da raiz do repositório:
+#   docker build -f services/evolution/Dockerfile .
 FROM node:22-bookworm-slim
-ENV NODE_ENV=production
+RUN corepack enable
 WORKDIR /app
-COPY --from=builder /app ./
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY services/evolution/package.json services/evolution/
+RUN pnpm install --frozen-lockfile --filter @sdt/evolution
+
+COPY services/evolution services/evolution
+RUN pnpm --filter @sdt/evolution build && chown -R node:node /app
+
 USER node
+WORKDIR /app/services/evolution
+ENV NODE_ENV=production PORT=3004
 EXPOSE 3004
 CMD ["node", "dist/main.js"]

@@ -106,6 +106,34 @@ Tudo no mesmo servidor, num projeto do Easypanel (ex.: `sdt`). A API fica só na
 4. **Primeiro administrador:** no serviço `api`, abra o **Console** e rode `node dist/cli/criar-admin.js` (pede nome, e-mail e senha).
 5. **Atualizações:** ligue o _Auto Deploy_ nos dois apps ou clique em _Deploy_. Faça backup do banco antes de publicar versão com migration.
 
+#### Chat do WhatsApp no Easypanel
+
+Mais dois apps no mesmo projeto, **sem domínio** (só a rede interna). Os endereços internos seguem `<projeto>_<serviço>`; abaixo, projeto `sdt`.
+
+1. **Banco do Evolution:** no serviço `db`, abra o **Console** e crie um usuário e um banco só para ele (nunca o banco do sistema):
+   ```sql
+   CREATE USER evolution WITH PASSWORD '<senha-forte>';
+   CREATE DATABASE evolution OWNER evolution;
+   ```
+2. **Servidor Evolution:** _+ Service → App_, nome `evolution`.
+   - Source: o mesmo repositório e branch, **Build Path `/infra/evolution-api`**, Dockerfile `Dockerfile` (baixa a v2.3.7 oficial e aplica o patch de LID; o build leva alguns minutos e pede uns 2 GB de memória).
+   - Mounts: volume `evolution_instances` em `/evolution/instances`.
+   - Environment (a partir de `infra/evolution-api/.env.example`):
+     - `AUTHENTICATION_API_KEY` = chave nova.
+     - `SERVER_URL=http://sdt_evolution:8080`.
+     - `DATABASE_ENABLED=true`, `DATABASE_PROVIDER=postgresql`, `DATABASE_CONNECTION_URI=postgresql://evolution:<senha-forte>@sdt_db:5432/evolution?schema=public`, `DATABASE_CONNECTION_CLIENT_NAME=sdt_evolution` e os `DATABASE_SAVE_*` do exemplo.
+     - Sem Redis (um número só): `CACHE_REDIS_ENABLED=false` e `CACHE_LOCAL_ENABLED=true`. Com Redis, crie _+ Service → Redis_ e use a URL interna em `CACHE_REDIS_URI`.
+     - `DEL_INSTANCE=false`, `TELEMETRY_ENABLED=false`, `LOG_LEVEL=ERROR,WARN,INFO`, `CONFIG_SESSION_PHONE_CLIENT=Só Dois Toques`, `CONFIG_SESSION_PHONE_NAME=Chrome`, `QRCODE_LIMIT=30`.
+   - Porta interna `8080`. As migrations do Evolution rodam sozinhas ao subir.
+3. **Microserviço:** _+ Service → App_, nome `whatsapp`.
+   - Source: o mesmo repositório e branch, Build Path `/`, Dockerfile `services/evolution/Dockerfile`.
+   - Environment: `INTERNAL_API_KEY` (chave nova, 32+ caracteres), `EVOLUTION_API_URL=http://sdt_evolution:8080`, `EVOLUTION_API_KEY` (= `AUTHENTICATION_API_KEY` do passo 2), `WEBHOOK_TOKEN` (outra chave nova, 32+), `API_PUBLIC_URL=http://sdt_whatsapp:3004`.
+   - Porta interna `3004`.
+4. **API:** no app `api`, acrescente `EVOLUTION_URL=http://sdt_whatsapp:3004` e `EVOLUTION_CHAVE` (= `INTERNAL_API_KEY` do passo 3) e faça _Deploy_ (a migration do chat roda sozinha). O `web` não muda.
+5. **Conectar:** entre como administrador → **Chat → Conexão do número → Conectar pelo QR code** e leia o código no celular da escola.
+
+Gere cada chave com `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. Inclua o banco `evolution` no backup do Postgres.
+
 O `pnpm db:backup` e o `pnpm db:restaurar` continuam valendo da sua máquina; para isso, exponha a porta do Postgres só enquanto precisar (ou rode-os por um túnel SSH).
 
 ## 7. Antes de abrir para a equipe
