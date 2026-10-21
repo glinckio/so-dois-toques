@@ -20,10 +20,14 @@ export type ResumoFinanceiro = {
   /** GASTO-CA-08: cada tipo de saída, já descontados os estornos dele. */
   gastos: Record<TipoDeSaida, number>;
   totalGastos: number;
-  /** Mensalidades (menos estornos) menos os gastos. */
+  /** ENTRADA-CA-04: outras receitas lançadas à mão, já descontados os estornos delas. */
+  outrasReceitas: number;
+  /** Mensalidades (menos estornos) mais outras receitas, menos os gastos. */
   resultado: number;
   /** Saldo inicial do caixa: aparece à parte e não é receita. */
   saldoInicial: number;
+  /** ENTRADA-CA-04: dinheiro que o dono pôs no caixa (menos estornos); não é receita. */
+  aportes: number;
   /** Lançamento que não é de nenhum tipo conhecido; entra só na conferência. */
   naoClassificado: number;
   entradas: number;
@@ -38,15 +42,18 @@ export function porcentagem(parte: number, total: number): number | null {
 }
 
 /**
- * FOCO-CA-09 e GASTO-CA-08: entradas são as mensalidades (menos os estornos delas);
- * saídas são os gastos por tipo, e o estorno de um gasto é uma entrada do mesmo tipo,
- * que desconta dele. O saldo inicial fica à parte. O resultado confere com
- * entradas − saídas do livro-razão.
+ * FOCO-CA-09, GASTO-CA-08 e ENTRADA-CA-04: receitas são as mensalidades (menos os
+ * estornos delas) e as outras receitas; saídas são os gastos por tipo. O estorno de um
+ * lançamento manual é o contrário dele, com o mesmo tipo, e desconta dele. O saldo
+ * inicial e os aportes ficam à parte. O resultado confere com entradas − saídas do
+ * livro-razão.
  */
 export function resumoFinanceiro(lancamentos: readonly LancamentoContabil[]): ResumoFinanceiro {
   let recebido = 0;
   let estornos = 0;
   let saldoInicial = 0;
+  let outrasReceitas = 0;
+  let aportes = 0;
   let naoClassificado = 0;
   let entradas = 0;
   let saidas = 0;
@@ -63,21 +70,25 @@ export function resumoFinanceiro(lancamentos: readonly LancamentoContabil[]): Re
     else if (l.tipo === "ENTRADA" && l.categoria === "SALDO_INICIAL")
       saldoInicial += l.valorCentavos;
     else if (ehTipoDeSaida(l.categoria)) gastos[l.categoria] -= sinal * l.valorCentavos;
+    else if (l.categoria === "OUTRA_RECEITA") outrasReceitas += sinal * l.valorCentavos;
+    else if (l.categoria === "APORTE") aportes += sinal * l.valorCentavos;
     else naoClassificado += sinal * l.valorCentavos;
   }
   const totalGastos = TIPOS_DE_SAIDA.reduce((total, t) => total + gastos[t], 0);
-  const resultado = recebido - estornos - totalGastos;
+  const resultado = recebido - estornos + outrasReceitas - totalGastos;
   return {
     recebido,
     estornos,
     gastos,
     totalGastos,
+    outrasReceitas,
     resultado,
     saldoInicial,
+    aportes,
     naoClassificado,
     entradas,
     saidas,
-    confere: resultado + saldoInicial + naoClassificado === entradas - saidas,
+    confere: resultado + saldoInicial + aportes + naoClassificado === entradas - saidas,
   };
 }
 

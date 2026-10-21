@@ -227,6 +227,13 @@ describe("VIVO-CA-14: linha do tempo da auditoria", () => {
     expect(eventoDaAuditoria("RESERVA_CRIADA")).toMatchObject({ assunto: "Horários" });
     expect(eventoDaAuditoria("PRODUTO_CRIADO")).toMatchObject({ assunto: "Estoque" });
     expect(eventoDaAuditoria("PRESENCA_REGISTRADA")).toMatchObject({ assunto: "Aulas" });
+    // ENTRADA-CA-06: entrada, gasto e estorno do caixa são dinheiro.
+    expect(eventoDaAuditoria("ENTRADA_REGISTRADA")).toMatchObject({ assunto: "Dinheiro" });
+    expect(eventoDaAuditoria("GASTO_REGISTRADO")).toMatchObject({ assunto: "Dinheiro" });
+    expect(eventoDaAuditoria("LANCAMENTO_ESTORNADO")).toMatchObject({
+      assunto: "Dinheiro",
+      icone: "estorno",
+    });
   });
 
   it("todo tipo de evento conhecido cai num assunto que não é o genérico por engano", () => {

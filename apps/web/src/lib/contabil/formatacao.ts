@@ -2,7 +2,7 @@ import { formatarData } from "@/lib/aulas/formatacao";
 import { competenciaValida, FORMAS } from "@/lib/mensalidades/formatacao";
 import type { LancamentoExportado } from "./tipos";
 
-/** As categorias do livro-razão na planilha (GASTO-CA-08). */
+/** As categorias do livro-razão na planilha (GASTO-CA-08 e ENTRADA-CA-04). */
 export const CATEGORIAS: Record<string, string> = {
   MENSALIDADE: "Mensalidade",
   ESTORNO: "Estorno",
@@ -12,6 +12,8 @@ export const CATEGORIAS: Record<string, string> = {
   EQUIPAMENTO: "Equipamento",
   INVESTIMENTO: "Investimento",
   OUTRO_GASTO: "Outro gasto",
+  OUTRA_RECEITA: "Outra receita",
+  APORTE: "Aporte",
 };
 
 export function nomeDaCategoria(categoria: string): string {

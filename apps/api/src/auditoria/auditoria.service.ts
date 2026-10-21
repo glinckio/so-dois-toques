@@ -80,6 +80,8 @@ export const ACOES = [
   // Etapa 20
   "WHATSAPP_CONEXAO_INICIADA",
   "WHATSAPP_DESCONECTADO",
+  // Etapa 21
+  "ENTRADA_REGISTRADA",
 ] as const;
 export type Acao = (typeof ACOES)[number];
 

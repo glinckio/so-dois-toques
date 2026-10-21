@@ -109,3 +109,63 @@ test("GASTO-CA-03, GASTO-CA-05, GASTO-CA-06 e GASTO-CA-09: contrato mensal, gast
     await contexto.close();
   }
 });
+
+test("ENTRADA-CA-01, ENTRADA-CA-02, ENTRADA-CA-03 e ENTRADA-CA-05: entrada manual, saldo, estorno e acesso só do administrador", async ({
+  page,
+  browser,
+}) => {
+  test.slow();
+  const marca = Math.random().toString(36).slice(2, 8);
+  await entrarComoAdmin(page);
+
+  // Pelo atalho do painel do Contábil.
+  await page.goto("/contabil");
+  await expect(page.getByRole("table", { name: "Entradas por tipo" })).toContainText("Aportes");
+  await page.getByRole("link", { name: "Lançar entrada" }).click();
+  await expect(page).toHaveURL(/\/contabil\/entradas$/);
+
+  const form = page.getByRole("form", { name: "Lançar entrada" });
+  await form.getByText("Aporte", { exact: true }).click();
+  await form.getByLabel("Descrição").fill(`Dinheiro do dono ${marca}`);
+  await form.getByLabel("Valor (R$)").fill("250,00");
+  await form.getByText("Dinheiro", { exact: true }).click();
+  await form.getByRole("button", { name: "Lançar entrada" }).click();
+  await expect(page.getByText(/^Entrada lançada\./)).toBeVisible();
+  const entradas = page.getByRole("list", { name: "Entradas" });
+  const item = entradas.getByRole("listitem").filter({ hasText: `Dinheiro do dono ${marca}` });
+  await expect(item).toContainText("+ R$ 250,00");
+  await expect(item).toContainText("Aporte");
+
+  // Estorno com motivo: o original fica marcado e sai o contrário.
+  await item.locator("summary", { hasText: "Estornar" }).click();
+  await item.getByLabel("Motivo").fill("Lançado em dobro");
+  await item.getByRole("button", { name: "Estornar" }).click();
+  await confirmar(page);
+  await expect(entradas.getByText("Estorno: Lançado em dobro").first()).toBeVisible();
+  await expect(
+    entradas.getByRole("listitem").filter({ hasText: `Dinheiro do dono ${marca}` }),
+  ).toContainText("Estornado");
+
+  // Valor fora do formato não é lançado.
+  await form.getByLabel("Descrição").fill(`Evento ${marca}`);
+  await form.getByLabel("Valor (R$)").fill("abc");
+  await form.getByRole("button", { name: "Lançar entrada" }).click();
+  await expect(page.getByText(/^Valor inválido/)).toBeVisible();
+
+  // A atendente não vê as entradas.
+  const email = emailUnico("atendente-entradas");
+  const senha = await cadastrarUsuario(page, {
+    nome: `Atendente ${marca}`,
+    email,
+    perfil: "Atendente",
+  });
+  const contexto = await browser.newContext();
+  const atendente = await contexto.newPage();
+  try {
+    await primeiroAcesso(atendente, email, senha, "saque-curto-2026-e");
+    await atendente.goto("/contabil/entradas");
+    await expect(atendente.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
+  } finally {
+    await contexto.close();
+  }
+});

@@ -84,6 +84,7 @@ export class ContabilService {
         competencia,
         recebido: r.recebido,
         estornos: r.estornos,
+        outrasReceitas: r.outrasReceitas,
         gastos: r.totalGastos,
         resultado: r.resultado,
       };

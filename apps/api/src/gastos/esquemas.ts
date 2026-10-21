@@ -9,6 +9,7 @@ import {
   DIA_PAGAMENTO_MAXIMO,
   GASTO_VALOR_MAXIMO,
   GASTO_VALOR_MINIMO,
+  TIPOS_DE_ENTRADA,
 } from "./regras.js";
 
 const centavos = z.number({ error: "Informe um valor em centavos." }).int("Valor inválido.");
@@ -66,6 +67,15 @@ export const locacaoSchema = z.object({
 export const gastoSchema = z.object({
   categoria: z.enum(CATEGORIAS_GASTO, { error: "Escolha o tipo do gasto." }),
   descricao: z.string().trim().min(3, "Descreva o gasto.").max(200),
+  data,
+  valorCentavos: valorDoGasto,
+  forma,
+});
+
+/** ENTRADA-CA-01: mesmas faixas do gasto. */
+export const entradaSchema = z.object({
+  categoria: z.enum(TIPOS_DE_ENTRADA, { error: "Escolha o tipo da entrada." }),
+  descricao: z.string().trim().min(3, "Descreva a entrada.").max(200),
   data,
   valorCentavos: valorDoGasto,
   forma,

@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { estornarGasto } from "@/app/acoes/gastos";
 import { Cabecalho, Destaque } from "@/components/base/cabecalho";
-import { Selo } from "@/components/base/selo";
 import { FormGasto } from "@/components/contabil/form-gasto";
-import { FormMotivo } from "@/components/mensalidades/form-motivo";
+import { ListaDoCaixa } from "@/components/contabil/lista-do-caixa";
 import {
   AcessoNegado,
   Aviso,
@@ -13,10 +12,10 @@ import {
   classeCartao,
   classeRotulo,
 } from "@/components/ui";
-import { formatarData, hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
+import { hojeEmSaoPaulo } from "@/lib/aulas/formatacao";
 import type { Caixa, Saida } from "@/lib/contabil/tipos";
 import type { Quadra } from "@/lib/horarios/tipos";
-import { competenciaAtual, FORMAS, formatarReais, nomeDoMes } from "@/lib/mensalidades/formatacao";
+import { competenciaAtual, formatarReais, nomeDoMes } from "@/lib/mensalidades/formatacao";
 import { chamarApi } from "@/lib/servidor/api";
 import { exigirArea } from "@/lib/servidor/sessao";
 
@@ -110,49 +109,17 @@ export default async function PaginaGastos({ searchParams }: PageProps<"/contabi
         ) : saidas.dados.saidas.length === 0 ? (
           <p className="text-apagado px-1 text-sm">Nenhuma saída neste mês.</p>
         ) : (
-          <ul aria-label="Saídas" className="flex flex-col gap-3">
-            {saidas.dados.saidas.map((s) => (
-              <li key={s.id} className={`${classeCartao} flex flex-col gap-3`}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Selo tom={s.ehEstorno ? "sucesso" : "perigo"}>
-                        {s.ehEstorno ? `Estorno · ${s.nomeCategoria}` : s.nomeCategoria}
-                      </Selo>
-                      {s.estorno && <Selo tom="neutro">Estornado</Selo>}
-                    </div>
-                    <p className="font-semibold">{s.descricao}</p>
-                    <p className="text-apagado text-sm">
-                      {formatarData(s.data)} · {FORMAS[s.forma]} · por {s.criadoPor}
-                    </p>
-                  </div>
-                  <p
-                    className={`text-lg font-extrabold tabular-nums ${s.ehEstorno ? "text-sucesso" : "text-perigo"}`}
-                  >
-                    {s.ehEstorno ? "+" : "−"} {formatarReais(s.valorCentavos)}
-                  </p>
-                </div>
-                {!s.ehEstorno && !s.estorno && (
-                  <details className="group">
-                    <summary className="text-suave hover:text-texto inline-flex min-h-10 items-center text-sm font-semibold">
-                      Estornar
-                    </summary>
-                    <div className="animate-entrar pt-2">
-                      <FormMotivo
-                        acao={estornarGasto}
-                        campos={{ lancamentoId: s.id }}
-                        titulo="Estornar este gasto"
-                        explicacao="Entra um lançamento contrário e o valor volta para o caixa. O original continua no histórico."
-                        rotulo="Estornar"
-                        idCampo={`motivo-${s.id}`}
-                        confirmar="Estornar este gasto? O valor volta para o saldo em caixa."
-                      />
-                    </div>
-                  </details>
-                )}
-              </li>
-            ))}
-          </ul>
+          <ListaDoCaixa
+            rotulo="Saídas"
+            itens={saidas.dados.saidas}
+            estornar={estornarGasto}
+            textos={{
+              titulo: "Estornar este gasto",
+              explicacao:
+                "Entra um lançamento contrário e o valor volta para o caixa. O original continua no histórico.",
+              confirmar: "Estornar este gasto? O valor volta para o saldo em caixa.",
+            }}
+          />
         )}
       </section>
     </>

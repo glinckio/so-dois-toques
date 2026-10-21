@@ -14,8 +14,10 @@ type Painel = {
   recebido: number;
   estornos: number;
   totalGastos: number;
+  outrasReceitas: number;
   resultado: number;
   saldoInicial: number;
+  aportes: number;
   naoClassificado: number;
   entradas: number;
   saidas: number;
@@ -25,6 +27,7 @@ type Painel = {
     competencia: string;
     recebido: number;
     estornos: number;
+    outrasReceitas: number;
     gastos: number;
     resultado: number;
   }[];
@@ -81,7 +84,9 @@ describe("Etapa 8 e 12: painel contábil das mensalidades", () => {
     expect(depois.recebido - antes.recebido).toBe(24000);
     expect(depois.estornos - antes.estornos).toBe(9000);
     expect(depois.resultado - antes.resultado).toBe(15000);
-    expect(depois.resultado).toBe(depois.recebido - depois.estornos - depois.totalGastos);
+    expect(depois.resultado).toBe(
+      depois.recebido - depois.estornos + depois.outrasReceitas - depois.totalGastos,
+    );
     expect(depois.naoClassificado).toBe(0);
 
     // A conferência bate com a soma direta do livro-razão no período.
@@ -94,7 +99,9 @@ describe("Etapa 8 e 12: painel contábil das mensalidades", () => {
     const soma = (tipo: string) => somas.find((s) => s.tipo === tipo)?._sum.valorCentavos ?? 0;
     expect(depois.entradas).toBe(soma("ENTRADA"));
     expect(depois.saidas).toBe(soma("SAIDA"));
-    expect(depois.resultado + depois.saldoInicial).toBe(depois.entradas - depois.saidas);
+    expect(depois.resultado + depois.saldoInicial + depois.aportes).toBe(
+      depois.entradas - depois.saidas,
+    );
     expect(depois.confere).toBe(true);
 
     // Totais por forma.
@@ -146,6 +153,7 @@ describe("Etapa 8 e 12: painel contábil das mensalidades", () => {
       competencia: competenciaAtual(new Date()),
       recebido: atual.recebido,
       estornos: atual.estornos,
+      outrasReceitas: atual.outrasReceitas,
       gastos: atual.totalGastos,
       resultado: atual.resultado,
     });

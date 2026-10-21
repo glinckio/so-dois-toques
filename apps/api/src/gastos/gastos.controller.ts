@@ -8,6 +8,7 @@ import {
   consultaGastosSchema,
   contratoSchema,
   encerrarContratoSchema,
+  entradaSchema,
   estornoSchema,
   gastoSchema,
   locacaoSchema,
@@ -17,7 +18,7 @@ import { GastosService } from "./gastos.service.js";
 
 const ator = (u: UsuarioAutenticado, ip?: string): Ator => ({ id: u.id, perfil: u.perfil, ip });
 
-/** Contratos de quadra, gastos e saldo: só o administrador (GASTO-CA-09). */
+/** Contratos de quadra, gastos, entradas e saldo: só o administrador (GASTO-CA-09, ENTRADA-CA-05). */
 @ExigeArea("contabil")
 @Controller("gastos")
 export class GastosController {
@@ -44,6 +45,22 @@ export class GastosController {
     @IpCliente() ip: string | undefined,
   ) {
     return this.gastos.registrarLocacao(ator(usuario, ip), dados);
+  }
+
+  @Get("entradas")
+  entradas(
+    @Query(new ZodPipe(consultaGastosSchema)) consulta: z.infer<typeof consultaGastosSchema>,
+  ) {
+    return this.gastos.entradas(consulta.competencia);
+  }
+
+  @Post("entradas")
+  registrarEntrada(
+    @Body(new ZodPipe(entradaSchema)) dados: z.infer<typeof entradaSchema>,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+    @IpCliente() ip: string | undefined,
+  ) {
+    return this.gastos.registrarEntrada(ator(usuario, ip), dados);
   }
 
   @Post(":id/estorno")

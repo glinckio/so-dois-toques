@@ -21,6 +21,7 @@ import { consultaDoPeriodo, descreverPeriodo } from "@/lib/contabil/formatacao";
 import {
   mesesDoGrafico,
   NOMES_DO_GRAFICO,
+  TIPOS_DE_ENTRADA,
   TIPOS_DE_SAIDA,
   type Painel,
   type TipoDeSaida,
@@ -41,8 +42,8 @@ export const metadata: Metadata = { title: "Contábil | Só Dois Toques" };
 const numero = "text-right tabular-nums";
 
 /**
- * FOCO-CA-09 e GASTO-CA-08: mensalidades, gastos por tipo, resultado e saldo em caixa no
- * período, só para o administrador (CONT-CA-10).
+ * FOCO-CA-09, GASTO-CA-08 e ENTRADA-CA-04: mensalidades, outras entradas, gastos por tipo,
+ * resultado e saldo em caixa no período, só para o administrador (CONT-CA-10).
  */
 export default async function PaginaContabil({ searchParams }: PageProps<"/contabil">) {
   await connection();
@@ -66,7 +67,7 @@ export default async function PaginaContabil({ searchParams }: PageProps<"/conta
             <Destaque>Contábil</Destaque> do Só Dois Toques
           </>
         }
-        descricao="Mensalidades recebidas, gastos, resultado e o saldo em caixa, pelo dia em que o dinheiro entrou ou saiu."
+        descricao="Mensalidades recebidas, outras entradas, gastos, resultado e o saldo em caixa, pelo dia em que o dinheiro entrou ou saiu."
         acoes={
           resposta.ok && (
             <a
@@ -232,7 +233,7 @@ function Conteudo({ painel: p }: { painel: Painel }) {
           tom="sucesso"
           valor={p.resultado}
           serie={p.comparativo.map((m) => m.resultado)}
-          nota="Recebido menos estornos e gastos"
+          nota="Mensalidades e outras receitas, menos estornos e gastos"
           testId="indicador-Resultado"
         />
         <CartaoNumero
@@ -245,43 +246,95 @@ function Conteudo({ painel: p }: { painel: Painel }) {
         />
       </section>
 
-      <Cartao aria-labelledby="titulo-saidas" className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <CabecalhoCartao
-            id="titulo-saidas"
-            icone="descer"
-            titulo="Saídas por tipo"
-            descricao="O que saiu do caixa no período, já descontados os estornos"
-          />
-          <Link href="/contabil/gastos" className={classeBotaoSecundario}>
-            <Icone nome="mais" width={16} height={16} />
-            Lançar gasto
-          </Link>
-        </div>
-        <table
-          className="w-full border-separate border-spacing-y-1.5 text-sm"
-          aria-label="Saídas por tipo"
-        >
-          <tbody>
-            {(Object.keys(TIPOS_DE_SAIDA) as TipoDeSaida[]).map((tipo) => (
-              <tr key={tipo}>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+        <Cartao aria-labelledby="titulo-entradas" className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <CabecalhoCartao
+              id="titulo-entradas"
+              icone="subir"
+              titulo="Entradas por tipo"
+              descricao="O que entrou no caixa no período, já descontados os estornos"
+            />
+            <Link href="/contabil/entradas" className={classeBotaoSecundario}>
+              <Icone nome="mais" width={16} height={16} />
+              Lançar entrada
+            </Link>
+          </div>
+          <table
+            className="w-full border-separate border-spacing-y-1.5 text-sm"
+            aria-label="Entradas por tipo"
+          >
+            <tbody>
+              <tr>
                 <th scope="row" className="text-left font-semibold">
-                  {TIPOS_DE_SAIDA[tipo]}
+                  Mensalidades
                 </th>
-                <td className={`${numero} text-perigo`}>{formatarReais(p.gastos[tipo])}</td>
+                <td className={`${numero} text-sucesso`}>
+                  {formatarReais(p.recebido - p.estornos)}
+                </td>
               </tr>
-            ))}
-            <tr>
-              <th scope="row" className="border-borda border-t pt-2 text-left font-bold">
-                Total
-              </th>
-              <td className={`${numero} border-borda border-t pt-2 font-bold`}>
-                {formatarReais(p.totalGastos)}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </Cartao>
+              <tr>
+                <th scope="row" className="text-left font-semibold">
+                  {TIPOS_DE_ENTRADA.OUTRA_RECEITA}
+                </th>
+                <td className={`${numero} text-sucesso`}>{formatarReais(p.outrasReceitas)}</td>
+              </tr>
+              <tr>
+                <th scope="row" className="border-borda border-t pt-2 text-left font-bold">
+                  Total de receitas
+                </th>
+                <td className={`${numero} border-borda border-t pt-2 font-bold`}>
+                  {formatarReais(p.recebido - p.estornos + p.outrasReceitas)}
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" className="text-apagado pt-2 text-left font-semibold">
+                  {TIPOS_DE_ENTRADA.APORTE} <span className="font-normal">(não é receita)</span>
+                </th>
+                <td className={`${numero} text-apagado pt-2`}>{formatarReais(p.aportes)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </Cartao>
+
+        <Cartao aria-labelledby="titulo-saidas" className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <CabecalhoCartao
+              id="titulo-saidas"
+              icone="descer"
+              titulo="Saídas por tipo"
+              descricao="O que saiu do caixa no período, já descontados os estornos"
+            />
+            <Link href="/contabil/gastos" className={classeBotaoSecundario}>
+              <Icone nome="mais" width={16} height={16} />
+              Lançar gasto
+            </Link>
+          </div>
+          <table
+            className="w-full border-separate border-spacing-y-1.5 text-sm"
+            aria-label="Saídas por tipo"
+          >
+            <tbody>
+              {(Object.keys(TIPOS_DE_SAIDA) as TipoDeSaida[]).map((tipo) => (
+                <tr key={tipo}>
+                  <th scope="row" className="text-left font-semibold">
+                    {TIPOS_DE_SAIDA[tipo]}
+                  </th>
+                  <td className={`${numero} text-perigo`}>{formatarReais(p.gastos[tipo])}</td>
+                </tr>
+              ))}
+              <tr>
+                <th scope="row" className="border-borda border-t pt-2 text-left font-bold">
+                  Total
+                </th>
+                <td className={`${numero} border-borda border-t pt-2 font-bold`}>
+                  {formatarReais(p.totalGastos)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </Cartao>
+      </div>
 
       <Conferencia painel={p} />
 
@@ -343,7 +396,7 @@ function Conteudo({ painel: p }: { painel: Painel }) {
           id="titulo-12-meses"
           icone="contabil"
           titulo="Últimos 12 meses"
-          descricao="Mensalidades recebidas e saídas (estornos e gastos) de cada mês, regime de caixa"
+          descricao="Receitas (mensalidades e outras receitas) e saídas (estornos e gastos) de cada mês, regime de caixa"
         />
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:items-start">
           <BarrasMensais meses={meses} nomes={NOMES_DO_GRAFICO} />
@@ -364,6 +417,7 @@ function Conferencia({ painel: p }: { painel: Painel }) {
     ...(p.saldoInicial !== 0
       ? [{ rotulo: "Saldo inicial", valor: p.saldoInicial, sinal: "+" }]
       : []),
+    ...(p.aportes !== 0 ? [{ rotulo: "Aportes", valor: p.aportes, sinal: "+" }] : []),
     ...(p.naoClassificado !== 0
       ? [{ rotulo: "Outros", valor: p.naoClassificado, sinal: "+" }]
       : []),
