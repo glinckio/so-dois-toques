@@ -16,8 +16,10 @@ type Painel = {
   estornos: number;
   gastos: Record<string, number>;
   totalGastos: number;
+  outrasReceitas: number;
   resultado: number;
   saldoInicial: number;
+  aportes: number;
   naoClassificado: number;
   entradas: number;
   saidas: number;
@@ -471,8 +473,10 @@ describe("Etapa 17: quadras alugadas, gastos e saldo do caixa", () => {
     expect(depois.gastos["INVESTIMENTO"]! - antes.gastos["INVESTIMENTO"]!).toBe(2000);
     expect(depois.totalGastos - antes.totalGastos).toBe(8000);
     expect(depois.resultado - antes.resultado).toBe(-8000);
-    expect(depois.resultado).toBe(depois.recebido - depois.estornos - depois.totalGastos);
-    expect(depois.resultado + depois.saldoInicial + depois.naoClassificado).toBe(
+    expect(depois.resultado).toBe(
+      depois.recebido - depois.estornos + depois.outrasReceitas - depois.totalGastos,
+    );
+    expect(depois.resultado + depois.saldoInicial + depois.aportes + depois.naoClassificado).toBe(
       depois.entradas - depois.saidas,
     );
     expect(depois.naoClassificado).toBe(0);

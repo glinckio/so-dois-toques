@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   descricaoDaParcela,
+  ehTipoDeEntrada,
+  estornavelNoCaixa,
   origemDaParcela,
   parcelasDevidas,
   saldoEmCaixa,
@@ -69,5 +71,30 @@ describe("GASTO-CA-07: saldo em caixa", () => {
     expect(
       saldoEmCaixa([l("ENTRADA", 100, "2026-01-01"), l("SAIDA", 30, "2026-02-01")], null),
     ).toBe(70);
+  });
+});
+
+describe("ENTRADA-CA-03: o que se estorna no caixa", () => {
+  it("estorna gasto e entrada manual, mas não mensalidade, saldo inicial nem estorno", () => {
+    const l = (tipo: "ENTRADA" | "SAIDA", categoria: string, estornoDeId: string | null = null) =>
+      estornavelNoCaixa({ tipo, categoria, estornoDeId });
+    expect(l("SAIDA", "EQUIPAMENTO")).toBe(true);
+    expect(l("SAIDA", "ALUGUEL_MENSAL")).toBe(true);
+    expect(l("ENTRADA", "OUTRA_RECEITA")).toBe(true);
+    expect(l("ENTRADA", "APORTE")).toBe(true);
+    expect(l("ENTRADA", "EQUIPAMENTO", "id")).toBe(false);
+    expect(l("SAIDA", "APORTE", "id")).toBe(false);
+    expect(l("ENTRADA", "MENSALIDADE")).toBe(false);
+    expect(l("ENTRADA", "SALDO_INICIAL")).toBe(false);
+    expect(l("SAIDA", "ESTORNO")).toBe(false);
+    // Tipo trocado (entrada de gasto, saída de aporte) só existe como estorno.
+    expect(l("ENTRADA", "EQUIPAMENTO")).toBe(false);
+    expect(l("SAIDA", "OUTRA_RECEITA")).toBe(false);
+  });
+
+  it("ENTRADA-CA-01: os tipos de entrada são outra receita e aporte", () => {
+    expect(ehTipoDeEntrada("OUTRA_RECEITA")).toBe(true);
+    expect(ehTipoDeEntrada("APORTE")).toBe(true);
+    expect(ehTipoDeEntrada("MENSALIDADE")).toBe(false);
   });
 });

@@ -66,6 +66,26 @@ describe("FOCO-CA-09: recebido, estornos e conferência", () => {
     expect(r.confere).toBe(true);
   });
 
+  it("ENTRADA-CA-04: outras receitas entram no resultado; aporte fica à parte e confere", () => {
+    const r = resumoFinanceiro([
+      entrada("MENSALIDADE", 20000),
+      entrada("OUTRA_RECEITA", 5000),
+      entrada("OUTRA_RECEITA", 1000),
+      saida("OUTRA_RECEITA", 1000),
+      entrada("APORTE", 30000),
+      entrada("APORTE", 2000),
+      saida("APORTE", 2000),
+      saida("EQUIPAMENTO", 4000),
+    ]);
+    expect(r.outrasReceitas).toBe(5000);
+    expect(r.aportes).toBe(30000);
+    expect(r.recebido).toBe(20000);
+    expect(r.resultado).toBe(20000 + 5000 - 4000);
+    expect(r.naoClassificado).toBe(0);
+    expect(r.confere).toBe(true);
+    expect(r.entradas - r.saidas).toBe(r.resultado + r.aportes);
+  });
+
   it("porcentagem com uma casa e sem base", () => {
     expect(porcentagem(1, 3)).toBe(33.3);
     expect(porcentagem(1, 0)).toBeNull();

@@ -42,6 +42,34 @@ export const NOMES_DAS_SAIDAS: Record<TipoDeSaida, string> = {
   OUTRO_GASTO: "Outro gasto",
 };
 
+/**
+ * ENTRADA-CA-01: o que entra no caixa à mão. Outra receita é receita; aporte é dinheiro
+ * que o dono põe no caixa e não é receita (Etapa 21).
+ */
+export const TIPOS_DE_ENTRADA = ["OUTRA_RECEITA", "APORTE"] as const;
+export type TipoDeEntrada = (typeof TIPOS_DE_ENTRADA)[number];
+
+export const ehTipoDeEntrada = (categoria: string): categoria is TipoDeEntrada =>
+  (TIPOS_DE_ENTRADA as readonly string[]).includes(categoria);
+
+export const NOMES_DAS_ENTRADAS: Record<TipoDeEntrada, string> = {
+  OUTRA_RECEITA: "Outra receita",
+  APORTE: "Aporte",
+};
+
+/**
+ * GASTO-CA-06 e ENTRADA-CA-03: só se estorna aqui o lançamento feito à mão (ou o aluguel
+ * mensal): uma saída de gasto ou uma entrada manual, que ainda não seja um estorno.
+ */
+export const estornavelNoCaixa = (l: {
+  tipo: "ENTRADA" | "SAIDA";
+  categoria: string;
+  estornoDeId: string | null;
+}) =>
+  l.estornoDeId === null &&
+  ((l.tipo === "SAIDA" && ehTipoDeSaida(l.categoria)) ||
+    (l.tipo === "ENTRADA" && ehTipoDeEntrada(l.categoria)));
+
 export type ContratoParaLancar = {
   /** Mês de início, "AAAA-MM". */
   inicio: string;

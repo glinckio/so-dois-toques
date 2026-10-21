@@ -17,12 +17,22 @@ import {
   proximaCompetencia,
 } from "../mensalidades/regras.js";
 import { PrismaService } from "../prisma/prisma.service.js";
-import type { contratoSchema, gastoSchema, locacaoSchema, saldoInicialSchema } from "./esquemas.js";
+import type {
+  contratoSchema,
+  entradaSchema,
+  gastoSchema,
+  locacaoSchema,
+  saldoInicialSchema,
+} from "./esquemas.js";
 import { LancamentoMensalService } from "./lancamento-mensal.service.js";
 import {
   descreverHorarioSemanal,
+  ehTipoDeEntrada,
   ehTipoDeSaida,
+  estornavelNoCaixa,
+  NOMES_DAS_ENTRADAS,
   NOMES_DAS_SAIDAS,
+  TIPOS_DE_ENTRADA,
   TIPOS_DE_SAIDA,
 } from "./regras.js";
 
@@ -36,7 +46,10 @@ const MESES_A_FRENTE = 12;
 
 const MENSAGEM_JA_ESTORNADO = "Este lançamento já foi estornado.";
 
-/** Etapa 17: contratos de quadra, locações avulsas, outros gastos, estornos e saldo. */
+/**
+ * Etapa 17: contratos de quadra, locações avulsas, outros gastos, estornos e saldo.
+ * Etapa 21: entradas manuais (outra receita e aporte).
+ */
 @Injectable()
 export class GastosService {
   constructor(
@@ -158,12 +171,15 @@ export class GastosService {
 
   // ---------- Saídas (GASTO-CA-05 e 06) ----------
 
-  /** As saídas do mês (e os estornos delas), da mais nova para a mais antiga. */
-  async saidas(competencia?: string) {
+  /** Os lançamentos do mês destas categorias (e os estornos deles), do mais novo ao mais antigo. */
+  private async doMes(
+    categorias: readonly (typeof TIPOS_DE_SAIDA | typeof TIPOS_DE_ENTRADA)[number][],
+    competencia?: string,
+  ) {
     const periodo = periodoDoMes(competencia ?? competenciaAtual(new Date()));
     const linhas = await this.prisma.lancamento.findMany({
       where: {
-        categoria: { in: [...TIPOS_DE_SAIDA] },
+        categoria: { in: [...categorias] },
         data: { gte: paraDataDoBanco(periodo.de), lte: paraDataDoBanco(periodo.ate) },
       },
       orderBy: [{ data: "desc" }, { criadoEm: "desc" }],
@@ -172,13 +188,19 @@ export class GastosService {
         estorno: { select: { id: true, data: true, descricao: true } },
       },
     });
+    const nome = (categoria: string) =>
+      ehTipoDeSaida(categoria)
+        ? NOMES_DAS_SAIDAS[categoria]
+        : ehTipoDeEntrada(categoria)
+          ? NOMES_DAS_ENTRADAS[categoria]
+          : categoria;
     return {
       periodo,
-      saidas: linhas.map((l) => ({
+      linhas: linhas.map((l) => ({
         id: l.id,
         tipo: l.tipo,
         categoria: l.categoria,
-        nomeCategoria: ehTipoDeSaida(l.categoria) ? NOMES_DAS_SAIDAS[l.categoria] : l.categoria,
+        nomeCategoria: nome(l.categoria),
         valorCentavos: l.valorCentavos,
         forma: l.forma,
         data: deDataDoBanco(l.data),
@@ -194,6 +216,18 @@ export class GastosService {
           : null,
       })),
     };
+  }
+
+  /** As saídas do mês (e os estornos delas). */
+  async saidas(competencia?: string) {
+    const { periodo, linhas } = await this.doMes(TIPOS_DE_SAIDA, competencia);
+    return { periodo, saidas: linhas };
+  }
+
+  /** ENTRADA-CA-02: as entradas manuais do mês (e os estornos delas). */
+  async entradas(competencia?: string) {
+    const { periodo, linhas } = await this.doMes(TIPOS_DE_ENTRADA, competencia);
+    return { periodo, entradas: linhas };
   }
 
   private async saida(
@@ -264,9 +298,40 @@ export class GastosService {
     return this.prisma.$transaction((tx) => this.saida(ator, dados, { ...dados }, tx));
   }
 
+  /** ENTRADA-CA-01: outra receita ou aporte, lançado à mão. */
+  async registrarEntrada(ator: Ator, dados: z.infer<typeof entradaSchema>) {
+    this.naoNoFuturo(dados.data);
+    return this.prisma.$transaction(async (tx) => {
+      const lancamento = await tx.lancamento.create({
+        data: {
+          tipo: "ENTRADA",
+          categoria: dados.categoria,
+          valorCentavos: dados.valorCentavos,
+          forma: dados.forma,
+          data: paraDataDoBanco(dados.data),
+          descricao: dados.descricao,
+          criadoPorId: ator.id,
+        },
+      });
+      await this.auditoria.registrar(
+        {
+          acao: "ENTRADA_REGISTRADA",
+          atorId: ator.id,
+          ip: ator.ip,
+          alvoTipo: "Lancamento",
+          alvoId: lancamento.id,
+          detalhes: { ...dados },
+        },
+        tx,
+      );
+      return { id: lancamento.id };
+    });
+  }
+
   /**
-   * GASTO-CA-06: o estorno é uma entrada do mesmo tipo e valor, ligada à saída original,
-   * com data de hoje. O livro-razão não deixa estornar duas vezes (estornoDeId único).
+   * GASTO-CA-06 e ENTRADA-CA-03: o estorno é o lançamento contrário do mesmo tipo e valor,
+   * ligado ao original, com data de hoje. O livro-razão não deixa estornar duas vezes
+   * (estornoDeId único).
    */
   async estornar(ator: Ator, id: string, motivo: string) {
     try {
@@ -277,19 +342,15 @@ export class GastosService {
           include: { estorno: { select: { id: true } } },
         });
         if (!original) throw new NotFoundException("Lançamento não encontrado.");
-        if (
-          original.tipo !== "SAIDA" ||
-          original.estornoDeId !== null ||
-          !ehTipoDeSaida(original.categoria)
-        ) {
+        if (!estornavelNoCaixa(original)) {
           throw new BadRequestException(
-            "Aqui só se estornam aluguéis, locações e gastos. Mensalidade se estorna pelo recibo.",
+            "Aqui só se estornam aluguéis, locações, gastos e entradas. Mensalidade se estorna pelo recibo.",
           );
         }
         if (original.estorno) throw new ConflictException(MENSAGEM_JA_ESTORNADO);
         const estorno = await tx.lancamento.create({
           data: {
-            tipo: "ENTRADA",
+            tipo: original.tipo === "SAIDA" ? "ENTRADA" : "SAIDA",
             categoria: original.categoria,
             valorCentavos: original.valorCentavos,
             forma: original.forma,

@@ -230,6 +230,9 @@ enum CategoriaLancamento {
   EQUIPAMENTO
   INVESTIMENTO
   OUTRO_GASTO
+  /// Etapa 21
+  OUTRA_RECEITA
+  APORTE
 }
 
 model Plano {
