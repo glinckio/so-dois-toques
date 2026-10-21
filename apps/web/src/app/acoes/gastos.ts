@@ -70,6 +70,39 @@ export async function estornarGasto(
   return { sucesso: "Estorno lançado: o valor voltou para o caixa." };
 }
 
+const CAMPOS_ENTRADA = ["tipo", "descricao", "data", "valor", "forma"] as const;
+
+/** ENTRADA-CA-01: outra receita ou aporte, lançado à mão. */
+export async function lancarEntrada(
+  _: EstadoFormulario,
+  form: FormData,
+): Promise<EstadoFormulario> {
+  const valorCentavos = centavosDe(texto(form, "valor"));
+  if (valorCentavos === null) return erroComValores({ erro: VALOR_INVALIDO }, form, CAMPOS_ENTRADA);
+  const resposta = await chamarApi("/gastos/entradas", {
+    metodo: "POST",
+    corpo: {
+      categoria: texto(form, "tipo"),
+      descricao: texto(form, "descricao"),
+      data: texto(form, "data"),
+      valorCentavos,
+      forma: texto(form, "forma"),
+    },
+  });
+  if (!resposta.ok) return erroComValores(erroDe(resposta), form, CAMPOS_ENTRADA);
+  refresh();
+  return { sucesso: "Entrada lançada. O saldo em caixa já foi atualizado." };
+}
+
+/** ENTRADA-CA-03: o mesmo estorno do gasto, no sentido contrário. */
+export async function estornarEntrada(
+  estado: EstadoFormulario,
+  form: FormData,
+): Promise<EstadoFormulario> {
+  const resultado = await estornarGasto(estado, form);
+  return resultado.sucesso ? { sucesso: "Estorno lançado: o valor saiu do caixa." } : resultado;
+}
+
 const CAMPOS_CONTRATO = [
   "quadraId",
   "diaSemana",

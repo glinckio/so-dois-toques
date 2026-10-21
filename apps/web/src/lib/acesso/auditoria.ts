@@ -66,6 +66,14 @@ export const ROTULOS_ACOES = {
   FEEDBACK_RETOMADO: "Formulário de feedback retomado",
   WHATSAPP_CONEXAO_INICIADA: "Conexão do WhatsApp iniciada (QR code)",
   WHATSAPP_DESCONECTADO: "WhatsApp desconectado",
+  QUADRA_CRIADA: "Quadra cadastrada",
+  QUADRA_ALTERADA: "Quadra alterada",
+  CONTRATO_REGISTRADO: "Aluguel mensal de quadra registrado",
+  CONTRATO_ENCERRADO: "Aluguel mensal de quadra encerrado",
+  GASTO_REGISTRADO: "Gasto lançado",
+  LANCAMENTO_ESTORNADO: "Lançamento do caixa estornado",
+  SALDO_INICIAL_REGISTRADO: "Saldo inicial do caixa registrado",
+  ENTRADA_REGISTRADA: "Entrada lançada no caixa",
 } as const;
 
 export const TAMANHO_PAGINA = 50;
@@ -164,7 +172,18 @@ const ASSUNTOS = [
   { prefixos: ["LOGIN_", "LOGOUT", "ACESSO_", "SENHA_", "USUARIO_", "ADMIN_"], assunto: "Acesso" },
   { prefixos: ["ALUNO_", "LOCAL_", "TURMA_", "MATRICULA_", "PRESENCA_"], assunto: "Aulas" },
   {
-    prefixos: ["PLANO_", "ASSINATURA_", "MENSALIDADE", "PAGAMENTO_", "CAIXA_", "LANCAMENTO_"],
+    prefixos: [
+      "PLANO_",
+      "ASSINATURA_",
+      "MENSALIDADE",
+      "PAGAMENTO_",
+      "CAIXA_",
+      "LANCAMENTO_",
+      "GASTO_",
+      "ENTRADA_",
+      "SALDO_",
+      "CONTRATO_",
+    ],
     assunto: "Dinheiro",
   },
   { prefixos: ["PRODUTO_", "COMPRA_", "VENDA_", "ESTOQUE_"], assunto: "Estoque" },

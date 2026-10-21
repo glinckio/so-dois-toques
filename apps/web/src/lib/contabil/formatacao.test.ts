@@ -37,6 +37,9 @@ describe("GASTO-CA-08: categorias novas na planilha", () => {
     expect(nomeDaCategoria("EQUIPAMENTO")).toBe("Equipamento");
     expect(nomeDaCategoria("INVESTIMENTO")).toBe("Investimento");
     expect(nomeDaCategoria("OUTRO_GASTO")).toBe("Outro gasto");
+    // ENTRADA-CA-04
+    expect(nomeDaCategoria("OUTRA_RECEITA")).toBe("Outra receita");
+    expect(nomeDaCategoria("APORTE")).toBe("Aporte");
   });
 });
 

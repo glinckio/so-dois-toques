@@ -11,16 +11,16 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 
 ## O que cada perfil vê
 
-| Tela                 | Administrador | Atendente                             |
-| -------------------- | ------------- | ------------------------------------- |
-| Início               | Sim           | Sim                                   |
-| Aulas                | Tudo          | Ver turmas e alunos e marcar presença |
-| Mensalidades         | Tudo          | Ver e receber, sem estornos           |
-| Horários             | Tudo          | Ver a agenda de cada quadra           |
-| Chat                 | Tudo          | Conversar (sem conectar o número)     |
-| Contábil e gastos    | Sim           | Não                                   |
-| Feedback             | Sim           | Não                                   |
-| Usuários e Auditoria | Sim           | Não                                   |
+| Tela                        | Administrador | Atendente                             |
+| --------------------------- | ------------- | ------------------------------------- |
+| Início                      | Sim           | Sim                                   |
+| Aulas                       | Tudo          | Ver turmas e alunos e marcar presença |
+| Mensalidades                | Tudo          | Ver e receber, sem estornos           |
+| Horários                    | Tudo          | Ver a agenda de cada quadra           |
+| Chat                        | Tudo          | Conversar (sem conectar o número)     |
+| Contábil, gastos e entradas | Sim           | Não                                   |
+| Feedback                    | Sim           | Não                                   |
+| Usuários e Auditoria        | Sim           | Não                                   |
 
 ## Aulas
 
@@ -53,9 +53,10 @@ Guia curto do sistema Só Dois Toques, versão 1.0.0. Funciona no navegador do c
 
 ## Contábil (administrador)
 
-- **Painel:** escolha o mês ou um período. Mostra o **saldo em caixa** (hoje), as mensalidades recebidas, os estornos, os gastos, o resultado (recebido menos estornos e gastos), o que há a receber (mensalidades vencidas), as saídas por tipo, os totais por forma de pagamento, a conferência com os lançamentos e os últimos 12 meses. **Baixar lançamentos (CSV)** gera a planilha para o contador.
+- **Painel:** escolha o mês ou um período. Mostra o **saldo em caixa** (hoje), as mensalidades recebidas, os estornos, os gastos, o resultado (mensalidades e outras receitas, menos estornos e gastos), o que há a receber (mensalidades vencidas), as entradas e as saídas por tipo, os totais por forma de pagamento, a conferência com os lançamentos e os últimos 12 meses. **Baixar lançamentos (CSV)** gera a planilha para o contador.
 - **Saldo em caixa:** começou com R$ 600,00 em 16/10/2026 (o que sobrou até ali) e sobe ou desce com tudo o que entra e sai a partir dessa data. O saldo inicial não conta como receita do mês.
 - **Gastos:** lance a **locação avulsa** de quadra (quadra, dia, valor e forma) e os **outros gastos** (equipamento, investimento ou outro, com descrição). A data é hoje ou antes. Lançamento errado não se apaga: abra-o na lista de saídas e **estorne** com motivo; o valor volta para o caixa.
+- **Entradas:** lance o dinheiro que entra no caixa além das mensalidades. **Outra receita** (aula avulsa, evento, patrocínio) conta no resultado; **aporte** (dinheiro que o dono põe no caixa) aumenta o saldo, mas não é receita e aparece à parte. Informe descrição, dia (hoje ou antes), valor e forma. Lançamento errado se corrige com **estorno** e motivo; o valor sai do caixa.
 - **Aluguel mensal:** registre o horário fixo pago por mês (quadra, dia, início e fim, valor, dia do pagamento de 1 a 28, forma e o primeiro mês). Todo mês, no dia do pagamento, o aluguel sai do caixa sozinho, uma vez só. Se o dia do pagamento do primeiro mês já passou, ele sai no dia do registro. Para mudar o valor, encerre o contrato a partir de um mês e registre outro.
 
 ## Feedback (administrador)
