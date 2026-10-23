@@ -10,7 +10,7 @@ import {
 } from "./regras.js";
 
 describe("GASTO-CA-04: meses do contrato a lançar", () => {
-  const contrato = { inicio: "2026-10", fim: null, diaPagamento: 10 };
+  const contrato = { inicio: "2026-10", fim: null, diaPagamento: 10, lancadoAte: null };
 
   it("lança no dia do pagamento de cada mês, até hoje", () => {
     expect(parcelasDevidas(contrato, "2026-12-09", "2026-10-01")).toEqual([
@@ -37,8 +37,21 @@ describe("GASTO-CA-04: meses do contrato a lançar", () => {
     ).toEqual(["2026-10", "2026-11"]);
   });
 
+  it("mês já lançado não volta, mesmo sem o lançamento dele no caixa", () => {
+    const lancado = { ...contrato, lancadoAte: "2026-10" };
+    expect(parcelasDevidas(lancado, "2026-10-20", "2026-10-01")).toEqual([]);
+    expect(parcelasDevidas(lancado, "2026-12-10", "2026-10-01")).toEqual([
+      { competencia: "2026-11", data: "2026-11-10" },
+      { competencia: "2026-12", data: "2026-12-10" },
+    ]);
+    // Marca anterior ao início (não acontece) não faz lançar antes do início.
+    expect(
+      parcelasDevidas({ ...contrato, lancadoAte: "2026-08" }, "2026-10-10", "2026-10-01"),
+    ).toEqual([{ competencia: "2026-10", data: "2026-10-10" }]);
+  });
+
   it("vira o ano", () => {
-    const dezembro = { inicio: "2026-12", fim: null, diaPagamento: 28 };
+    const dezembro = { inicio: "2026-12", fim: null, diaPagamento: 28, lancadoAte: null };
     expect(parcelasDevidas(dezembro, "2027-01-28", "2026-12-01")).toEqual([
       { competencia: "2026-12", data: "2026-12-28" },
       { competencia: "2027-01", data: "2027-01-28" },

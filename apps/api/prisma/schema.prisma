@@ -377,6 +377,8 @@ model ContratoQuadra {
   inicio         DateTime       @db.Date
   /// Primeiro dia do primeiro mês que não é mais pago.
   fim            DateTime?      @db.Date
+  /// Primeiro dia do último mês já lançado no caixa; esse mês e os anteriores não voltam.
+  lancadoAte     DateTime?      @db.Date
   criadoPorId    String         @db.Uuid
   criadoPor      Usuario        @relation("ContratoCriadoPor", fields: [criadoPorId], references: [id], onDelete: Restrict)
   criadoEm       DateTime       @default(now()) @db.Timestamptz(3)

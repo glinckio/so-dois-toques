@@ -76,6 +76,8 @@ export type ContratoParaLancar = {
   /** Mês a partir do qual não lança mais, "AAAA-MM"; null se vale. */
   fim: string | null;
   diaPagamento: number;
+  /** Último mês já lançado, "AAAA-MM"; null se nenhum. Ele e os anteriores não voltam. */
+  lancadoAte: string | null;
 };
 
 export type Parcela = { competencia: string; data: string };
@@ -83,7 +85,8 @@ export type Parcela = { competencia: string; data: string };
 /**
  * GASTO-CA-04: os meses do contrato cujo dia de pagamento já chegou até hoje, do início
  * até antes do encerramento. A saída entra no dia do pagamento ou, se o contrato foi
- * registrado depois dele, no dia do registro.
+ * registrado depois dele, no dia do registro. Começa depois do último mês já lançado:
+ * mexer no lançamento de um mês (no banco ou por estorno) não faz o mês entrar de novo.
  */
 export function parcelasDevidas(
   contrato: ContratoParaLancar,
@@ -93,7 +96,10 @@ export function parcelasDevidas(
   const parcelas: Parcela[] = [];
   const ultimo = competenciaDe(hoje);
   for (
-    let competencia = contrato.inicio;
+    let competencia =
+      contrato.lancadoAte && contrato.lancadoAte >= contrato.inicio
+        ? proximaCompetencia(contrato.lancadoAte)
+        : contrato.inicio;
     competencia <= ultimo && (contrato.fim === null || competencia < contrato.fim);
     competencia = proximaCompetencia(competencia)
   ) {

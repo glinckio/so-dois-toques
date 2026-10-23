@@ -307,6 +307,38 @@ describe("Etapa 17: quadras alugadas, gastos e saldo do caixa", () => {
     });
   });
 
+  it("GASTO-CA-04: mês já lançado não volta, mesmo com o lançamento apagado ou mexido no banco", async () => {
+    const { api, token } = admin;
+    const quadra = await novaQuadra();
+    const lancador = app.get(LancamentoMensalService);
+    const { body } = await api
+      .post("/gastos/contratos", contrato(quadra.id, { diaPagamento: 1 }), token)
+      .expect(201);
+    expect(body.lancados).toBe(1);
+    expect(await prisma.contratoQuadra.findUnique({ where: { id: body.id } })).toMatchObject({
+      lancadoAte: paraDataDoBanco(`${mesAtual()}-01`),
+    });
+
+    // Correção feita à mão no banco, passando por cima da trava do livro-razão.
+    await prisma.$transaction([
+      prisma.$executeRaw`ALTER TABLE "Lancamento" DISABLE TRIGGER "Lancamento_sem_update_delete"`,
+      prisma.$executeRaw`DELETE FROM "Lancamento" WHERE "origemId" = ${`${body.id}:${mesAtual()}`}`,
+      prisma.$executeRaw`ALTER TABLE "Lancamento" ENABLE TRIGGER "Lancamento_sem_update_delete"`,
+    ]);
+
+    expect(await lancador.lancar(new Date(), body.id)).toBe(0);
+    const doContrato = () =>
+      prisma.lancamento.findMany({
+        where: { categoria: "ALUGUEL_MENSAL", origemId: { startsWith: `${body.id}:` } },
+      });
+    expect(await doContrato()).toEqual([]);
+
+    // O mês seguinte entra normalmente no dia do pagamento.
+    const mesQueVem = proximaCompetencia(mesAtual());
+    await lancador.lancar(new Date(`${vencimentoEm(mesQueVem, 1)}T15:00:00Z`), body.id);
+    expect((await doContrato()).map((l) => l.origemId)).toEqual([`${body.id}:${mesQueVem}`]);
+  });
+
   it("GASTO-CA-05: locação avulsa e outros gastos lançam a saída; data futura e valor fora da faixa são recusados", async () => {
     const { api, token } = admin;
     const quadra = await novaQuadra();
