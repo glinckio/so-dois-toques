@@ -8,7 +8,7 @@ import {
 import { deDataDoBanco, hojeEmSaoPaulo, paraDataDoBanco } from "../aulas/regras.js";
 import { ENV } from "../config.module.js";
 import type { Env } from "../env.js";
-import { competenciaDe } from "../mensalidades/regras.js";
+import { competenciaDe, primeiroDia } from "../mensalidades/regras.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { descricaoDaParcela, origemDaParcela, parcelasDevidas } from "./regras.js";
 
@@ -16,8 +16,11 @@ const UMA_HORA = 60 * 60 * 1000;
 
 /**
  * GASTO-CA-04: lança o aluguel dos contratos de quadra no dia do pagamento de cada mês,
- * na subida da API, a cada hora e ao registrar um contrato. O índice único parcial
- * (contrato e mês) garante um lançamento só, mesmo com duas execuções ao mesmo tempo.
+ * na subida da API, a cada hora e ao registrar um contrato. O contrato guarda o último
+ * mês lançado (lancadoAte), atualizado junto com o lançamento e com a linha do contrato
+ * travada: duas execuções ao mesmo tempo não lançam o mês duas vezes, e um mês já
+ * lançado não volta mesmo que o lançamento dele seja mexido no banco. O índice único
+ * parcial (contrato e mês) segue como segunda proteção.
  */
 @Injectable()
 export class LancamentoMensalService implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -57,33 +60,36 @@ export class LancamentoMensalService implements OnApplicationBootstrap, OnApplic
         ...(contratoId ? { id: contratoId } : {}),
         inicio: { lte: paraDataDoBanco(hoje) },
       },
-      include: { quadra: { select: { nome: true } } },
+      select: { id: true },
     });
-    if (contratos.length === 0) return 0;
-    const jaLancados = new Set(
-      (
-        await this.prisma.lancamento.findMany({
-          where: {
-            categoria: "ALUGUEL_MENSAL",
-            origemTipo: "ContratoQuadra",
-            OR: contratos.map((c) => ({ origemId: { startsWith: `${c.id}:` } })),
-          },
-          select: { origemId: true },
-        })
-      ).map((l) => l.origemId),
-    );
-    const novos = contratos.flatMap((c) =>
-      parcelasDevidas(
+    let total = 0;
+    for (const { id } of contratos) total += await this.lancarContrato(id, hoje);
+    if (total > 0) this.logger.log(`Aluguel de quadra lançado: ${total} mês(es).`);
+    return total;
+  }
+
+  private lancarContrato(id: string, hoje: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "ContratoQuadra" WHERE id = ${id}::uuid FOR UPDATE`;
+      const c = await tx.contratoQuadra.findUniqueOrThrow({
+        where: { id },
+        include: { quadra: { select: { nome: true } } },
+      });
+      const parcelas = parcelasDevidas(
         {
           inicio: competenciaDe(deDataDoBanco(c.inicio)),
           fim: c.fim ? competenciaDe(deDataDoBanco(c.fim)) : null,
           diaPagamento: c.diaPagamento,
+          lancadoAte: c.lancadoAte ? competenciaDe(deDataDoBanco(c.lancadoAte)) : null,
         },
         hoje,
         hojeEmSaoPaulo(c.criadoEm),
-      )
-        .filter((p) => !jaLancados.has(origemDaParcela(c.id, p.competencia)))
-        .map((p) => ({
+      );
+      const ultima = parcelas.at(-1);
+      if (!ultima) return 0;
+      // ON CONFLICT DO NOTHING: a chave do mês pode já existir no banco.
+      const { count } = await tx.lancamento.createMany({
+        data: parcelas.map((p) => ({
           tipo: "SAIDA" as const,
           categoria: "ALUGUEL_MENSAL" as const,
           valorCentavos: c.valorCentavos,
@@ -94,14 +100,13 @@ export class LancamentoMensalService implements OnApplicationBootstrap, OnApplic
           origemId: origemDaParcela(c.id, p.competencia),
           criadoPorId: c.criadoPorId,
         })),
-    );
-    if (novos.length === 0) return 0;
-    // ON CONFLICT DO NOTHING: outra execução pode ter lançado o mesmo mês agora.
-    const { count } = await this.prisma.lancamento.createMany({
-      data: novos,
-      skipDuplicates: true,
+        skipDuplicates: true,
+      });
+      await tx.contratoQuadra.update({
+        where: { id },
+        data: { lancadoAte: paraDataDoBanco(primeiroDia(ultima.competencia)) },
+      });
+      return count;
     });
-    if (count > 0) this.logger.log(`Aluguel de quadra lançado: ${count} mês(es).`);
-    return count;
   }
 }

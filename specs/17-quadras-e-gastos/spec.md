@@ -66,7 +66,7 @@ Em 16/10/2026 o dono contou que as aulas acontecem em quadras alugadas, algumas 
 - **GASTO-CA-01**: O administrador cadastra, renomeia e desativa quadras; nome repetido é recusado; quadra desativada não recebe turma, contrato nem locação nova.
 - **GASTO-CA-02**: A turma tem quadra; duas turmas ativas sobrepostas na mesma quadra e no mesmo dia são recusadas, e em quadras diferentes são aceitas; a agenda e os bloqueios são de uma quadra.
 - **GASTO-CA-03**: O contrato mensal é registrado com quadra, dia, horário, valor, dia do pagamento, forma e mês de início; dados fora das faixas são recusados.
-- **GASTO-CA-04**: No dia do pagamento de cada mês, o sistema lança uma saída do valor do contrato, uma só por mês, mesmo com duas execuções ao mesmo tempo; contrato que começa depois do dia do pagamento lança o primeiro mês no dia do registro; contrato encerrado não lança mais nada a partir do mês do encerramento.
+- **GASTO-CA-04**: No dia do pagamento de cada mês, o sistema lança uma saída do valor do contrato, uma só por mês, mesmo com duas execuções ao mesmo tempo; contrato que começa depois do dia do pagamento lança o primeiro mês no dia do registro; contrato encerrado não lança mais nada a partir do mês do encerramento; um mês já lançado não volta a ser lançado, mesmo que o lançamento dele seja apagado ou mexido no banco.
 - **GASTO-CA-05**: A locação avulsa e os outros gastos (equipamento, investimento, outro) lançam a saída com data, valor e forma; data futura e valor fora da faixa são recusados.
 - **GASTO-CA-06**: O administrador estorna locação, gasto ou mensalidade de contrato com motivo: entra o lançamento contrário ligado ao original; estornar de novo é recusado.
 - **GASTO-CA-07**: A migração cria o saldo inicial de R$ 600,00 em 16/10/2026; o saldo em caixa é esse valor mais as entradas menos as saídas a partir dessa data.
@@ -84,4 +84,5 @@ Em 16/10/2026 o dono contou que as aulas acontecem em quadras alugadas, algumas 
 ## Decisões registradas
 
 - 16/10/2026, respostas do dono: as quadras alugadas são onde acontecem as turmas (cada turma passa a ter quadra); o aluguel mensal entra no caixa sozinho todo mês; investimento é gasto; o saldo de R$ 600,00 vale a partir de hoje.
+- 23/10/2026, correção: depois de o dono ajustar o caixa direto no banco, o lançamento automático (que procurava o lançamento de cada mês) lançou de novo os aluguéis já tratados e o saldo ficou negativo. O contrato passa a guardar o último mês lançado (`lancadoAte`), e o lançamento automático só olha para ele; a migração marca como lançados os meses já vencidos.
 - Padrões propostos nesta spec (o dono pode mudar na aprovação): dia de pagamento do contrato de 1 a 28; forma de pagamento escolhida no contrato; mudança de valor = encerrar e registrar outro; categorias de gasto: equipamento, investimento e outro.
